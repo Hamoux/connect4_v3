@@ -62,6 +62,49 @@ def get_conn():
         cursor_factory=RealDictCursor
     )
 
+
+def ensure_tables():
+    """Create database tables if they don't already exist.
+
+    This makes deploying to a fresh PostgreSQL instance (like Render's)
+    completely hands‑off; the app will boot even when the schema is empty.
+    """
+    ddl_partie = """
+    CREATE TABLE IF NOT EXISTS partie (
+        id_partie SERIAL PRIMARY KEY,
+        mode TEXT,
+        type_partie TEXT,
+        status TEXT,
+        joueur_depart TEXT,
+        signature TEXT UNIQUE,
+        rows INTEGER,
+        cols INTEGER,
+        nb_colonnes INTEGER,
+        confiance INTEGER,
+        joueur_gagnant TEXT,
+        ligne_gagnante TEXT
+    );
+    """
+    ddl_situation = """
+    CREATE TABLE IF NOT EXISTS situation (
+        id_situation SERIAL PRIMARY KEY,
+        id_partie INTEGER REFERENCES partie(id_partie),
+        numero_coup INTEGER,
+        plateau TEXT,
+        joueur TEXT,
+        precedent INTEGER,
+        suivant INTEGER
+    );
+    """
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(ddl_partie)
+            cur.execute(ddl_situation)
+        conn.commit()
+
+# ensure database schema exists at startup
+ensure_tables()
+
 def q_one(sql, params=()):
     with get_conn() as conn:
         with conn.cursor() as cur:
