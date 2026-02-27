@@ -2,6 +2,8 @@ import os
 import sys
 import time
 from flask import Flask, render_template, jsonify, request
+import uuid
+
 
 import psycopg2
 from psycopg2.extras import RealDictCursor
@@ -25,18 +27,22 @@ DIFF_TO_DEPTH = {"easy": 2, "medium": 4, "hard": 6}
 ai_engine = MinimaxAI(ROWS, COLS)
 
 # =======================
-# STATE (server memory)
+# MULTI-GAME STORAGE & HELPERS
 # =======================
-state = {
+# in-memory map of active online games (key=id_partie)
+games = {}
+
+# template for new state objects; some entries are filled lazily
+_default_state_template = {
     "id_partie": None,
-    "mode": "WEB",
-    "type_partie": "IA",          # "IA" ou "HUMAIN"
+    "mode": "WEB",          # "WEB" (online) or "LOCAL" (UI only)
+    "type_partie": "IA",    # "IA" or "HUMAIN"
     "status": "Aucune partie",
 
     "ai_enabled": True,
     "ai_depth": 4,
 
-    "board": [[0 for _ in range(COLS)] for _ in range(ROWS)],
+    "board": None,            # will be created per-instance
     "current_player": "R",
     "game_over": False,
     "starting_player": None,
@@ -45,8 +51,67 @@ state = {
     "signature": "init",
     "last_situation_id": None,
 
-    "winning_line": None,         # [[r,c],[r,c],[r,c],[r,c]]
+    "winning_line": None,
+
+    # used only for online games to track who has joined
+    # store as a list so it serializes cleanly to JSON
+    "client_ids": [],
 }
+
+
+def make_fresh_state():
+    """Return a brand-new state dictionary (deep copy of template)."""
+    s = {k: (v.copy() if isinstance(v, (list, dict)) else v) for k, v in _default_state_template.items()}
+    # board must be a fresh 2‑D list
+    s["board"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    s["client_ids"] = []
+    return s
+
+
+def get_game_state(game_id):
+    """Look up the state for the given game_id (int) or None.
+    Returns None if no such game.
+    """
+    if game_id is None:
+        return state
+    return games.get(game_id)
+
+
+def register_client(game, client_id):
+    """Register a new client (browser session) for *game*.
+    If more than two unique clients try to join an online game, raise
+    ValueError("Partie pleine").  client_id may be None; in that case
+    we do nothing (legacy requests).
+
+    Also assign the client to a color slot (client_r/client_j) based on
+    starting_player so we can later check turn ownership.
+    """
+    if not client_id:
+        return
+    clients = game.setdefault("client_ids", [])
+    # already known?
+    if client_id in clients:
+        return
+    if len(clients) >= 2:
+        raise ValueError("Partie pleine")
+    clients.append(client_id)
+
+    # assign colour slot for human-vs-human web games
+    if game.get("mode") == "WEB" and game.get("type_partie") == "HUMAIN":
+        # determine preferred order: starting_player goes first
+        first = game.get("starting_player", "R")
+        second = "J" if first == "R" else "R"
+        # if slot not yet filled, put this client there
+        if game.get(f"client_{first.lower()}") is None:
+            game[f"client_{first.lower()}"] = client_id
+        elif game.get(f"client_{second.lower()}") is None and client_id != game.get(f"client_{first.lower()}"):
+            game[f"client_{second.lower()}"] = client_id
+
+# global fallback state (for old single‑game behaviour)
+state = make_fresh_state()
+state["mode"] = "WEB"
+
+# old shared state is removed; use make_fresh_state()/games map instead
 
 # =======================
 # DB helpers
@@ -168,25 +233,30 @@ def try_finish_partie_db(id_partie, winner, ligne=None):
 # =======================
 # Game logic
 # =======================
-def reset_state_new_game():
-    state["board"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-    state["current_player"] = "R"
-    state["starting_player"] = None
-    state["game_over"] = False
-    state["signature"] = "init"
-    state["last_situation_id"] = None
-    state["id_partie"] = None
-    state["winning_line"] = None
-    state["status"] = "Aucune partie"
+def reset_state_new_game(s=None):
+    """Reset the given state object (or global state if None) for a fresh game."""
+    if s is None:
+        s = state
+    s["board"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    s["current_player"] = "R"
+    s["starting_player"] = None
+    s["game_over"] = False
+    s["signature"] = "init"
+    s["last_situation_id"] = None
+    s["id_partie"] = None
+    s["winning_line"] = None
+    s["status"] = "Aucune partie"
 
-def find_winning_line(r, c):
+def find_winning_line(r, c, s=None):
+    if s is None:
+        s = state
     directions = [(0,1), (1,0), (1,1), (1,-1)]
-    player = state["board"][r][c]
+    player = s["board"][r][c]
     for dr, dc in directions:
         coords = []
         for i in range(-3, 4):
             nr, nc = r + dr*i, c + dc*i
-            if 0 <= nr < ROWS and 0 <= nc < COLS and state["board"][nr][nc] == player:
+            if 0 <= nr < ROWS and 0 <= nc < COLS and s["board"][nr][nc] == player:
                 coords.append((nr, nc))
                 if len(coords) == 4:
                     return coords
@@ -251,12 +321,14 @@ def apply_move(col):
     line = find_winning_line(placed_row, col)
     return placed_row, line, joueur
 
-def finalize_win(winner, line):
-    state["game_over"] = True
-    state["status"] = "TERMINEE"
-    state["winning_line"] = [[r, c] for (r, c) in line]
-    ligne_txt = str(state["winning_line"])  # format [[8,2],[7,2],...]
-    try_finish_partie_db(state["id_partie"], winner, ligne=ligne_txt)
+def finalize_win(winner, line, s=None):
+    if s is None:
+        s = state
+    s["game_over"] = True
+    s["status"] = "TERMINEE"
+    s["winning_line"] = [[r, c] for (r, c) in line]
+    ligne_txt = str(s["winning_line"])  # format [[8,2],[7,2],...]
+    try_finish_partie_db(s["id_partie"], winner, ligne=ligne_txt)
 
 # =======================
 # Routes
@@ -265,47 +337,158 @@ def finalize_win(winner, line):
 def home():
     return render_template("index.html")
 
+
+
+def _export_state(game):
+    # return copy without internal keys
+    if game is None:
+        return None
+    g = dict(game)
+    clients = g.pop("client_ids", [])
+    # expose number of joined clients so UI can show waiting indicator
+    g["player_count"] = len(clients)
+    return g
+
+
 @app.get("/api/state")
 def api_state():
-    return jsonify(state)
+    # return the state for a particular game if requested
+    game_id = request.args.get("game_id", type=int)
+    client_id = request.args.get("client_id")
+
+    game = get_game_state(game_id)
+    if game_id is not None and game is None:
+        return jsonify({"error": "Partie introuvable"}), 404
+
+    try:
+        register_client(game, client_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    return jsonify(_export_state(game))
 
 @app.post("/api/new")
 def api_new():
-    reset_state_new_game()
-
     data = request.json or {}
-    mode = str(data.get("mode") or "IA").upper()             # "IA" / "HUMAIN"
+    client_id = data.get("client_id")
+
+    mode = str(data.get("mode") or "IA").upper()  # "IA", "LOCAL", "ONLINE"
     diff = str(data.get("difficulty") or "medium").lower()  # easy/medium/hard
     starting_player = str(data.get("starting_player") or "R").upper()
 
-    state["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
-    state["ai_enabled"] = (mode == "IA")
-    state["ai_depth"] = DIFF_TO_DEPTH.get(diff, 4)
+    # for online human-vs-human the colour is chosen randomly and the client may pass nothing
+    if mode == "ONLINE":
+        # ignore caller value; pick red or yellow at random
+        import random
+        starting_player = random.choice(["R", "J"])
 
-    # honor requested starting player (UI choice). Do not change DB insertion.
-    state["current_player"] = starting_player if starting_player in ("R","J") else "R"
-    state["starting_player"] = state["current_player"]
-    # choose AI side opposite the human when IA enabled
-    if state["ai_enabled"]:
-        state["ai_player"] = "J" if state["current_player"] == "R" else "R"
+    # LOCAL games never touch the database or shared memory
+    if mode == "LOCAL":
+        g = make_fresh_state()
+        g["mode"] = "LOCAL"
+        g["type_partie"] = "HUMAIN"
+        g["ai_enabled"] = False
+        # starting player logic
+        g["current_player"] = starting_player if starting_player in ("R","J") else "R"
+        g["starting_player"] = g["current_player"]
+        g["winning_line"] = None
+        g["status"] = "EN_COURS"
+        # we don't register client ids for pure local
+        return jsonify(g)
+
+    # ONLINE / IA mode – attempt to match or create server‑tracked game
+    if mode == "ONLINE" and not data.get("game_id"):
+        # look for an existing waiting human game with <2 clients
+        for existing in games.values():
+            if (
+                existing.get("mode") == "WEB"
+                and existing.get("type_partie") == "HUMAIN"
+                and not existing.get("game_over")
+                and len(existing.get("client_ids", [])) < 2
+            ):
+                try:
+                    register_client(existing, client_id)
+                except ValueError:
+                    pass
+                # matched existing room, return its exported state
+                return jsonify(_export_state(existing))
+
+    # otherwise create a new game
+    g = make_fresh_state()
+    g["mode"] = "WEB"
+    g["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
+    g["ai_enabled"] = (mode == "IA")
+    g["ai_depth"] = DIFF_TO_DEPTH.get(diff, 4)
+
+    # honour starting player
+    g["current_player"] = starting_player if starting_player in ("R","J") else "R"
+    g["starting_player"] = g["current_player"]
+    if g["ai_enabled"]:
+        g["ai_player"] = "J" if g["current_player"] == "R" else "R"
+
+    # prepare colour slots for two humans
+    g["client_r"] = None
+    g["client_j"] = None
 
     pid, sig = create_partie_db()
-    state["id_partie"] = pid
-    state["signature"] = sig
-    state["status"] = "EN_COURS"
-    state["winning_line"] = None
+    g["id_partie"] = pid
+    g["signature"] = sig
+    g["status"] = "EN_COURS"
+    g["winning_line"] = None
 
-    return jsonify(state)
+    games[pid] = g
+    try:
+        register_client(g, client_id)
+    except ValueError:
+        pass
+
+    return jsonify(_export_state(g))
 
 @app.post("/api/play")
 def api_play():
     data = request.json or {}
     col = data.get("col", None)
+    client_id = data.get("client_id")
+    game_id = data.get("game_id")
 
-    if state["id_partie"] is None:
+    game = get_game_state(game_id)
+    if game_id is not None and game is None:
+        return jsonify({"error": "Partie introuvable"}), 404
+    try:
+        register_client(game, client_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    # work on the chosen game or fall back to global
+    global state
+    state = game or state
+
+    # block moves until opponent joined
+    if state.get("mode") == "WEB" and state.get("type_partie") == "HUMAIN":
+        if len(state.get("client_ids", [])) < 2:
+            return jsonify({"error": "En attente d'un adversaire."}), 400
+
+    # enforce that only the client whose colour matches current_player may play
+    if state.get("mode") == "WEB" and state.get("type_partie") == "HUMAIN" and client_id:
+        # if the player has already been assigned a colour, they may not play the opposite one
+        if state.get("client_r") == client_id and state["current_player"] == "J":
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+        if state.get("client_j") == client_id and state["current_player"] == "R":
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+
+        # otherwise, enforce expected slot if it exists (once two different clients are present)
+        expected = None
+        if state["current_player"] == "R":
+            expected = state.get("client_r")
+        else:
+            expected = state.get("client_j")
+        if expected and client_id != expected:
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+
+    if state["id_partie"] is None and state.get("mode") != "LOCAL":
         return jsonify({"error": "Aucune partie. Clique sur 'Nouvelle partie'."}), 400
     if state["game_over"]:
-        return jsonify(state)
+        return jsonify(_export_state(state))
 
     # Si IA active et c’est son tour -> on bloque (elle jouera via /api/ai_move)
     if state.get("ai_enabled", False) and state["current_player"] == state.get("ai_player"):
@@ -318,18 +501,33 @@ def api_play():
 
     if line:
         finalize_win(joueur, line)
-        return jsonify(state)
+        return jsonify(_export_state(state))
 
     # switch player
     state["current_player"] = "J" if state["current_player"] == "R" else "R"
-    return jsonify(state)
+    return jsonify(_export_state(state))
 
 @app.post("/api/ai_move")
 def api_ai_move():
-    if state["id_partie"] is None:
+    data = request.json or {}
+    client_id = data.get("client_id")
+    game_id = data.get("game_id")
+
+    game = get_game_state(game_id)
+    if game_id is not None and game is None:
+        return jsonify({"error": "Partie introuvable"}), 404
+    try:
+        register_client(game, client_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    global state
+    state = game or state
+
+    if state["id_partie"] is None and state.get("mode") != "LOCAL":
         return jsonify({"error": "Aucune partie"}), 400
     if state["game_over"]:
-        return jsonify(state)
+        return jsonify(_export_state(state))
     if not state.get("ai_enabled", False):
         return jsonify({"error": "IA désactivée"}), 400
     if state["current_player"] != state.get("ai_player"):
@@ -343,11 +541,11 @@ def api_ai_move():
 
     if line:
         finalize_win(joueur, line)
-        return jsonify(state)
+        return jsonify(_export_state(state))
 
     # switch back to humain
     state["current_player"] = "R" if state["current_player"] == "J" else "J"
-    return jsonify(state)
+    return jsonify(_export_state(state))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

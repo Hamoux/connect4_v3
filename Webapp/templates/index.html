@@ -27,9 +27,15 @@
         <div class="stat">
           <div class="label">Mode de jeu</div>
           <select id="modeSelect" class="select">
-            <option value="HUMAIN">J vs J</option>
+            <option value="LOCAL">J vs J (locale)</option>
+            <option value="ONLINE">J vs J (en ligne)</option>
             <option value="IA" selected>J vs IA</option>
           </select>
+        </div>
+
+        <div class="stat">
+          <div class="label">Votre rôle</div>
+          <div class="value" id="yourRole">-</div>
         </div>
 
         <div class="stat">
@@ -52,6 +58,13 @@
         </div>
 
         <button id="btnNew" class="btn primary full">Nouvelle partie</button>
+        <div class="stat">
+          <div class="label">Lien de la partie</div>
+          <div class="value">
+            <input id="shareLink" type="text" readonly class="input" />
+            <button id="btnCopyLink" class="btn small">Copier</button>
+          </div>
+        </div>
         <div class="hint" id="hint">Clique sur une colonne 👇</div>
       </div>
 
