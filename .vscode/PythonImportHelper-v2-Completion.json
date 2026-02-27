@@ -1,0 +1,1322 @@
+[
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "psycopg2",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "errors",
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "isExtraImport": true,
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "IntegrityError",
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "isExtraImport": true,
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "IntegrityError",
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "isExtraImport": true,
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "IntegrityError",
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "isExtraImport": true,
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
+        "isExtraImport": true,
+        "detail": "psycopg2.extras",
+        "documentation": {}
+    },
+    {
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
+        "isExtraImport": true,
+        "detail": "psycopg2.extras",
+        "documentation": {}
+    },
+    {
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
+        "isExtraImport": true,
+        "detail": "psycopg2.extras",
+        "documentation": {}
+    },
+    {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4Game",
+        "importPath": "game",
+        "description": "game",
+        "isExtraImport": true,
+        "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4Game",
+        "importPath": "game",
+        "description": "game",
+        "isExtraImport": true,
+        "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4Game",
+        "importPath": "game",
+        "description": "game",
+        "isExtraImport": true,
+        "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "canonical_signature_from_history",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "canonical_signature_from_history",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "moves_signature",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
+        "isExtraImport": true,
+        "detail": "selenium",
+        "documentation": {}
+    },
+    {
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
+        "isExtraImport": true,
+        "detail": "selenium",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "Keys",
+        "importPath": "selenium.webdriver.common.keys",
+        "description": "selenium.webdriver.common.keys",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.keys",
+        "documentation": {}
+    },
+    {
+        "label": "Options",
+        "importPath": "selenium.webdriver.chrome.options",
+        "description": "selenium.webdriver.chrome.options",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.options",
+        "documentation": {}
+    },
+    {
+        "label": "Options",
+        "importPath": "selenium.webdriver.chrome.options",
+        "description": "selenium.webdriver.chrome.options",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.options",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverWait",
+        "importPath": "selenium.webdriver.support.ui",
+        "description": "selenium.webdriver.support.ui",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support.ui",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverWait",
+        "importPath": "selenium.webdriver.support.ui",
+        "description": "selenium.webdriver.support.ui",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support.ui",
+        "documentation": {}
+    },
+    {
+        "label": "expected_conditions",
+        "importPath": "selenium.webdriver.support",
+        "description": "selenium.webdriver.support",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "expected_conditions",
+        "importPath": "selenium.webdriver.support",
+        "description": "selenium.webdriver.support",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "import_bga_moves",
+        "importPath": "bga_import",
+        "description": "bga_import",
+        "isExtraImport": true,
+        "detail": "bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "tkinter",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "ttk",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "messagebox",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "filedialog",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "ttk",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "filedialog",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "messagebox",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4UI",
+        "importPath": "ui",
+        "description": "ui",
+        "isExtraImport": true,
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urljoin",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "MinimaxAI",
+        "importPath": "ai",
+        "description": "ai",
+        "isExtraImport": true,
+        "detail": "ai",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")  # ✅ ton nom exact\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")  # mets en variable d'env si tu veux\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) for x in row) for row in board)\ndef moves_signature(history):\n    # signature = colonnes jouées (1..cols)\n    return \"\".join(str(c + 1) for (_r, c, _p) in history)\n# db.py\ndef create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "moves_signature",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def moves_signature(history):\n    # signature = colonnes jouées (1..cols)\n    return \"\".join(str(c + 1) for (_r, c, _p) in history)\n# db.py\ndef create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:\n        cols_sql.append(\"rows\"); vals.append(rows)\n    if cols is not None:",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:\n        cols_sql.append(\"rows\"); vals.append(rows)\n    if cols is not None:\n        cols_sql.append(\"cols\"); vals.append(cols)\n    if nb_colonnes is not None:\n        cols_sql.append(\"nb_colonnes\"); vals.append(nb_colonnes)\n    if confiance is not None:",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def insert_situation(id_partie, numero_coup, plateau, joueur, precedent=None, suivant=None):\n    sql = \"\"\"\n    INSERT INTO situation (id_partie, numero_coup, plateau, joueur, precedent, suivant)\n    VALUES (%s, %s, %s, %s, %s, %s)\n    RETURNING id_situation;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (id_partie, numero_coup, plateau, joueur, precedent, suivant))",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def update_links(precedent_id, suivant_id):\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(\"UPDATE situation SET suivant=%s WHERE id_situation=%s;\", (suivant_id, precedent_id))\n            cur.execute(\"UPDATE situation SET precedent=%s WHERE id_situation=%s;\", (precedent_id, suivant_id))\n    finally:\n        conn.close()\ndef finish_partie(id_partie, status, joueur_gagnant=None, ligne_gagnante=None, signature=None):\n    sql = \"\"\"",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def finish_partie(id_partie, status, joueur_gagnant=None, ligne_gagnante=None, signature=None):\n    sql = \"\"\"\n    UPDATE partie\n    SET status=%s, joueur_gagnant=%s, ligne_gagnante=%s, signature=%s\n    WHERE id_partie=%s;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (status, joueur_gagnant, ligne_gagnante, signature, id_partie))",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def delete_partie(id_partie):\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(\"DELETE FROM partie WHERE id_partie=%s;\", (id_partie,))\n    finally:\n        conn.close()\ndef mirror_moves_signature(sig: str, cols: int) -> str:\n    # sig contient des colonnes en 1..cols\n    out = []",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "mirror_moves_signature",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def mirror_moves_signature(sig: str, cols: int) -> str:\n    # sig contient des colonnes en 1..cols\n    out = []\n    for ch in sig:\n        if not ch.isdigit():\n            continue\n        old = int(ch)\n        out.append(str(cols + 1 - old))\n    return \"\".join(out)\ndef canonical_signature_from_history(history, cols: int) -> str:",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "canonical_signature_from_history",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def canonical_signature_from_history(history, cols: int) -> str:\n    # signature normale\n    sig = \"\".join(str(c + 1) for (_r, c, _p) in history)\n    # signature miroir\n    msig = mirror_moves_signature(sig, cols)\n    # canonique = la plus petite (lexicographique)\n    return min(sig, msig)\ndef update_partie_signature(id_partie, signature):\n    sql = \"\"\"\n    UPDATE partie",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def update_partie_signature(id_partie, signature):\n    sql = \"\"\"\n    UPDATE partie\n    SET signature=%s\n    WHERE id_partie=%s;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (signature, id_partie))",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "MinimaxAI",
+        "kind": 6,
+        "importPath": "ai",
+        "description": "ai",
+        "peekOfCode": "class MinimaxAI:\n    def __init__(self, rows, cols):\n        self.rows = rows\n        self.cols = cols\n        self.tt = {}\n    def reset_params(self, rows, cols):\n        self.rows = rows\n        self.cols = cols\n        self.tt.clear()\n    def clear_cache(self):",
+        "detail": "ai",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "bga_import",
+        "description": "bga_import",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "find_partie_id_by_signature",
+        "kind": 2,
+        "importPath": "bga_import",
+        "description": "bga_import",
+        "peekOfCode": "def find_partie_id_by_signature(signature: str):\n    sql = \"SELECT id_partie FROM partie WHERE signature = %s LIMIT 1;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (signature,))\n        row = cur.fetchone()\n        return row[\"id_partie\"] if row else None\ndef count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))",
+        "detail": "bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "count_situations_for_partie",
+        "kind": 2,
+        "importPath": "bga_import",
+        "description": "bga_import",
+        "peekOfCode": "def count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))\n        return int(cur.fetchone()[\"n\"])\n# ---------------- Import logic ----------------\ndef import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9",
+        "detail": "bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "import_bga_moves",
+        "kind": 2,
+        "importPath": "bga_import",
+        "description": "bga_import",
+        "peekOfCode": "def import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9\n    \"\"\"\n    # 1) tri + construction signature\n    moves = sorted(moves, key=lambda m: int(m[\"move_id\"]))\n    signature = \"\".join(str(int(m[\"col\"])) for m in moves)  # string de 1..9\n    # 2) éviter doublons\n    existing_pid = find_partie_id_by_signature(signature)",
+        "detail": "bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "load_credentials",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]\ndef make_driver(headless=False):\n    opts = Options()",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "make_driver",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def make_driver(headless=False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n    opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-gpu\")\n    opts.add_argument(\"--no-sandbox\")\n    opts.add_argument(\"--disable-dev-shm-usage\")\n    # un peu moins \"bot-like\" (pas magique, mais aide)\n    opts.add_experimental_option(\"excludeSwitches\", [\"enable-automation\"])",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "is_logged_in",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def is_logged_in(driver):\n    # Heuristique simple : si on voit \"Logout\" ou un lien profil\n    # (BGA change parfois son HTML, donc c'est volontairement large)\n    html = driver.page_source.lower()\n    return (\"logout\" in html) or (\"deconnexion\" in html) or (\"player\" in html and \"profile\" in html)\ndef login_bga(driver, email, password, timeout=30):\n    \"\"\"\n    IMPORTANT:\n    Le HTML BGA peut changer. On essaye plusieurs sélecteurs.\n    Si ça bloque, je te dis en bas quoi faire (mode \"login manuel\" assisté).",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "login_bga",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def login_bga(driver, email, password, timeout=30):\n    \"\"\"\n    IMPORTANT:\n    Le HTML BGA peut changer. On essaye plusieurs sélecteurs.\n    Si ça bloque, je te dis en bas quoi faire (mode \"login manuel\" assisté).\n    \"\"\"\n    driver.get(LOGIN_URL)\n    wait = WebDriverWait(driver, timeout)\n    # si déjà log\n    if is_logged_in(driver):",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "wait_for_gamelogs",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def wait_for_gamelogs(driver, timeout=40):\n    \"\"\"\n    Attend que window.g_gamelogs existe et ait du contenu.\n    \"\"\"\n    end = time.time() + timeout\n    while time.time() < end:\n        try:\n            gg = driver.execute_script(\"return window.g_gamelogs || null;\")\n            if gg and isinstance(gg, list) and len(gg) > 0:\n                return gg",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_gamelogs",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def extract_moves_from_gamelogs(driver):\n    \"\"\"\n    Exécute un JS dans la page pour retourner la liste:\n    [{\"move_id\": 2, \"col\": 5, \"player_id\": \"3368422\"}, ...]\n    \"\"\"\n    js = r\"\"\"\n    const logs = window.g_gamelogs || [];\n    const byMove = new Map(); // move_id -> {col, pid}\n    for (const pkt of logs) {\n      const mid = Number(pkt && pkt.move_id);",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "import_one_table",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def import_one_table(driver, table_url, rows=9, cols=9, confiance=3):\n    print(f\"\\n=== TABLE: {table_url} ===\")\n    driver.get(table_url)\n    # Attendre que la page charge un minimum\n    time.sleep(3)\n    gg = wait_for_gamelogs(driver, timeout=50)\n    if not gg:\n        print(\"❌ g_gamelogs introuvable (page pas chargée / pas de replay / DOM différent).\")\n        return None\n    moves = extract_moves_from_gamelogs(driver)",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "load_tables_from_file",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def load_tables_from_file(path=\"tables.txt\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"{path} introuvable. Mets une URL de table par ligne.\"\n        )\n    urls = []\n    for line in p.read_text(encoding=\"utf-8\").splitlines():\n        line = line.strip()\n        if not line or line.startswith(\"#\"):",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "def main():\n    # usage:\n    # python bga_puppet.py tables.txt\n    tables_file = sys.argv[1] if len(sys.argv) > 1 else \"tables.txt\"\n    email, password = load_credentials(\"credentials.json\")\n    driver = make_driver(headless=False)\n    try:\n        driver.get(BGA_HOME)\n        time.sleep(2)\n        # login",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "BGA_HOME",
+        "kind": 5,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "BGA_HOME = \"https://boardgamearena.com/\"\nLOGIN_URL = \"https://boardgamearena.com/account\"  # page qui force souvent la connexion\ndef load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "LOGIN_URL",
+        "kind": 5,
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "peekOfCode": "LOGIN_URL = \"https://boardgamearena.com/account\"  # page qui force souvent la connexion\ndef load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]\ndef make_driver(headless=False):",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "DBExplorer",
+        "kind": 6,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "class DBExplorer(tk.Toplevel):\n    def __init__(self, master=None, config_path=\"config.json\"):\n        super().__init__(master)\n        self.title(\"Explorateur DB - Connect4\")\n        self.geometry(\"1100x700\")\n        # config\n        self.rows, self.cols, self.starting_player = 9, 9, \"R\"\n        try:\n            cfg = json.load(open(config_path, \"r\", encoding=\"utf-8\"))\n            self.rows = int(cfg.get(\"rows\", self.rows))",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "q_all",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def q_all(sql, params=None):\n    with get_conn() as conn:\n        with conn.cursor(cursor_factory=RealDictCursor) as cur:\n            cur.execute(sql, params or ())\n            return cur.fetchall()\ndef q_one(sql, params=None):\n    rows = q_all(sql, params)\n    return rows[0] if rows else None\ndef exec_sql(sql, params=None):\n    with get_conn() as conn:",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "q_one",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def q_one(sql, params=None):\n    rows = q_all(sql, params)\n    return rows[0] if rows else None\ndef exec_sql(sql, params=None):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params or ())\n            conn.commit()\n# ============================================================\n# Helpers signature / plateau",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "exec_sql",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def exec_sql(sql, params=None):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params or ())\n            conn.commit()\n# ============================================================\n# Helpers signature / plateau\n# ============================================================\ndef sanitize_signature(sig: str) -> str:\n    if not sig:",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_signature",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def sanitize_signature(sig: str) -> str:\n    if not sig:\n        return \"\"\n    return re.sub(r\"\\D\", \"\", sig)\ndef mirror_moves_signature(sig: str, cols: int) -> str:\n    out = []\n    for ch in sanitize_signature(sig):\n        c = int(ch)\n        out.append(str(cols + 1 - c))\n    return \"\".join(out)",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "mirror_moves_signature",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def mirror_moves_signature(sig: str, cols: int) -> str:\n    out = []\n    for ch in sanitize_signature(sig):\n        c = int(ch)\n        out.append(str(cols + 1 - c))\n    return \"\".join(out)\ndef canonical_signature(sig: str, cols: int) -> str:\n    s = sanitize_signature(sig)\n    ms = mirror_moves_signature(s, cols)\n    return min(s, ms) if s and ms else s",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "canonical_signature",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def canonical_signature(sig: str, cols: int) -> str:\n    s = sanitize_signature(sig)\n    ms = mirror_moves_signature(s, cols)\n    return min(s, ms) if s and ms else s\ndef empty_board(rows, cols):\n    return [[0 for _ in range(cols)] for _ in range(rows)]\ndef mirror_board(board):\n    return [list(reversed(row)) for row in board]\ndef parse_board_text(plateau: str, rows: int, cols: int):\n    if plateau is None:",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "empty_board",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def empty_board(rows, cols):\n    return [[0 for _ in range(cols)] for _ in range(rows)]\ndef mirror_board(board):\n    return [list(reversed(row)) for row in board]\ndef parse_board_text(plateau: str, rows: int, cols: int):\n    if plateau is None:\n        raise ValueError(\"plateau is NULL\")\n    s = plateau.strip(\"\\n\\r \")\n    lines = s.splitlines()\n    # format \"rows lignes\" de longueur cols (0/R/J)",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "mirror_board",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def mirror_board(board):\n    return [list(reversed(row)) for row in board]\ndef parse_board_text(plateau: str, rows: int, cols: int):\n    if plateau is None:\n        raise ValueError(\"plateau is NULL\")\n    s = plateau.strip(\"\\n\\r \")\n    lines = s.splitlines()\n    # format \"rows lignes\" de longueur cols (0/R/J)\n    if len(lines) == rows and all(len(line) == cols for line in lines):\n        board = empty_board(rows, cols)",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "parse_board_text",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def parse_board_text(plateau: str, rows: int, cols: int):\n    if plateau is None:\n        raise ValueError(\"plateau is NULL\")\n    s = plateau.strip(\"\\n\\r \")\n    lines = s.splitlines()\n    # format \"rows lignes\" de longueur cols (0/R/J)\n    if len(lines) == rows and all(len(line) == cols for line in lines):\n        board = empty_board(rows, cols)\n        for r in range(rows):\n            for c in range(cols):",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "replay_from_signature",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def replay_from_signature(sig: str, rows: int, cols: int, starting_player: str):\n    \"\"\"\n    Rejoue la signature et retourne:\n    board, history [(r,c,p)], next_player\n    \"\"\"\n    board = empty_board(rows, cols)\n    player = starting_player\n    hist = []\n    for ch in sanitize_signature(sig):\n        col = int(ch) - 1",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "pick_partie_id_dialog",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def pick_partie_id_dialog(master=None, config_path=\"config.json\"):\n    dlg = DBExplorer(master=master, config_path=config_path)\n    dlg.grab_set()\n    selected = {\"id\": None}\n    def select_current():\n        sel = dlg.parties_tree.selection()\n        if not sel:\n            messagebox.showwarning(\"Charger\", \"Sélectionne une partie\")\n            return\n        vals = dlg.parties_tree.item(sel[0], \"values\")",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "load_partie_for_play",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def load_partie_for_play(id_partie: int, config_path=\"config.json\"):\n    \"\"\"\n    ✅ LA fonction clé pour que ton UI puisse continuer une partie importée.\n    Elle renvoie:\n      rows, cols, starting_player, signature,\n      board, history[(r,c,p)], future[],\n      current_player, game_over, result,\n      last_situation_id\n    \"\"\"\n    rows, cols, starting_player = 9, 9, \"R\"",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "open_explorer_from_ui",
+        "kind": 2,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "def open_explorer_from_ui(master):\n    DBExplorer(master=master)\nif __name__ == \"__main__\":\n    root = tk.Tk()\n    root.withdraw()\n    DBExplorer(master=root)\n    root.mainloop()",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "PADDING",
+        "kind": 5,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "PADDING = 12\nTOP_BAR = 20\nBOTTOM_BAR = 26\nclass DBExplorer(tk.Toplevel):\n    def __init__(self, master=None, config_path=\"config.json\"):\n        super().__init__(master)\n        self.title(\"Explorateur DB - Connect4\")\n        self.geometry(\"1100x700\")\n        # config\n        self.rows, self.cols, self.starting_player = 9, 9, \"R\"",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "TOP_BAR",
+        "kind": 5,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "TOP_BAR = 20\nBOTTOM_BAR = 26\nclass DBExplorer(tk.Toplevel):\n    def __init__(self, master=None, config_path=\"config.json\"):\n        super().__init__(master)\n        self.title(\"Explorateur DB - Connect4\")\n        self.geometry(\"1100x700\")\n        # config\n        self.rows, self.cols, self.starting_player = 9, 9, \"R\"\n        try:",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "BOTTOM_BAR",
+        "kind": 5,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "BOTTOM_BAR = 26\nclass DBExplorer(tk.Toplevel):\n    def __init__(self, master=None, config_path=\"config.json\"):\n        super().__init__(master)\n        self.title(\"Explorateur DB - Connect4\")\n        self.geometry(\"1100x700\")\n        # config\n        self.rows, self.cols, self.starting_player = 9, 9, \"R\"\n        try:\n            cfg = json.load(open(config_path, \"r\", encoding=\"utf-8\"))",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "kind": 2,
+        "importPath": "fill_random_db",
+        "description": "fill_random_db",
+        "peekOfCode": "def board_to_text(board):\n    # même format que ton db.py (0/R/J)\n    return \"\\n\".join(\"\".join(str(x) for x in row) for row in board)\ndef winning_line_to_text(winning_line):\n    # format simple en texte, lisible + compact\n    # ex: \"(7,3);(6,4);(5,5);(4,6)\"\n    if not winning_line:\n        return None\n    return \";\".join(f\"({r},{c})\" for (r, c) in winning_line)\ndef play_one_random_game(rows=9, cols=9, starting_player=\"R\", confiance=1):",
+        "detail": "fill_random_db",
+        "documentation": {}
+    },
+    {
+        "label": "winning_line_to_text",
+        "kind": 2,
+        "importPath": "fill_random_db",
+        "description": "fill_random_db",
+        "peekOfCode": "def winning_line_to_text(winning_line):\n    # format simple en texte, lisible + compact\n    # ex: \"(7,3);(6,4);(5,5);(4,6)\"\n    if not winning_line:\n        return None\n    return \";\".join(f\"({r},{c})\" for (r, c) in winning_line)\ndef play_one_random_game(rows=9, cols=9, starting_player=\"R\", confiance=1):\n    g = Connect4Game(rows=rows, cols=cols, starting_player=starting_player)\n    # 1) créer la partie (avec rows/cols pour éviter les defaults en DB)\n    pid = create_partie(",
+        "detail": "fill_random_db",
+        "documentation": {}
+    },
+    {
+        "label": "play_one_random_game",
+        "kind": 2,
+        "importPath": "fill_random_db",
+        "description": "fill_random_db",
+        "peekOfCode": "def play_one_random_game(rows=9, cols=9, starting_player=\"R\", confiance=1):\n    g = Connect4Game(rows=rows, cols=cols, starting_player=starting_player)\n    # 1) créer la partie (avec rows/cols pour éviter les defaults en DB)\n    pid = create_partie(\n        mode=\"batch_random\",\n        type_partie=\"IA_VS_IA\",\n        status=\"EN_COURS\",\n        joueur_depart=starting_player,\n        rows=rows,\n        cols=cols,",
+        "detail": "fill_random_db",
+        "documentation": {}
+    },
+    {
+        "label": "fill",
+        "kind": 2,
+        "importPath": "fill_random_db",
+        "description": "fill_random_db",
+        "peekOfCode": "def fill(n=500, rows=9, cols=9, starting_player=\"R\", confiance=1):\n    ok = 0\n    tries = 0\n    while ok < n:\n        tries += 1\n        if play_one_random_game(rows=rows, cols=cols, starting_player=starting_player, confiance=confiance):\n            ok += 1\n            if ok % 50 == 0 or ok == 1:\n                print(f\"✅ {ok}/{n} parties insérées (essais={tries})\")\n    print(f\"🎉 Terminé: {ok} parties insérées (essais totaux={tries})\")",
+        "detail": "fill_random_db",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4Game",
+        "kind": 6,
+        "importPath": "game",
+        "description": "game",
+        "peekOfCode": "class Connect4Game:\n    def __init__(self, rows=8, cols=9, starting_player=\"R\", win_len=4):\n        self.rows = rows\n        self.cols = cols\n        self.starting_player = starting_player\n        self.win_len = win_len\n        self.reset()\n    def reset(self):\n        self.current_player = self.starting_player\n        self.board = [[0 for _ in range(self.cols)] for _ in range(self.rows)]",
+        "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "make_driver",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:\n        opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-notifications\")\n    opts.add_argument(\"--disable-popup-blocking\")\n    opts.add_argument(\"--disable-blink-features=AutomationControlled\")",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "login_bga_manual",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def login_bga_manual(driver):\n    \"\"\"\n    Tu te connectes à la main. Ensuite on récupère le domaine réel (fr., en., www)\n    pour que toutes les requêtes suivantes utilisent EXACTEMENT le même domaine (cookies ok).\n    \"\"\"\n    global BASE\n    print(\"🔐 Ouverture BGA login (manuel)...\")\n    driver.get(f\"{BASE}/account\")\n    print(\"👉 Connecte-toi MANUELLEMENT dans Chrome.\")\n    input(\"✅ Quand tu es connectée (avatar visible), appuie sur ENTER...\")",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "collect_player_ids_from_ranking",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def collect_player_ids_from_ranking(driver, max_players: int, scroll_steps: int):\n    \"\"\"\n    Va sur gamepanel connect4 (classement), scroll pour charger plus de joueurs,\n    puis extrait les player_id depuis les liens <a href=\"/player?id=...\">.\n    \"\"\"\n    url = f\"{BASE}/gamepanel?game=connectfour\"\n    print(\"🏁 Ouverture page classement:\", url)\n    driver.get(url)\n    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "load_player_ids",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def load_player_ids():\n    \"\"\"\n    Si player_ids.json existe, on l'utilise.\n    Sinon on renvoie None (et on collectera depuis classement).\n    \"\"\"\n    if PLAYER_IDS_FILE.exists():\n        try:\n            data = json.loads(PLAYER_IDS_FILE.read_text(encoding=\"utf-8\"))\n            ids = [str(x) for x in data if str(x).isdigit()]\n            ids = list(dict.fromkeys(ids))",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "get_connect4_table_ids",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):\n    \"\"\"\n    Ouvre /gamestats?player=...&game_id=1186&finished=1\n    et extrait des #TABLEID.\n    \"\"\"\n    url = f\"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}\"\n    driver.get(url)\n    time.sleep(2)\n    for _ in range(10):\n        driver.execute_script(\"window.scrollTo(0, document.body.scrollHeight);\")",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "resolve_real_replay_url_from_table",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"\n    Va sur /table?table=xxxxxx et tente de récupérer un lien /archive/replay/...\n    \"\"\"\n    table_url = f\"{BASE}/table?table={table_id}\"\n    driver.get(table_url)\n    wait = WebDriverWait(driver, 20)\n    wait.until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    # Essayer de cliquer/attendre un lien replay\n    try:",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "wait_gamelogs",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def wait_gamelogs(driver, max_wait=30):\n    end = time.time() + max_wait\n    while time.time() < end:\n        n = driver.execute_script(\"return (window.g_gamelogs && window.g_gamelogs.length) || 0;\")\n        if int(n) > 0:\n            return True\n        time.sleep(0.5)\n    return False\ndef extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_replay_url",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"\n    Ouvre /archive/replay/... et lit window.g_gamelogs\n    \"\"\"\n    driver.get(replay_url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)\n    ok = wait_gamelogs(driver, max_wait=30)\n    if not ok:\n        return []",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_gamereview",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def extract_moves_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait les coups depuis \"Historique de la partie\".\n    On lit le texte: \"... place un pion dans la colonne X\"\n    + on essaie de récupérer player_id depuis les liens /player?id=...\n    \"\"\"\n    url = f\"{BASE}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(1.5)",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "import_into_db",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def import_into_db(moves):\n    # import local pour éviter erreurs si tu testes juste sans DB\n    from bga_import import import_bga_moves\n    pid = import_bga_moves(moves, rows=ROWS, cols=COLS, confiance=CONFIANCE)\n    return pid\n# ============================================================\n# MAIN\n# ============================================================\ndef main():\n    driver = make_driver(headless=False)",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "def main():\n    driver = make_driver(headless=False)\n    try:\n        login_bga_manual(driver)\n        # 1) player ids depuis fichier si dispo\n        player_ids = load_player_ids()\n        # 2) sinon depuis classement\n        if not player_ids:\n            player_ids = collect_player_ids_from_ranking(\n                driver,",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "GAME_ID",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "GAME_ID = 1186              # connectfour\nFINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "FINISHED",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "FINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "ROWS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "COLS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "COLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "CONFIANCE",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "CONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_PLAYERS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "MAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_TABLES_PER_PLAYER",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "MAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "SCROLL_STEPS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "SCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "SLEEP_SCROLL",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "SLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PAUSE_BETWEEN_PLAYERS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "PAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "BASE",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "BASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_DIR",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "PROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "OUT_DIR",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "OUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PLAYER_IDS_FILE",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "PLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "EXTRACT_JS",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium",
+        "description": "scrape_replay_selenium",
+        "peekOfCode": "EXTRACT_JS = r\"\"\"\nreturn (function () {\n  const byMove = new Map();\n  for (const pkt of (window.g_gamelogs || [])) {\n    const mid = Number(pkt && pkt.move_id);\n    if (!Number.isFinite(mid)) continue;\n    const data = (pkt.data || []);\n    const disc = data.find(d => d && d.type === \"playDisc\");\n    if (!disc || !disc.args) continue;\n    const col = Number(disc.args.x);",
+        "detail": "scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4UI",
+        "kind": 6,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "class Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")\n        self.resizable(False, False)\n        # ---- config ----\n        self.rows = DEFAULT_ROWS\n        self.cols = DEFAULT_COLS\n        self.starting_player = DEFAULT_STARTING_PLAYER\n        self.load_config(\"config.json\")",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_ROWS",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "DEFAULT_ROWS = 9\nDEFAULT_COLS = 9\nDEFAULT_STARTING_PLAYER = \"R\"\nCELL = 60\nPADDING = 12\nHOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_COLS",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "DEFAULT_COLS = 9\nDEFAULT_STARTING_PLAYER = \"R\"\nCELL = 60\nPADDING = 12\nHOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "DEFAULT_STARTING_PLAYER",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "DEFAULT_STARTING_PLAYER = \"R\"\nCELL = 60\nPADDING = 12\nHOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "CELL",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "CELL = 60\nPADDING = 12\nHOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "PADDING",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "PADDING = 12\nHOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "HOLE_R",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "HOLE_R = 22\nTOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "TOP_BAR",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "TOP_BAR = 32\nBOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "BOTTOM_BAR",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "BOTTOM_BAR = 32\nBOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")\n        self.resizable(False, False)",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "BOARD_BG",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "BOARD_BG = \"#7a4bb3\"\nHOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")\n        self.resizable(False, False)\n        # ---- config ----",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "HOLE_COLOR",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "HOLE_COLOR = \"#e6e6e6\"\nSAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")\n        self.resizable(False, False)\n        # ---- config ----\n        self.rows = DEFAULT_ROWS",
+        "detail": "ui",
+        "documentation": {}
+    },
+    {
+        "label": "SAVE_DIR",
+        "kind": 5,
+        "importPath": "ui",
+        "description": "ui",
+        "peekOfCode": "SAVE_DIR = \"saves\"\nos.makedirs(SAVE_DIR, exist_ok=True)\nclass Connect4UI(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Puissance 4\")\n        self.resizable(False, False)\n        # ---- config ----\n        self.rows = DEFAULT_ROWS\n        self.cols = DEFAULT_COLS",
+        "detail": "ui",
+        "documentation": {}
+    }
+]

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Connect4 Web</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">C4</div>
+      <div>
+        <div class="title">Connect4 Web</div>
+        <div class="subtitle">Version DB + replay</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- GAUCHE -->
+    <aside class="sidebar">
+      <div class="sideCard">
+        <div class="sideTitle">Infos partie</div>
+
+        <div class="stat">
+          <div class="label">Mode de jeu</div>
+          <select id="modeSelect" class="select">
+            <option value="HUMAIN">J vs J</option>
+            <option value="IA" selected>J vs IA</option>
+          </select>
+        </div>
+
+        <div class="stat">
+          <div class="label">Difficulté IA</div>
+          <select id="diffSelect" class="select">
+            <option value="easy">Facile</option>
+            <option value="medium" selected>Moyen</option>
+            <option value="hard">Difficile</option>
+          </select>
+        </div>
+
+        <div class="stat">
+          <div class="label">Mode affiché</div>
+          <div class="value"><span class="pill" id="turnPill">-</span></div>
+        </div>
+
+        <div class="stat">
+          <div class="label">Statut</div>
+          <div class="value" id="statusTxt">-</div>
+        </div>
+
+        <button id="btnNew" class="btn primary full">Nouvelle partie</button>
+        <div class="hint" id="hint">Clique sur une colonne 👇</div>
+      </div>
+
+      <div class="sideCard">
+        <div class="sideTitle">Paramètres joueur</div>
+        <div class="stat">
+          <div class="label">Nom rouge</div>
+          <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
+        </div>
+        <div class="stat">
+          <div class="label">Nom jaune</div>
+          <input id="playerNameJ" type="text" placeholder="Joueur jaune" class="input" />
+        </div>
+        <div class="stat">
+          <div class="label">Couleur (vous débutez)</div>
+          <select id="colorSelect" class="select">
+            <option value="R" selected>Rouge</option>
+            <option value="J">Jaune</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- hint moved below new game button -->
+    </aside>
+
+    <!-- CENTRE -->
+    <section class="content">
+      <div id="colHeader" class="colHeader"></div>
+
+      <div class="boardWrap">
+        <div id="board" class="board" aria-label="Plateau"></div>
+      </div>
+    </section>
+
+    <!-- DROITE -->
+    <aside class="rightbar">
+      <div class="sideCard">
+        <div class="sideTitle">Messages</div>
+        <div class="message" id="message" hidden></div>
+      </div>
+      <div class="sideCard">
+        <div class="sideTitle">Historique</div>
+        <div id="history" class="historyLog"></div>
+      </div>
+    </aside>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+[
+  {
+    "move_id": 1,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 2,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 3,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 4,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 5,
+    "col": 7,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 6,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 7,
+    "col": 7,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 8,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 9,
+    "col": 5,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 10,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 11,
+    "col": 3,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 12,
+    "col": 6,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 13,
+    "col": 2,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 14,
+    "col": 4,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 15,
+    "col": 4,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 16,
+    "col": 4,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 17,
+    "col": 4,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 18,
+    "col": 2,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 19,
+    "col": 4,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 20,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 21,
+    "col": 5,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 22,
+    "col": 4,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 23,
+    "col": 4,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 24,
+    "col": 9,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 25,
+    "col": 8,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 26,
+    "col": 8,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 27,
+    "col": 8,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 28,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 29,
+    "col": 7,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 30,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 31,
+    "col": 8,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 32,
+    "col": 2,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 33,
+    "col": 2,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 34,
+    "col": 2,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 35,
+    "col": 8,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 36,
+    "col": 8,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 37,
+    "col": 2,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 38,
+    "col": 2,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 39,
+    "col": 4,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 40,
+    "col": 5,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 41,
+    "col": 5,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 42,
+    "col": 4,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 43,
+    "col": 1,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 44,
+    "col": 7,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 45,
+    "col": 9,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 46,
+    "col": 1,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 47,
+    "col": 1,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 48,
+    "col": 1,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 49,
+    "col": 3,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 50,
+    "col": 3,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 51,
+    "col": 3,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 52,
+    "col": 3,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 53,
+    "col": 1,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 54,
+    "col": 1,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 55,
+    "col": 1,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 56,
+    "col": 2,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 57,
+    "col": 2,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 58,
+    "col": 1,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 59,
+    "col": 3,
+    "player_id": "94154229"
+  },
+  {
+    "move_id": 60,
+    "col": 3,
+    "player_id": "91048134"
+  },
+  {
+    "move_id": 61,
+    "col": 3,
+    "player_id": "94154229"
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "move_id": 1,
+    "col": 7,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 2,
+    "col": 2,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 3,
+    "col": 7,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 4,
+    "col": 2,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 5,
+    "col": 6,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 6,
+    "col": 8,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 7,
+    "col": 4,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 8,
+    "col": 5,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 9,
+    "col": 6,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 10,
+    "col": 5,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 11,
+    "col": 7,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 12,
+    "col": 7,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 13,
+    "col": 5,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 14,
+    "col": 2,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 15,
+    "col": 2,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 16,
+    "col": 1,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 17,
+    "col": 6,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 18,
+    "col": 6,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 19,
+    "col": 4,
+    "player_id": "98887363"
+  },
+  {
+    "move_id": 20,
+    "col": 4,
+    "player_id": "98939026"
+  },
+  {
+    "move_id": 21,
+    "col": 4,
+    "player_id": "98887363"
+  }
+]

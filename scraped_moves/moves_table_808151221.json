@@ -1,0 +1,492 @@
+[
+  {
+    "move_id": 1,
+    "col": 7,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 2,
+    "col": 3,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 3,
+    "col": 7,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 4,
+    "col": 4,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 5,
+    "col": 5,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 6,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 7,
+    "col": 5,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 8,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 9,
+    "col": 3,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 10,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 11,
+    "col": 6,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 12,
+    "col": 8,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 13,
+    "col": 6,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 14,
+    "col": 6,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 15,
+    "col": 6,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 16,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 17,
+    "col": 8,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 18,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 19,
+    "col": 5,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 20,
+    "col": 7,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 21,
+    "col": 7,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 22,
+    "col": 7,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 23,
+    "col": 6,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 24,
+    "col": 6,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 25,
+    "col": 6,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 26,
+    "col": 7,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 27,
+    "col": 7,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 28,
+    "col": 6,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 29,
+    "col": 8,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 30,
+    "col": 8,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 31,
+    "col": 3,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 32,
+    "col": 6,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 33,
+    "col": 1,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 34,
+    "col": 1,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 35,
+    "col": 5,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 36,
+    "col": 7,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 37,
+    "col": 1,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 38,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 39,
+    "col": 3,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 40,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 41,
+    "col": 4,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 42,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 43,
+    "col": 9,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 44,
+    "col": 9,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 45,
+    "col": 9,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 46,
+    "col": 9,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 47,
+    "col": 3,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 48,
+    "col": 1,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 49,
+    "col": 7,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 50,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 51,
+    "col": 1,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 52,
+    "col": 1,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 53,
+    "col": 2,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 54,
+    "col": 1,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 55,
+    "col": 2,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 56,
+    "col": 1,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 57,
+    "col": 1,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 58,
+    "col": 2,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 59,
+    "col": 2,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 60,
+    "col": 2,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 61,
+    "col": 2,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 62,
+    "col": 2,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 63,
+    "col": 2,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 64,
+    "col": 2,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 65,
+    "col": 9,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 66,
+    "col": 9,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 67,
+    "col": 9,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 68,
+    "col": 8,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  },
+  {
+    "move_id": 69,
+    "col": 8,
+    "player_name": "wasnot",
+    "player_id": "unknown",
+    "color": "R"
+  },
+  {
+    "move_id": 70,
+    "col": 8,
+    "player_name": "kentino",
+    "player_id": "unknown",
+    "color": "J"
+  }
+]

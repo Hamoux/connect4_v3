@@ -1,0 +1,47 @@
+[
+  {
+    "move_id": 1,
+    "col": 3,
+    "player_id": "98089779"
+  },
+  {
+    "move_id": 2,
+    "col": 7,
+    "player_id": "98089779"
+  },
+  {
+    "move_id": 3,
+    "col": 3,
+    "player_id": "98089779"
+  },
+  {
+    "move_id": 4,
+    "col": 3,
+    "player_id": "97090159"
+  },
+  {
+    "move_id": 5,
+    "col": 4,
+    "player_id": "98089779"
+  },
+  {
+    "move_id": 6,
+    "col": 4,
+    "player_id": "97090159"
+  },
+  {
+    "move_id": 7,
+    "col": 5,
+    "player_id": "98089779"
+  },
+  {
+    "move_id": 8,
+    "col": 6,
+    "player_id": "97090159"
+  },
+  {
+    "move_id": 9,
+    "col": 2,
+    "player_id": "98089779"
+  }
+]
