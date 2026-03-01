@@ -13,7 +13,6 @@
       <div class="logo">C4</div>
       <div>
         <div class="title">Connect4 Web</div>
-        <div class="subtitle">Version DB + replay</div>
       </div>
     </div>
   </header>
@@ -21,6 +20,7 @@
   <main class="layout">
     <!-- GAUCHE -->
     <aside class="sidebar">
+
       <div class="sideCard">
         <div class="sideTitle">Infos partie</div>
 
@@ -34,11 +34,6 @@
         </div>
 
         <div class="stat">
-          <div class="label">Votre rôle</div>
-          <div class="value" id="yourRole">-</div>
-        </div>
-
-        <div class="stat">
           <div class="label">Difficulté IA</div>
           <select id="diffSelect" class="select">
             <option value="easy">Facile</option>
@@ -47,37 +42,19 @@
           </select>
         </div>
 
-        <div class="stat">
-          <div class="label">Mode affiché</div>
-          <div class="value"><span class="pill" id="turnPill">-</span></div>
-        </div>
-
-        <div class="stat">
-          <div class="label">Statut</div>
-          <div class="value" id="statusTxt">-</div>
-        </div>
-
-        <button id="btnNew" class="btn primary full">Nouvelle partie</button>
-        <div class="stat">
-          <div class="label">Lien de la partie</div>
-          <div class="value">
-            <input id="shareLink" type="text" readonly class="input" />
-            <button id="btnCopyLink" class="btn small">Copier</button>
-          </div>
-        </div>
-        <div class="hint" id="hint">Clique sur une colonne 👇</div>
-      </div>
-
-      <div class="sideCard">
+        <div class="sideCard">
         <div class="sideTitle">Paramètres joueur</div>
+
         <div class="stat">
           <div class="label">Nom rouge</div>
           <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
         </div>
+
         <div class="stat">
           <div class="label">Nom jaune</div>
           <input id="playerNameJ" type="text" placeholder="Joueur jaune" class="input" />
         </div>
+
         <div class="stat">
           <div class="label">Couleur (vous débutez)</div>
           <select id="colorSelect" class="select">
@@ -87,7 +64,20 @@
         </div>
       </div>
 
-      <!-- hint moved below new game button -->
+        <button id="btnNew" class="btn primary full">Nouvelle partie</button>
+
+        <div class="stat">
+          <div class="label">Lien de la partie</div>
+          <div class="value">
+            <input id="shareLink" type="text" readonly class="input" />
+            <button id="btnCopyLink" class="btn small" type="button">Copier</button>
+          </div>
+        </div>
+
+      </div>
+
+      
+
     </aside>
 
     <!-- CENTRE -->
@@ -105,6 +95,7 @@
         <div class="sideTitle">Messages</div>
         <div class="message" id="message" hidden></div>
       </div>
+
       <div class="sideCard">
         <div class="sideTitle">Historique</div>
         <div id="history" class="historyLog"></div>
