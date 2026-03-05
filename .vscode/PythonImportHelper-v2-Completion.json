@@ -1,5 +1,14 @@
 [
     {
+        "label": "json",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "json",
+        "description": "json",
+        "detail": "json",
+        "documentation": {}
+    },
+    {
         "label": "os",
         "kind": 6,
         "isExtraImport": true,
@@ -14,6 +23,14 @@
         "isExtraImport": true,
         "importPath": "psycopg2",
         "description": "psycopg2",
+        "detail": "psycopg2",
+        "documentation": {}
+    },
+    {
+        "label": "errors",
+        "importPath": "psycopg2",
+        "description": "psycopg2",
+        "isExtraImport": true,
         "detail": "psycopg2",
         "documentation": {}
     },
@@ -74,12 +91,27 @@
         "documentation": {}
     },
     {
-        "label": "json",
-        "kind": 6,
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
         "isExtraImport": true,
-        "importPath": "json",
-        "description": "json",
-        "detail": "json",
+        "detail": "psycopg2.extras",
+        "documentation": {}
+    },
+    {
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
+        "isExtraImport": true,
+        "detail": "psycopg2.extras",
+        "documentation": {}
+    },
+    {
+        "label": "RealDictCursor",
+        "importPath": "psycopg2.extras",
+        "description": "psycopg2.extras",
+        "isExtraImport": true,
+        "detail": "psycopg2.extras",
         "documentation": {}
     },
     {
@@ -104,6 +136,70 @@
         "description": "game",
         "isExtraImport": true,
         "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "Connect4Game",
+        "importPath": "game",
+        "description": "game",
+        "isExtraImport": true,
+        "detail": "game",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "importPath": "db.db",
+        "description": "db.db",
+        "isExtraImport": true,
+        "detail": "db.db",
         "documentation": {}
     },
     {
@@ -283,15 +379,6 @@
         "documentation": {}
     },
     {
-        "label": "sys",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "sys",
-        "description": "sys",
-        "detail": "sys",
-        "documentation": {}
-    },
-    {
         "label": "time",
         "kind": 6,
         "isExtraImport": true,
@@ -301,6 +388,23 @@
         "documentation": {}
     },
     {
+        "label": "re",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "re",
+        "description": "re",
+        "detail": "re",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
         "label": "Path",
         "importPath": "pathlib",
         "description": "pathlib",
@@ -322,6 +426,62 @@
         "description": "pathlib",
         "isExtraImport": true,
         "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urljoin",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urljoin",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
+        "label": "urljoin",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
         "documentation": {}
     },
     {
@@ -341,27 +501,35 @@
         "documentation": {}
     },
     {
-        "label": "By",
-        "importPath": "selenium.webdriver.common.by",
-        "description": "selenium.webdriver.common.by",
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
         "isExtraImport": true,
-        "detail": "selenium.webdriver.common.by",
+        "detail": "selenium",
         "documentation": {}
     },
     {
-        "label": "By",
-        "importPath": "selenium.webdriver.common.by",
-        "description": "selenium.webdriver.common.by",
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
         "isExtraImport": true,
-        "detail": "selenium.webdriver.common.by",
+        "detail": "selenium",
         "documentation": {}
     },
     {
-        "label": "Keys",
-        "importPath": "selenium.webdriver.common.keys",
-        "description": "selenium.webdriver.common.keys",
+        "label": "webdriver",
+        "importPath": "selenium",
+        "description": "selenium",
         "isExtraImport": true,
-        "detail": "selenium.webdriver.common.keys",
+        "detail": "selenium",
+        "documentation": {}
+    },
+    {
+        "label": "Options",
+        "importPath": "selenium.webdriver.chrome.options",
+        "description": "selenium.webdriver.chrome.options",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.options",
         "documentation": {}
     },
     {
@@ -378,6 +546,86 @@
         "description": "selenium.webdriver.chrome.options",
         "isExtraImport": true,
         "detail": "selenium.webdriver.chrome.options",
+        "documentation": {}
+    },
+    {
+        "label": "Options",
+        "importPath": "selenium.webdriver.chrome.options",
+        "description": "selenium.webdriver.chrome.options",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.options",
+        "documentation": {}
+    },
+    {
+        "label": "Options",
+        "importPath": "selenium.webdriver.chrome.options",
+        "description": "selenium.webdriver.chrome.options",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.chrome.options",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "By",
+        "importPath": "selenium.webdriver.common.by",
+        "description": "selenium.webdriver.common.by",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.common.by",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverWait",
+        "importPath": "selenium.webdriver.support.ui",
+        "description": "selenium.webdriver.support.ui",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support.ui",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverWait",
+        "importPath": "selenium.webdriver.support.ui",
+        "description": "selenium.webdriver.support.ui",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support.ui",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverWait",
+        "importPath": "selenium.webdriver.support.ui",
+        "description": "selenium.webdriver.support.ui",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support.ui",
         "documentation": {}
     },
     {
@@ -410,6 +658,104 @@
         "description": "selenium.webdriver.support",
         "isExtraImport": true,
         "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "expected_conditions",
+        "importPath": "selenium.webdriver.support",
+        "description": "selenium.webdriver.support",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "expected_conditions",
+        "importPath": "selenium.webdriver.support",
+        "description": "selenium.webdriver.support",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "expected_conditions",
+        "importPath": "selenium.webdriver.support",
+        "description": "selenium.webdriver.support",
+        "isExtraImport": true,
+        "detail": "selenium.webdriver.support",
+        "documentation": {}
+    },
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "Flask",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "render_template",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "jsonify",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "request",
+        "importPath": "flask",
+        "description": "flask",
+        "isExtraImport": true,
+        "detail": "flask",
+        "documentation": {}
+    },
+    {
+        "label": "MinimaxAI",
+        "importPath": "ai",
+        "description": "ai",
+        "isExtraImport": true,
+        "detail": "ai",
+        "documentation": {}
+    },
+    {
+        "label": "MinimaxAI",
+        "importPath": "ai",
+        "description": "ai",
+        "isExtraImport": true,
+        "detail": "ai",
+        "documentation": {}
+    },
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "WebDriverException",
+        "importPath": "selenium.common.exceptions",
+        "description": "selenium.common.exceptions",
+        "isExtraImport": true,
+        "detail": "selenium.common.exceptions",
         "documentation": {}
     },
     {
@@ -421,12 +767,12 @@
         "documentation": {}
     },
     {
-        "label": "re",
+        "label": "traceback",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "re",
-        "description": "re",
-        "detail": "re",
+        "importPath": "traceback",
+        "description": "traceback",
+        "detail": "traceback",
         "documentation": {}
     },
     {
@@ -487,12 +833,19 @@
         "documentation": {}
     },
     {
-        "label": "random",
-        "kind": 6,
+        "label": "import_table_id_connect4",
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
         "isExtraImport": true,
-        "importPath": "random",
-        "description": "random",
-        "detail": "random",
+        "detail": "bga_puppet",
+        "documentation": {}
+    },
+    {
+        "label": "import_table_id_connect4",
+        "importPath": "bga_puppet",
+        "description": "bga_puppet",
+        "isExtraImport": true,
+        "detail": "bga_puppet",
         "documentation": {}
     },
     {
@@ -504,27 +857,658 @@
         "documentation": {}
     },
     {
-        "label": "urlparse",
-        "importPath": "urllib.parse",
-        "description": "urllib.parse",
+        "label": "BGABot",
+        "importPath": "bga_player_bot",
+        "description": "bga_player_bot",
         "isExtraImport": true,
-        "detail": "urllib.parse",
+        "detail": "bga_player_bot",
         "documentation": {}
     },
     {
-        "label": "urljoin",
-        "importPath": "urllib.parse",
-        "description": "urllib.parse",
+        "label": "app",
+        "importPath": "Webapp",
+        "description": "Webapp",
         "isExtraImport": true,
-        "detail": "urllib.parse",
+        "detail": "Webapp",
         "documentation": {}
     },
     {
-        "label": "MinimaxAI",
-        "importPath": "ai",
-        "description": "ai",
-        "isExtraImport": true,
-        "detail": "ai",
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "backupp.bga_import",
+        "description": "backupp.bga_import",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "backupp.bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "find_partie_id_by_signature",
+        "kind": 2,
+        "importPath": "backupp.bga_import",
+        "description": "backupp.bga_import",
+        "peekOfCode": "def find_partie_id_by_signature(signature: str):\n    sql = \"SELECT id_partie FROM partie WHERE signature = %s LIMIT 1;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (signature,))\n        row = cur.fetchone()\n        return row[\"id_partie\"] if row else None\ndef count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))",
+        "detail": "backupp.bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "count_situations_for_partie",
+        "kind": 2,
+        "importPath": "backupp.bga_import",
+        "description": "backupp.bga_import",
+        "peekOfCode": "def count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))\n        return int(cur.fetchone()[\"n\"])\n# ---------------- Import logic ----------------\ndef import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9",
+        "detail": "backupp.bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "import_bga_moves",
+        "kind": 2,
+        "importPath": "backupp.bga_import",
+        "description": "backupp.bga_import",
+        "peekOfCode": "def import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9\n    \"\"\"\n    # 1) tri + construction signature\n    moves = sorted(moves, key=lambda m: int(m[\"move_id\"]))\n    signature = \"\".join(str(int(m[\"col\"])) for m in moves)  # string de 1..9\n    # 2) éviter doublons\n    existing_pid = find_partie_id_by_signature(signature)",
+        "detail": "backupp.bga_import",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")  # ✅ ton nom exact\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")  # mets en variable d'env si tu veux\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) for x in row) for row in board)\ndef moves_signature(history):\n    # signature = colonnes jouées (1..cols)\n    return \"\".join(str(c + 1) for (_r, c, _p) in history)\n# db.py\ndef create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "moves_signature",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def moves_signature(history):\n    # signature = colonnes jouées (1..cols)\n    return \"\".join(str(c + 1) for (_r, c, _p) in history)\n# db.py\ndef create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:\n        cols_sql.append(\"rows\"); vals.append(rows)\n    if cols is not None:",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def create_partie(mode, type_partie, status, joueur_depart, rows=None, cols=None, nb_colonnes=None, confiance=None, signature=None):\n    cols_sql = [\"mode\", \"type_partie\", \"status\", \"joueur_depart\"]\n    vals = [mode, type_partie, status, joueur_depart]\n    if rows is not None:\n        cols_sql.append(\"rows\"); vals.append(rows)\n    if cols is not None:\n        cols_sql.append(\"cols\"); vals.append(cols)\n    if nb_colonnes is not None:\n        cols_sql.append(\"nb_colonnes\"); vals.append(nb_colonnes)\n    if confiance is not None:",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def insert_situation(id_partie, numero_coup, plateau, joueur, precedent=None, suivant=None):\n    sql = \"\"\"\n    INSERT INTO situation (id_partie, numero_coup, plateau, joueur, precedent, suivant)\n    VALUES (%s, %s, %s, %s, %s, %s)\n    RETURNING id_situation;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (id_partie, numero_coup, plateau, joueur, precedent, suivant))",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_links",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def update_links(precedent_id, suivant_id):\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(\"UPDATE situation SET suivant=%s WHERE id_situation=%s;\", (suivant_id, precedent_id))\n            cur.execute(\"UPDATE situation SET precedent=%s WHERE id_situation=%s;\", (precedent_id, suivant_id))\n    finally:\n        conn.close()\ndef finish_partie(id_partie, status, joueur_gagnant=None, ligne_gagnante=None, signature=None):\n    sql = \"\"\"",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "finish_partie",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def finish_partie(id_partie, status, joueur_gagnant=None, ligne_gagnante=None, signature=None):\n    sql = \"\"\"\n    UPDATE partie\n    SET status=%s, joueur_gagnant=%s, ligne_gagnante=%s, signature=%s\n    WHERE id_partie=%s;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (status, joueur_gagnant, ligne_gagnante, signature, id_partie))",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "delete_partie",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def delete_partie(id_partie):\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(\"DELETE FROM partie WHERE id_partie=%s;\", (id_partie,))\n    finally:\n        conn.close()\ndef mirror_moves_signature(sig: str, cols: int) -> str:\n    # sig contient des colonnes en 1..cols\n    out = []",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "mirror_moves_signature",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def mirror_moves_signature(sig: str, cols: int) -> str:\n    # sig contient des colonnes en 1..cols\n    out = []\n    for ch in sig:\n        if not ch.isdigit():\n            continue\n        old = int(ch)\n        out.append(str(cols + 1 - old))\n    return \"\".join(out)\ndef canonical_signature_from_history(history, cols: int) -> str:",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "canonical_signature_from_history",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def canonical_signature_from_history(history, cols: int) -> str:\n    # signature normale\n    sig = \"\".join(str(c + 1) for (_r, c, _p) in history)\n    # signature miroir\n    msig = mirror_moves_signature(sig, cols)\n    # canonique = la plus petite (lexicographique)\n    return min(sig, msig)\ndef update_partie_signature(id_partie, signature):\n    sql = \"\"\"\n    UPDATE partie",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature",
+        "kind": 2,
+        "importPath": "backupp.db",
+        "description": "backupp.db",
+        "peekOfCode": "def update_partie_signature(id_partie, signature):\n    sql = \"\"\"\n    UPDATE partie\n    SET signature=%s\n    WHERE id_partie=%s;\n    \"\"\"\n    conn = get_conn()\n    try:\n        with conn, conn.cursor() as cur:\n            cur.execute(sql, (signature, id_partie))",
+        "detail": "backupp.db",
+        "documentation": {}
+    },
+    {
+        "label": "make_driver",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:\n        opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-notifications\")\n    opts.add_argument(\"--disable-popup-blocking\")\n    opts.add_argument(\"--disable-blink-features=AutomationControlled\")",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "login_bga_manual",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def login_bga_manual(driver):\n    \"\"\"\n    Tu te connectes à la main. Ensuite on récupère le domaine réel (fr., en., www)\n    pour que toutes les requêtes suivantes utilisent EXACTEMENT le même domaine (cookies ok).\n    \"\"\"\n    global BASE\n    print(\"🔐 Ouverture BGA login (manuel)...\")\n    driver.get(f\"{BASE}/account\")\n    print(\"👉 Connecte-toi MANUELLEMENT dans Chrome.\")\n    input(\"✅ Quand tu es connectée (avatar visible), appuie sur ENTER...\")",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "collect_player_ids_from_ranking",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def collect_player_ids_from_ranking(driver, max_players: int, scroll_steps: int):\n    \"\"\"\n    Va sur gamepanel connect4 (classement), scroll pour charger plus de joueurs,\n    puis extrait les player_id depuis les liens <a href=\"/player?id=...\">.\n    \"\"\"\n    url = f\"{BASE}/gamepanel?game=connectfour\"\n    print(\"🏁 Ouverture page classement:\", url)\n    driver.get(url)\n    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "load_player_ids",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def load_player_ids():\n    \"\"\"\n    Si player_ids.json existe, on l'utilise.\n    Sinon on renvoie None (et on collectera depuis classement).\n    \"\"\"\n    if PLAYER_IDS_FILE.exists():\n        try:\n            data = json.loads(PLAYER_IDS_FILE.read_text(encoding=\"utf-8\"))\n            ids = [str(x) for x in data if str(x).isdigit()]\n            ids = list(dict.fromkeys(ids))",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "get_connect4_table_ids",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):\n    \"\"\"\n    Ouvre /gamestats?player=...&game_id=1186&finished=1\n    et extrait des #TABLEID.\n    \"\"\"\n    url = f\"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}\"\n    driver.get(url)\n    time.sleep(2)\n    for _ in range(10):\n        driver.execute_script(\"window.scrollTo(0, document.body.scrollHeight);\")",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "resolve_real_replay_url_from_table",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"\n    Va sur /table?table=xxxxxx et tente de récupérer un lien /archive/replay/...\n    \"\"\"\n    table_url = f\"{BASE}/table?table={table_id}\"\n    driver.get(table_url)\n    wait = WebDriverWait(driver, 20)\n    wait.until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    # Essayer de cliquer/attendre un lien replay\n    try:",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "wait_gamelogs",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def wait_gamelogs(driver, max_wait=30):\n    end = time.time() + max_wait\n    while time.time() < end:\n        n = driver.execute_script(\"return (window.g_gamelogs && window.g_gamelogs.length) || 0;\")\n        if int(n) > 0:\n            return True\n        time.sleep(0.5)\n    return False\ndef extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_replay_url",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"\n    Ouvre /archive/replay/... et lit window.g_gamelogs\n    \"\"\"\n    driver.get(replay_url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)\n    ok = wait_gamelogs(driver, max_wait=30)\n    if not ok:\n        return []",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_gamereview",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def extract_moves_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait les coups depuis \"Historique de la partie\".\n    On lit le texte: \"... place un pion dans la colonne X\"\n    + on essaie de récupérer player_id depuis les liens /player?id=...\n    \"\"\"\n    url = f\"{BASE}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(1.5)",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "import_into_db",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def import_into_db(moves):\n    # import local pour éviter erreurs si tu testes juste sans DB\n    from bga_import import import_bga_moves\n    pid = import_bga_moves(moves, rows=ROWS, cols=COLS, confiance=CONFIANCE)\n    return pid\n# ============================================================\n# MAIN\n# ============================================================\ndef main():\n    driver = make_driver(headless=False)",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "def main():\n    driver = make_driver(headless=False)\n    try:\n        login_bga_manual(driver)\n        # 1) player ids depuis fichier si dispo\n        player_ids = load_player_ids()\n        # 2) sinon depuis classement\n        if not player_ids:\n            player_ids = collect_player_ids_from_ranking(\n                driver,",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "GAME_ID",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "GAME_ID = 1186              # connectfour\nFINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "FINISHED",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "FINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "ROWS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "COLS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "COLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "CONFIANCE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "CONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_PLAYERS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "MAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_TABLES_PER_PLAYER",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "MAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "SCROLL_STEPS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "SCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "SLEEP_SCROLL",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "SLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PAUSE_BETWEEN_PLAYERS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "PAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "BASE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "BASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_DIR",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "PROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "OUT_DIR",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "OUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "PLAYER_IDS_FILE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "PLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "EXTRACT_JS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium",
+        "description": "backupp.scrape_replay_selenium",
+        "peekOfCode": "EXTRACT_JS = r\"\"\"\nreturn (function () {\n  const byMove = new Map();\n  for (const pkt of (window.g_gamelogs || [])) {\n    const mid = Number(pkt && pkt.move_id);\n    if (!Number.isFinite(mid)) continue;\n    const data = (pkt.data || []);\n    const disc = data.find(d => d && d.type === \"playDisc\");\n    if (!disc || !disc.args) continue;\n    const col = Number(disc.args.x);",
+        "detail": "backupp.scrape_replay_selenium",
+        "documentation": {}
+    },
+    {
+        "label": "get_board_size_from_table_page",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.\n    \"\"\"\n    try:\n        tid = str(int(str(table_id)))  # normalize (remove leading zeros)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "make_driver",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:\n        opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-notifications\")\n    opts.add_argument(\"--disable-popup-blocking\")\n    opts.add_argument(\"--disable-blink-features=AutomationControlled\")",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "login_bga_manual",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def login_bga_manual(driver):\n    \"\"\"\n    Connexion manuelle. Ensuite on récupère le domaine réel (fr./en./www)\n    pour que toutes les requêtes suivantes utilisent EXACTEMENT le même domaine (cookies ok).\n    \"\"\"\n    global BASE\n    print(\"🔐 Ouverture BGA login (manuel)...\")\n    driver.get(f\"{BASE}/account\")\n    print(\"👉 Connecte-toi MANUELLEMENT dans Chrome.\")\n    input(\"✅ Quand tu es connecté (avatar visible), appuie sur ENTER...\")",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "collect_player_ids_from_ranking",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def collect_player_ids_from_ranking(driver, max_players: int, scroll_steps: int):\n    \"\"\"\n    Va sur gamepanel connect4 (classement), scroll pour charger plus de joueurs,\n    puis extrait les player_id depuis les liens <a href=\"/player?id=...\">.\n    \"\"\"\n    url = f\"{BASE}/gamepanel?game=connectfour\"\n    print(\"🏁 Ouverture page classement:\", url)\n    driver.get(url)\n    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "get_connect4_table_ids",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):\n    \"\"\"\n    Ouvre /gamestats?player=...&game_id=1186&finished=1\n    et extrait des table ids depuis les liens \"table=...\".\n    \"\"\"\n    url = f\"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}\"\n    driver.get(url)\n    time.sleep(2)\n    for _ in range(10):\n        driver.execute_script(\"window.scrollTo(0, document.body.scrollHeight);\")",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "detect_board_size_anchored",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def detect_board_size_anchored(page_text: str):\n    \"\"\"\n    Detect size ONLY on lines that mention board size (avoid false matches like times/scores).\n    \"\"\"\n    if not page_text:\n        return None\n    lower = page_text.lower()\n    # quick safe path\n    if \"9x9\" in lower or \"9×9\" in lower:\n        return (9, 9)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "extract_size_and_moves_from_gamereview",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def extract_size_and_moves_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait:\n    - size (rows, cols) via detect_board_size_anchored(body.text)\n    - moves depuis le texte: \"... place un pion dans la colonne X\"\n    \"\"\"\n    url = f\"{BASE}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(1.2)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "wait_gamelogs",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def wait_gamelogs(driver, max_wait=30):\n    end = time.time() + max_wait\n    while time.time() < end:\n        n = driver.execute_script(\"return (window.g_gamelogs && window.g_gamelogs.length) || 0;\")\n        if int(n) > 0:\n            return True\n        time.sleep(0.5)\n    return False\ndef resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "resolve_real_replay_url_from_table",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"\n    Va sur /table?table=xxxxxx et tente de récupérer un lien /archive/replay/...\n    \"\"\"\n    table_url = f\"{BASE}/table?table={table_id}\"\n    driver.get(table_url)\n    wait = WebDriverWait(driver, 20)\n    wait.until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    try:\n        a = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[href*=\"/archive/replay/\"]')))",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "extract_moves_from_replay_url",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"\n    Ouvre /archive/replay/... et lit window.g_gamelogs\n    \"\"\"\n    driver.get(replay_url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)\n    ok = wait_gamelogs(driver, max_wait=30)\n    if not ok:\n        return []",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "import_into_db",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def import_into_db(moves):\n    from bga_import import import_bga_moves\n    id_partie = import_bga_moves(moves, rows=ROWS, cols=COLS, confiance=CONFIANCE)\n    return id_partie\n# ============================================================\n# MAIN\n# ============================================================\ndef main():\n    driver = make_driver(headless=False)\n    try:",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "def main():\n    driver = make_driver(headless=False)\n    try:\n        login_bga_manual(driver)\n        # Always collect best players from ranking (no file dependency)\n        player_ids = collect_player_ids_from_ranking(\n            driver,\n            max_players=MAX_PLAYERS,\n            scroll_steps=SCROLL_STEPS\n        )",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "GAME_ID",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "GAME_ID = 1186              # connectfour\nFINISHED = 1                # 1 = terminées\n# DB / format (on force 9x9 pour les imports BGA)\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "FINISHED",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "FINISHED = 1                # 1 = terminées\n# DB / format (on force 9x9 pour les imports BGA)\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "ROWS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "COLS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "COLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "CONFIANCE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "CONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "ONLY_9X9",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "ONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "STRICT_SIZE_CHECK",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "STRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_PLAYERS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "MAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "MAX_TABLES_PER_PLAYER",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "MAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "SCROLL_STEPS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "SCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "SLEEP_SCROLL",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "SLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "PAUSE_BETWEEN_PLAYERS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "PAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "PAUSE_BETWEEN_TABLES",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "PAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "BASE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "BASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.\n    \"\"\"\n    try:",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_DIR",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "PROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "OUT_DIR",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "OUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "SIZE_RE",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "SIZE_RE = re.compile(r\"(\\d{1,2})\\s*[x×]\\s*(\\d{1,2})\", re.IGNORECASE)\ndef detect_board_size_anchored(page_text: str):\n    \"\"\"\n    Detect size ONLY on lines that mention board size (avoid false matches like times/scores).\n    \"\"\"\n    if not page_text:\n        return None\n    lower = page_text.lower()\n    # quick safe path\n    if \"9x9\" in lower or \"9×9\" in lower:",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
+        "documentation": {}
+    },
+    {
+        "label": "EXTRACT_JS",
+        "kind": 5,
+        "importPath": "backupp.scrape_replay_selenium_patched_v2",
+        "description": "backupp.scrape_replay_selenium_patched_v2",
+        "peekOfCode": "EXTRACT_JS = r\"\"\"\nreturn (function () {\n  const byMove = new Map();\n  for (const pkt of (window.g_gamelogs || [])) {\n    const mid = Number(pkt && pkt.move_id);\n    if (!Number.isFinite(mid)) continue;\n    const data = (pkt.data || []);\n    const disc = data.find(d => d && d.type === \"playDisc\");\n    if (!disc || !disc.args) continue;\n    const col = Number(disc.args.x);",
+        "detail": "backupp.scrape_replay_selenium_patched_v2",
         "documentation": {}
     },
     {
@@ -532,7 +1516,7 @@
         "kind": 2,
         "importPath": "db.db",
         "description": "db.db",
-        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")  # ✅ ton nom exact\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")  # mets en variable d'env si tu veux\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")  # ✅ ton nom exact\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"Celina123\")  # set via env; can be None if local trust auth  # mets en variable d'env si tu veux\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
         "detail": "db.db",
         "documentation": {}
     },
@@ -627,6 +1611,330 @@
         "documentation": {}
     },
     {
+        "label": "canonical_signature_from_moves",
+        "kind": 2,
+        "importPath": "db.db",
+        "description": "db.db",
+        "peekOfCode": "def canonical_signature_from_moves(moves, cols: int) -> str:\n    \"\"\"Compute canonical signature from a list of moves dicts with 'col' (1..cols).\"\"\"\n    sig = \"\".join(str(int(m[\"col\"])) for m in moves)\n    msig = mirror_moves_signature(sig, cols)\n    return min(sig, msig)",
+        "detail": "db.db",
+        "documentation": {}
+    },
+    {
+        "label": "make_fresh_state",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def make_fresh_state():\n    s = {k: (v.copy() if isinstance(v, (list, dict)) else v) for k, v in _default_state_template.items()}\n    s[\"board\"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]\n    s[\"client_ids\"] = []\n    return s\ndef get_game_state(game_id):\n    if game_id is None:\n        return state\n    return games.get(game_id)\ndef register_client(game, client_id):",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "get_game_state",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def get_game_state(game_id):\n    if game_id is None:\n        return state\n    return games.get(game_id)\ndef register_client(game, client_id):\n    if not client_id:\n        return\n    clients = game.setdefault(\"client_ids\", [])\n    if client_id in clients:\n        return",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "register_client",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def register_client(game, client_id):\n    if not client_id:\n        return\n    clients = game.setdefault(\"client_ids\", [])\n    if client_id in clients:\n        return\n    if len(clients) >= 2:\n        raise ValueError(\"Partie pleine\")\n    clients.append(client_id)\n    if game.get(\"mode\") == \"WEB\" and game.get(\"type_partie\") == \"HUMAIN\":",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "get_conn",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "ensure_tables",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def ensure_tables():\n    ddl_partie = \"\"\"\n    CREATE TABLE IF NOT EXISTS partie (\n        id_partie SERIAL PRIMARY KEY,\n        mode TEXT,\n        type_partie TEXT,\n        status TEXT,\n        joueur_depart TEXT,\n        signature TEXT UNIQUE,\n        rows INTEGER,",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "q_one",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def q_one(sql, params=()):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params)\n            return cur.fetchone()\ndef exec_sql(sql, params=()):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params)\n            conn.commit()",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "exec_sql",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def exec_sql(sql, params=()):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params)\n            conn.commit()\ndef board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "board_to_text",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(\n        \"\"\"\n        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)\n        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)\n        RETURNING id_partie\n        \"\"\",",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "create_partie_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(\n        \"\"\"\n        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)\n        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)\n        RETURNING id_partie\n        \"\"\",\n        (\"WEB\", type_partie, \"EN_COURS\", \"R\", sig, ROWS, COLS, COLS, CONFIANCE_WEB),\n    )",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "update_partie_signature_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def update_partie_signature_db(id_partie, signature):\n    try:\n        exec_sql(\"UPDATE partie SET signature=%s WHERE id_partie=%s\", (signature, id_partie))\n    except psycopg2.errors.UniqueViolation:\n        pass\ndef insert_situation_db(id_partie, numero_coup, plateau, joueur, precedent_id):\n    row = q_one(\n        \"\"\"\n        INSERT INTO situation (id_partie, numero_coup, plateau, joueur, precedent, suivant)\n        VALUES (%s,%s,%s,%s,%s,%s)",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "insert_situation_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def insert_situation_db(id_partie, numero_coup, plateau, joueur, precedent_id):\n    row = q_one(\n        \"\"\"\n        INSERT INTO situation (id_partie, numero_coup, plateau, joueur, precedent, suivant)\n        VALUES (%s,%s,%s,%s,%s,%s)\n        RETURNING id_situation\n        \"\"\",\n        (id_partie, numero_coup, plateau, joueur, precedent_id, None),\n    )\n    return int(row[\"id_situation\"])",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "link_situations_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def link_situations_db(prev_id, next_id):\n    if prev_id is None:\n        return\n    exec_sql(\"UPDATE situation SET suivant=%s WHERE id_situation=%s\", (next_id, prev_id))\n    exec_sql(\"UPDATE situation SET precedent=%s WHERE id_situation=%s\", (prev_id, next_id))\ndef try_finish_partie_db(id_partie, winner, ligne=None):\n    exec_sql(\"UPDATE partie SET status=%s WHERE id_partie=%s\", (\"TERMINEE\", id_partie))\n    exec_sql(\"UPDATE partie SET joueur_gagnant=%s WHERE id_partie=%s\", (winner, id_partie))\n    if ligne is not None:\n        exec_sql(\"UPDATE partie SET ligne_gagnante=%s WHERE id_partie=%s\", (ligne, id_partie))",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "try_finish_partie_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def try_finish_partie_db(id_partie, winner, ligne=None):\n    exec_sql(\"UPDATE partie SET status=%s WHERE id_partie=%s\", (\"TERMINEE\", id_partie))\n    exec_sql(\"UPDATE partie SET joueur_gagnant=%s WHERE id_partie=%s\", (winner, id_partie))\n    if ligne is not None:\n        exec_sql(\"UPDATE partie SET ligne_gagnante=%s WHERE id_partie=%s\", (ligne, id_partie))\n# =======================\n# Win check helper (pour hint / obvious move)\n# =======================\ndef check_win(board, r, c, player):\n    dirs = [(0,1),(1,0),(1,1),(1,-1)]",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "check_win",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def check_win(board, r, c, player):\n    dirs = [(0,1),(1,0),(1,1),(1,-1)]\n    for dr, dc in dirs:\n        count = 1\n        # forward\n        rr, cc = r+dr, c+dc\n        while 0 <= rr < ROWS and 0 <= cc < COLS and board[rr][cc] == player:\n            count += 1\n            rr += dr; cc += dc\n        # backward",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "immediate_win_or_block",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def immediate_win_or_block(board, player):\n    opponent = \"J\" if player == \"R\" else \"R\"\n    valid = ai_engine.valid_cols(board)\n    # 1) win now\n    for col in valid:\n        r = ai_engine.next_open_row(board, col)\n        if r is None: \n            continue\n        board[r][col] = player\n        ok = check_win(board, r, col, player)",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "best_ai_col",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def best_ai_col(board, ai_player, depth):\n    valid = ai_engine.valid_cols(board)\n    if not valid:\n        return None\n    # ✅ stratégie “coup évident d’abord”\n    obvious = immediate_win_or_block(board, ai_player)\n    if obvious is not None:\n        return obvious\n    best_score = -10**18\n    best_col = valid[0]",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "find_winning_line",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def find_winning_line(r, c, s):\n    directions = [(0,1), (1,0), (1,1), (1,-1)]\n    player = s[\"board\"][r][c]\n    for dr, dc in directions:\n        coords = []\n        for i in range(-3, 4):\n            nr, nc = r + dr*i, c + dc*i\n            if 0 <= nr < ROWS and 0 <= nc < COLS and s[\"board\"][nr][nc] == player:\n                coords.append((nr, nc))\n                if len(coords) == 4:",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "apply_move",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def apply_move(col, s):\n    if col is None or not isinstance(col, int) or not (0 <= col < COLS):\n        raise ValueError(\"col invalide\")\n    placed_row = None\n    for r in range(ROWS - 1, -1, -1):\n        if s[\"board\"][r][col] == 0:\n            s[\"board\"][r][col] = s[\"current_player\"]\n            placed_row = r\n            break\n    if placed_row is None:",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "finalize_win",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def finalize_win(winner, line, s):\n    s[\"game_over\"] = True\n    s[\"status\"] = \"TERMINEE\"\n    s[\"winning_line\"] = [[r, c] for (r, c) in line]\n    try_finish_partie_db(s[\"id_partie\"], winner, ligne=str(s[\"winning_line\"]))\n# =======================\n# Routes\n# =======================\n@app.get(\"/\")\ndef home():",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "home",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def home():\n    return render_template(\"index.html\")\ndef _export_state(game):\n    if game is None:\n        return None\n    g = dict(game)\n    clients = g.pop(\"client_ids\", [])\n    g[\"player_count\"] = len(clients)\n    return g\n@app.get(\"/api/state\")",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "api_state",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def api_state():\n    game_id = request.args.get(\"game_id\", type=int)\n    client_id = request.args.get(\"client_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)\n    except ValueError as e:\n        return jsonify({\"error\": str(e)}), 400",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "api_new",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def api_new():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    mode = str(data.get(\"mode\") or \"IA\").upper()      # IA / LOCAL / ONLINE\n    diff = str(data.get(\"difficulty\") or \"medium\").lower()\n    starting_player = str(data.get(\"starting_player\") or \"R\").upper()\n    if mode == \"ONLINE\":\n        import random\n        starting_player = random.choice([\"R\", \"J\"])\n    if mode == \"LOCAL\":",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "api_play",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def api_play():\n    data = request.json or {}\n    col = data.get(\"col\", None)\n    client_id = data.get(\"client_id\")\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "api_ai_move",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def api_ai_move():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)\n    except ValueError as e:",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "api_hint",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def api_hint():\n    data = request.json or {}\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    s = game or state\n    if s.get(\"game_over\"):\n        return jsonify({\"error\": \"Partie terminée\"}), 400\n    depth = int(s.get(\"ai_depth\", 4))",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "app",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "app = Flask(__name__)\n# =======================\n# CONFIG\n# =======================\nROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "ROWS",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "COLS",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "COLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "CONFIANCE_WEB",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "CONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "DIFF_TO_DEPTH",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "DIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "ai_engine",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "ai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "games",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "games = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",\n    \"ai_enabled\": True,\n    \"ai_depth\": 4,\n    \"board\": None,\n    \"current_player\": \"R\",",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "_default_state_template",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",\n    \"ai_enabled\": True,\n    \"ai_depth\": 4,\n    \"board\": None,\n    \"current_player\": \"R\",\n    \"game_over\": False,",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "state",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "state = make_fresh_state()\nstate[\"mode\"] = \"WEB\"\n# =======================\n# DB helpers\n# =======================\ndef get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "state[\"mode\"]",
+        "kind": 5,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "state[\"mode\"] = \"WEB\"\n# =======================\n# DB helpers\n# =======================\ndef get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
         "label": "MinimaxAI",
         "kind": 6,
         "importPath": "ai",
@@ -640,7 +1948,7 @@
         "kind": 2,
         "importPath": "bga_import",
         "description": "bga_import",
-        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    # Never hardcode credentials. If password is None, psycopg2 will rely on local auth.\n    password = os.getenv(\"PGPASSWORD\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor",
         "detail": "bga_import",
         "documentation": {}
     },
@@ -658,7 +1966,7 @@
         "kind": 2,
         "importPath": "bga_import",
         "description": "bga_import",
-        "peekOfCode": "def count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))\n        return int(cur.fetchone()[\"n\"])\n# ---------------- Import logic ----------------\ndef import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9",
+        "peekOfCode": "def count_situations_for_partie(id_partie: int) -> int:\n    sql = \"SELECT COUNT(*) AS n FROM situation WHERE id_partie = %s;\"\n    with get_conn() as conn, conn.cursor() as cur:\n        cur.execute(sql, (id_partie,))\n        return int(cur.fetchone()[\"n\"])\n# ---------------- Import logic ----------------\ndef _canonical_signature_from_cols(cols_list, nb_cols: int) -> str:\n    \"\"\"Signature = min(cols, mirror(cols)). Mirror uses (nb_cols + 1 - col).\"\"\"\n    s = \"\".join(str(int(c)) for c in cols_list)\n    m = \"\".join(str(int(nb_cols + 1 - int(c))) for c in cols_list)",
         "detail": "bga_import",
         "documentation": {}
     },
@@ -667,106 +1975,61 @@
         "kind": 2,
         "importPath": "bga_import",
         "description": "bga_import",
-        "peekOfCode": "def import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9\n    \"\"\"\n    # 1) tri + construction signature\n    moves = sorted(moves, key=lambda m: int(m[\"move_id\"]))\n    signature = \"\".join(str(int(m[\"col\"])) for m in moves)  # string de 1..9\n    # 2) éviter doublons\n    existing_pid = find_partie_id_by_signature(signature)",
+        "peekOfCode": "def import_bga_moves(moves, rows=9, cols=9, confiance=3):\n    \"\"\"\n    moves: list of dicts like {\"move_id\":2, \"col\":5, \"player_id\":\"3368422\"}\n    col is 1..9\n    \"\"\"\n    # 1) tri + construction signature (canonical to dedupe mirror games)\n    moves = sorted(moves, key=lambda m: int(m.get(\"move_id\", 0)))\n    cols_seq = [int(m[\"col\"]) for m in moves]\n    signature = _canonical_signature_from_cols(cols_seq, cols)\n    # 2) éviter doublons",
         "detail": "bga_import",
         "documentation": {}
     },
     {
-        "label": "load_credentials",
+        "label": "BGABot",
+        "kind": 6,
+        "importPath": "bga_player_bot",
+        "description": "bga_player_bot",
+        "peekOfCode": "class BGABot:\n    def __init__(self, chrome_profile_dir=None):\n        \"\"\"\n        Selenium normal (compatible Python 3.14).\n        Utilise un profil Chrome dédié pour garder la session BGA.\n        \"\"\"\n        script_dir = os.path.dirname(os.path.abspath(__file__))\n        # Profil CHROME dédié au bot (évite les crashs avec ton Chrome perso)\n        if chrome_profile_dir is None:\n            chrome_profile_dir = os.path.join(script_dir, \"selenium_profile\")",
+        "detail": "bga_player_bot",
+        "documentation": {}
+    },
+    {
+        "label": "handle_cookies_popup",
         "kind": 2,
         "importPath": "bga_puppet",
         "description": "bga_puppet",
-        "peekOfCode": "def load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]\ndef make_driver(headless=False):\n    opts = Options()",
+        "peekOfCode": "def handle_cookies_popup(driver):\n    \"\"\"\n    Clique sur 'Tout autoriser' ou 'Tout refuser' si popup cookies.\n    \"\"\"\n    xpaths = [\n        \"//button[contains(., 'Tout autoriser')]\",\n        \"//button[contains(., 'Tout refuser')]\",\n        \"//a[contains(., 'Tout autoriser')]\",\n        \"//a[contains(., 'Tout refuser')]\",\n    ]",
         "detail": "bga_puppet",
         "documentation": {}
     },
     {
-        "label": "make_driver",
+        "label": "is_connect4_page",
         "kind": 2,
         "importPath": "bga_puppet",
         "description": "bga_puppet",
-        "peekOfCode": "def make_driver(headless=False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n    opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-gpu\")\n    opts.add_argument(\"--no-sandbox\")\n    opts.add_argument(\"--disable-dev-shm-usage\")\n    # un peu moins \"bot-like\" (pas magique, mais aide)\n    opts.add_experimental_option(\"excludeSwitches\", [\"enable-automation\"])",
+        "peekOfCode": "def is_connect4_page(driver) -> bool:\n    \"\"\"\n    Vérifie si la page correspond à Puissance Quatre (Connect4).\n    \"\"\"\n    title = (driver.title or \"\").lower()\n    body = \"\"\n    try:\n        body = (driver.find_element(By.TAG_NAME, \"body\").text or \"\").lower()\n    except Exception:\n        pass",
         "detail": "bga_puppet",
         "documentation": {}
     },
     {
-        "label": "is_logged_in",
+        "label": "wait_archive_finished",
         "kind": 2,
         "importPath": "bga_puppet",
         "description": "bga_puppet",
-        "peekOfCode": "def is_logged_in(driver):\n    # Heuristique simple : si on voit \"Logout\" ou un lien profil\n    # (BGA change parfois son HTML, donc c'est volontairement large)\n    html = driver.page_source.lower()\n    return (\"logout\" in html) or (\"deconnexion\" in html) or (\"player\" in html and \"profile\" in html)\ndef login_bga(driver, email, password, timeout=30):\n    \"\"\"\n    IMPORTANT:\n    Le HTML BGA peut changer. On essaye plusieurs sélecteurs.\n    Si ça bloque, je te dis en bas quoi faire (mode \"login manuel\" assisté).",
+        "peekOfCode": "def wait_archive_finished(driver, timeout=60) -> bool:\n    \"\"\"\n    Attendre que la page ne soit plus en \"Recherche de l'archive... Merci de patienter...\"\n    \"\"\"\n    end = time.time() + timeout\n    while time.time() < end:\n        try:\n            txt = (driver.find_element(By.TAG_NAME, \"body\").text or \"\").lower()\n        except Exception:\n            txt = \"\"",
         "detail": "bga_puppet",
         "documentation": {}
     },
     {
-        "label": "login_bga",
+        "label": "extract_moves_connect4_from_gamereview",
         "kind": 2,
         "importPath": "bga_puppet",
         "description": "bga_puppet",
-        "peekOfCode": "def login_bga(driver, email, password, timeout=30):\n    \"\"\"\n    IMPORTANT:\n    Le HTML BGA peut changer. On essaye plusieurs sélecteurs.\n    Si ça bloque, je te dis en bas quoi faire (mode \"login manuel\" assisté).\n    \"\"\"\n    driver.get(LOGIN_URL)\n    wait = WebDriverWait(driver, timeout)\n    # si déjà log\n    if is_logged_in(driver):",
+        "peekOfCode": "def extract_moves_connect4_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait les coups connect4.\n    Retour: (moves, preview_debug_15_lignes)\n    \"\"\"\n    base = _base_from_driver(driver)\n    url = f\"{base}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    handle_cookies_popup(driver)",
         "detail": "bga_puppet",
         "documentation": {}
     },
     {
-        "label": "wait_for_gamelogs",
+        "label": "import_table_id_connect4",
         "kind": 2,
         "importPath": "bga_puppet",
         "description": "bga_puppet",
-        "peekOfCode": "def wait_for_gamelogs(driver, timeout=40):\n    \"\"\"\n    Attend que window.g_gamelogs existe et ait du contenu.\n    \"\"\"\n    end = time.time() + timeout\n    while time.time() < end:\n        try:\n            gg = driver.execute_script(\"return window.g_gamelogs || null;\")\n            if gg and isinstance(gg, list) and len(gg) > 0:\n                return gg",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "extract_moves_from_gamelogs",
-        "kind": 2,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "def extract_moves_from_gamelogs(driver):\n    \"\"\"\n    Exécute un JS dans la page pour retourner la liste:\n    [{\"move_id\": 2, \"col\": 5, \"player_id\": \"3368422\"}, ...]\n    \"\"\"\n    js = r\"\"\"\n    const logs = window.g_gamelogs || [];\n    const byMove = new Map(); // move_id -> {col, pid}\n    for (const pkt of logs) {\n      const mid = Number(pkt && pkt.move_id);",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "import_one_table",
-        "kind": 2,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "def import_one_table(driver, table_url, rows=9, cols=9, confiance=3):\n    print(f\"\\n=== TABLE: {table_url} ===\")\n    driver.get(table_url)\n    # Attendre que la page charge un minimum\n    time.sleep(3)\n    gg = wait_for_gamelogs(driver, timeout=50)\n    if not gg:\n        print(\"❌ g_gamelogs introuvable (page pas chargée / pas de replay / DOM différent).\")\n        return None\n    moves = extract_moves_from_gamelogs(driver)",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "load_tables_from_file",
-        "kind": 2,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "def load_tables_from_file(path=\"tables.txt\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"{path} introuvable. Mets une URL de table par ligne.\"\n        )\n    urls = []\n    for line in p.read_text(encoding=\"utf-8\").splitlines():\n        line = line.strip()\n        if not line or line.startswith(\"#\"):",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "main",
-        "kind": 2,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "def main():\n    # usage:\n    # python bga_puppet.py tables.txt\n    tables_file = sys.argv[1] if len(sys.argv) > 1 else \"tables.txt\"\n    email, password = load_credentials(\"credentials.json\")\n    driver = make_driver(headless=False)\n    try:\n        driver.get(BGA_HOME)\n        time.sleep(2)\n        # login",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "BGA_HOME",
-        "kind": 5,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "BGA_HOME = \"https://boardgamearena.com/\"\nLOGIN_URL = \"https://boardgamearena.com/account\"  # page qui force souvent la connexion\ndef load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]",
-        "detail": "bga_puppet",
-        "documentation": {}
-    },
-    {
-        "label": "LOGIN_URL",
-        "kind": 5,
-        "importPath": "bga_puppet",
-        "description": "bga_puppet",
-        "peekOfCode": "LOGIN_URL = \"https://boardgamearena.com/account\"  # page qui force souvent la connexion\ndef load_credentials(path=\"credentials.json\"):\n    p = Path(path)\n    if not p.exists():\n        raise FileNotFoundError(\n            f\"Fichier {path} introuvable. Crée credentials.json avec email/password.\"\n        )\n    data = json.loads(p.read_text(encoding=\"utf-8\"))\n    return data[\"email\"], data[\"password\"]\ndef make_driver(headless=False):",
+        "peekOfCode": "def import_table_id_connect4(driver, table_id, rows=9, cols=9, confiance=3):\n    \"\"\"\n    Scrape + import DB.\n    Retour:\n      (id_partie, None) si OK\n      (None, preview_debug) si KO\n    \"\"\"\n    table_id = str(table_id)\n    moves, preview = extract_moves_connect4_from_gamereview(driver, table_id)\n    if not moves:",
         "detail": "bga_puppet",
         "documentation": {}
     },
@@ -892,7 +2155,7 @@
         "kind": 2,
         "importPath": "explorer_tool",
         "description": "explorer_tool",
-        "peekOfCode": "def load_partie_for_play(id_partie: int, config_path=\"config.json\"):\n    \"\"\"\n    ✅ LA fonction clé pour que ton UI puisse continuer une partie importée.\n    Elle renvoie:\n      rows, cols, starting_player, signature,\n      board, history[(r,c,p)], future[],\n      current_player, game_over, result,\n      last_situation_id\n    \"\"\"\n    rows, cols, starting_player = 9, 9, \"R\"",
+        "peekOfCode": "def load_partie_for_play(id_partie: int, config_path=\"config.json\"):\n    \"\"\"\n    ✅ LA fonction clé pour que ton UI puisse continuer une partie importée.\n    Elle renvoie:\n    rows, cols, starting_player, signature,\n    board, history[(r,c,p)], future[],\n    current_player, game_over, result,\n    last_situation_id\n    \"\"\"\n    rows, cols, starting_player = 9, 9, \"R\"",
         "detail": "explorer_tool",
         "documentation": {}
     },
@@ -902,6 +2165,15 @@
         "importPath": "explorer_tool",
         "description": "explorer_tool",
         "peekOfCode": "def open_explorer_from_ui(master):\n    DBExplorer(master=master)\nif __name__ == \"__main__\":\n    root = tk.Tk()\n    root.withdraw()\n    DBExplorer(master=root)\n    root.mainloop()",
+        "detail": "explorer_tool",
+        "documentation": {}
+    },
+    {
+        "label": "DEBUG",
+        "kind": 5,
+        "importPath": "explorer_tool",
+        "description": "explorer_tool",
+        "peekOfCode": "DEBUG = True\n# ============================================================\n# DB helpers\n# ============================================================\ndef get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")",
         "detail": "explorer_tool",
         "documentation": {}
     },
@@ -978,237 +2250,282 @@
         "documentation": {}
     },
     {
+        "label": "get_table_id_from_url",
+        "kind": 2,
+        "importPath": "play_and_import",
+        "description": "play_and_import",
+        "peekOfCode": "def get_table_id_from_url(driver):\n    url = driver.current_url or \"\"\n    m = re.search(r\"table=(\\d+)\", url)\n    return m.group(1) if m else None\nif __name__ == \"__main__\":\n    bot = BGABot()\n    try:\n        # 1) login manuel (détecté)\n        bot.login()\n        game_count = 0",
+        "detail": "play_and_import",
+        "documentation": {}
+    },
+    {
+        "label": "get_board_size_from_table_page",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.\n    \"\"\"\n    try:\n        tid = str(int(str(table_id)))  # normalize (remove leading zeros)",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
         "label": "make_driver",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
         "peekOfCode": "def make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:\n        opts.add_argument(\"--start-maximized\")\n    opts.add_argument(\"--disable-notifications\")\n    opts.add_argument(\"--disable-popup-blocking\")\n    opts.add_argument(\"--disable-blink-features=AutomationControlled\")",
-        "detail": "scrape_replay_selenium",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "login_bga_manual",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def login_bga_manual(driver):\n    \"\"\"\n    Tu te connectes à la main. Ensuite on récupère le domaine réel (fr., en., www)\n    pour que toutes les requêtes suivantes utilisent EXACTEMENT le même domaine (cookies ok).\n    \"\"\"\n    global BASE\n    print(\"🔐 Ouverture BGA login (manuel)...\")\n    driver.get(f\"{BASE}/account\")\n    print(\"👉 Connecte-toi MANUELLEMENT dans Chrome.\")\n    input(\"✅ Quand tu es connectée (avatar visible), appuie sur ENTER...\")",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def login_bga_manual(driver):\n    \"\"\"\n    Connexion manuelle. Ensuite on récupère le domaine réel (fr./en./www)\n    pour que toutes les requêtes suivantes utilisent EXACTEMENT le même domaine (cookies ok).\n    \"\"\"\n    global BASE\n    print(\"🔐 Ouverture BGA login (manuel)...\")\n    driver.get(f\"{BASE}/account\")\n    print(\"👉 Connecte-toi MANUELLEMENT dans Chrome.\")\n    input(\"✅ Quand tu es connecté (avatar visible), appuie sur ENTER...\")",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "collect_player_ids_from_ranking",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
         "peekOfCode": "def collect_player_ids_from_ranking(driver, max_players: int, scroll_steps: int):\n    \"\"\"\n    Va sur gamepanel connect4 (classement), scroll pour charger plus de joueurs,\n    puis extrait les player_id depuis les liens <a href=\"/player?id=...\">.\n    \"\"\"\n    url = f\"{BASE}/gamepanel?game=connectfour\"\n    print(\"🏁 Ouverture page classement:\", url)\n    driver.get(url)\n    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)",
-        "detail": "scrape_replay_selenium",
-        "documentation": {}
-    },
-    {
-        "label": "load_player_ids",
-        "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def load_player_ids():\n    \"\"\"\n    Si player_ids.json existe, on l'utilise.\n    Sinon on renvoie None (et on collectera depuis classement).\n    \"\"\"\n    if PLAYER_IDS_FILE.exists():\n        try:\n            data = json.loads(PLAYER_IDS_FILE.read_text(encoding=\"utf-8\"))\n            ids = [str(x) for x in data if str(x).isdigit()]\n            ids = list(dict.fromkeys(ids))",
-        "detail": "scrape_replay_selenium",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "get_connect4_table_ids",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):\n    \"\"\"\n    Ouvre /gamestats?player=...&game_id=1186&finished=1\n    et extrait des #TABLEID.\n    \"\"\"\n    url = f\"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}\"\n    driver.get(url)\n    time.sleep(2)\n    for _ in range(10):\n        driver.execute_script(\"window.scrollTo(0, document.body.scrollHeight);\")",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):\n    \"\"\"\n    Ouvre /gamestats?player=...&game_id=1186&finished=1\n    et extrait des table ids depuis les liens \"table=...\".\n    \"\"\"\n    url = f\"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}\"\n    driver.get(url)\n    time.sleep(2)\n    for _ in range(10):\n        driver.execute_script(\"window.scrollTo(0, document.body.scrollHeight);\")",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
-        "label": "resolve_real_replay_url_from_table",
+        "label": "detect_board_size_anchored",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"\n    Va sur /table?table=xxxxxx et tente de récupérer un lien /archive/replay/...\n    \"\"\"\n    table_url = f\"{BASE}/table?table={table_id}\"\n    driver.get(table_url)\n    wait = WebDriverWait(driver, 20)\n    wait.until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    # Essayer de cliquer/attendre un lien replay\n    try:",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def detect_board_size_anchored(page_text: str):\n    \"\"\"\n    Detect size ONLY on lines that mention board size (avoid false matches like times/scores).\n    \"\"\"\n    if not page_text:\n        return None\n    lower = page_text.lower()\n    # quick safe path\n    if \"9x9\" in lower or \"9×9\" in lower:\n        return (9, 9)",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
+        "label": "extract_size_and_moves_from_gamereview",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def extract_size_and_moves_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait:\n    - size (rows, cols) via detect_board_size_anchored(body.text)\n    - moves depuis le texte: \"... place un pion dans la colonne X\"\n    \"\"\"\n    url = f\"{BASE}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(1.2)",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "wait_gamelogs",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def wait_gamelogs(driver, max_wait=30):\n    end = time.time() + max_wait\n    while time.time() < end:\n        n = driver.execute_script(\"return (window.g_gamelogs && window.g_gamelogs.length) || 0;\")\n        if int(n) > 0:\n            return True\n        time.sleep(0.5)\n    return False\ndef extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def wait_gamelogs(driver, max_wait=30):\n    end = time.time() + max_wait\n    while time.time() < end:\n        n = driver.execute_script(\"return (window.g_gamelogs && window.g_gamelogs.length) || 0;\")\n        if int(n) > 0:\n            return True\n        time.sleep(0.5)\n    return False\ndef resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
+        "label": "resolve_real_replay_url_from_table",
+        "kind": 2,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def resolve_real_replay_url_from_table(driver, table_id: str):\n    \"\"\"\n    Va sur /table?table=xxxxxx et tente de récupérer un lien /archive/replay/...\n    \"\"\"\n    table_url = f\"{BASE}/table?table={table_id}\"\n    driver.get(table_url)\n    wait = WebDriverWait(driver, 20)\n    wait.until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    try:\n        a = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[href*=\"/archive/replay/\"]')))",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "extract_moves_from_replay_url",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
         "peekOfCode": "def extract_moves_from_replay_url(driver, replay_url: str):\n    \"\"\"\n    Ouvre /archive/replay/... et lit window.g_gamelogs\n    \"\"\"\n    driver.get(replay_url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(2)\n    ok = wait_gamelogs(driver, max_wait=30)\n    if not ok:\n        return []",
-        "detail": "scrape_replay_selenium",
-        "documentation": {}
-    },
-    {
-        "label": "extract_moves_from_gamereview",
-        "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def extract_moves_from_gamereview(driver, table_id: str):\n    \"\"\"\n    Ouvre /gamereview?table=... et extrait les coups depuis \"Historique de la partie\".\n    On lit le texte: \"... place un pion dans la colonne X\"\n    + on essaie de récupérer player_id depuis les liens /player?id=...\n    \"\"\"\n    url = f\"{BASE}/gamereview?table={table_id}\"\n    driver.get(url)\n    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, \"body\")))\n    time.sleep(1.5)",
-        "detail": "scrape_replay_selenium",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "import_into_db",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def import_into_db(moves):\n    # import local pour éviter erreurs si tu testes juste sans DB\n    from bga_import import import_bga_moves\n    pid = import_bga_moves(moves, rows=ROWS, cols=COLS, confiance=CONFIANCE)\n    return pid\n# ============================================================\n# MAIN\n# ============================================================\ndef main():\n    driver = make_driver(headless=False)",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def import_into_db(moves):\n    from bga_import import import_bga_moves\n    id_partie = import_bga_moves(moves, rows=ROWS, cols=COLS, confiance=CONFIANCE)\n    return id_partie\n# ============================================================\n# MAIN\n# ============================================================\ndef main():\n    driver = make_driver(headless=False)\n    try:",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "main",
         "kind": 2,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "def main():\n    driver = make_driver(headless=False)\n    try:\n        login_bga_manual(driver)\n        # 1) player ids depuis fichier si dispo\n        player_ids = load_player_ids()\n        # 2) sinon depuis classement\n        if not player_ids:\n            player_ids = collect_player_ids_from_ranking(\n                driver,",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "def main():\n    driver = make_driver(headless=False)\n    try:\n        login_bga_manual(driver)\n        # Always collect best players from ranking (no file dependency)\n        player_ids = collect_player_ids_from_ranking(\n            driver,\n            max_players=MAX_PLAYERS,\n            scroll_steps=SCROLL_STEPS\n        )",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "GAME_ID",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "GAME_ID = 1186              # connectfour\nFINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "GAME_ID = 1186              # connectfour\nFINISHED = 1                # 1 = terminées\n# DB / format (on force 9x9 pour les imports BGA)\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "FINISHED",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "FINISHED = 1                # 1 = terminées\n# DB / format\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "FINISHED = 1                # 1 = terminées\n# DB / format (on force 9x9 pour les imports BGA)\nROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "ROWS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "COLS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "COLS = 9\nCONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "COLS = 9\nCONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "CONFIANCE",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "CONFIANCE = 3               # adapte si tu veux (0=perdre exprès, 1=random, 2..., 3...)\n# Scrap limites\nMAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "CONFIANCE = 3               # 3=BGA/humain (voir mapping confiance)\n# Import policy\nONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
+        "label": "ONLY_9X9",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "ONLY_9X9 = True             # we ONLY import 9x9 games\nSTRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
+        "label": "STRICT_SIZE_CHECK",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "STRICT_SIZE_CHECK = True    # if size cannot be detected => skip (recommended)\n# Scrap limites (tweak)\nMAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "MAX_PLAYERS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "MAX_PLAYERS = 80            # nombre max de joueurs à traiter\nMAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "MAX_PLAYERS = 40            # nombre max de joueurs à traiter (top du classement)\nMAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "MAX_TABLES_PER_PLAYER",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "MAX_TABLES_PER_PLAYER = 10  # nombre max de parties par joueur\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "MAX_TABLES_PER_PLAYER = 80  # nombre max de parties par joueur (augmente => consomme + de quota)\nSCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "SCROLL_STEPS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "SCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "SCROLL_STEPS = 20           # scroll sur classement pour charger + de joueurs\nSLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "SLEEP_SCROLL",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "SLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "SLEEP_SCROLL = 0.6\nPAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "PAUSE_BETWEEN_PLAYERS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "PAUSE_BETWEEN_PLAYERS = 0.7\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "PAUSE_BETWEEN_PLAYERS = 0.6\n# Anti quota / anti-ban\nPAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>",
+        "detail": "scrape_replay_selenium_patched_v3",
+        "documentation": {}
+    },
+    {
+        "label": "PAUSE_BETWEEN_TABLES",
+        "kind": 5,
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "PAUSE_BETWEEN_TABLES = 1.0  # pause entre tables (augmente si BGA limite)\n# Domaine (sera auto-fix après login)\nBASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "BASE",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "BASE = \"https://boardgamearena.com\"\nPROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "BASE = \"https://boardgamearena.com\"\ndef get_board_size_from_table_page(driver, table_id: str):\n    \"\"\"\n    ✅ Reliable board size source for Connect Four on BGA:\n    It is displayed on the table page in:\n      <span id=\"gameoption_100_displayed_value\">9x9</span>\n    We open /table?table=... and read that value.\n    Returns (rows, cols) or None.\n    \"\"\"\n    try:",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "PROJECT_DIR",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "PROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "PROJECT_DIR = Path(__file__).resolve().parent\nOUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "OUT_DIR",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "OUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\nPLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "OUT_DIR = PROJECT_DIR / \"scraped_moves\"\nOUT_DIR.mkdir(exist_ok=True)\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
-        "label": "PLAYER_IDS_FILE",
+        "label": "SIZE_RE",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
-        "peekOfCode": "PLAYER_IDS_FILE = PROJECT_DIR / \"player_ids.json\"  # optionnel\n# ============================================================\n# DRIVER\n# ============================================================\ndef make_driver(headless: bool = False):\n    opts = Options()\n    if headless:\n        opts.add_argument(\"--headless=new\")\n        opts.add_argument(\"--window-size=1400,900\")\n    else:",
-        "detail": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
+        "peekOfCode": "SIZE_RE = re.compile(r\"(\\d{1,2})\\s*[x×]\\s*(\\d{1,2})\", re.IGNORECASE)\ndef detect_board_size_anchored(page_text: str):\n    \"\"\"\n    Detect size ONLY on lines that mention board size (avoid false matches like times/scores).\n    \"\"\"\n    if not page_text:\n        return None\n    lower = page_text.lower()\n    # quick safe path\n    if \"9x9\" in lower or \"9×9\" in lower:",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {
         "label": "EXTRACT_JS",
         "kind": 5,
-        "importPath": "scrape_replay_selenium",
-        "description": "scrape_replay_selenium",
+        "importPath": "scrape_replay_selenium_patched_v3",
+        "description": "scrape_replay_selenium_patched_v3",
         "peekOfCode": "EXTRACT_JS = r\"\"\"\nreturn (function () {\n  const byMove = new Map();\n  for (const pkt of (window.g_gamelogs || [])) {\n    const mid = Number(pkt && pkt.move_id);\n    if (!Number.isFinite(mid)) continue;\n    const data = (pkt.data || []);\n    const disc = data.find(d => d && d.type === \"playDisc\");\n    if (!disc || !disc.args) continue;\n    const col = Number(disc.args.x);",
-        "detail": "scrape_replay_selenium",
+        "detail": "scrape_replay_selenium_patched_v3",
         "documentation": {}
     },
     {

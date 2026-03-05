@@ -13,6 +13,7 @@
       <div class="logo">C4</div>
       <div>
         <div class="title">Connect4 Web</div>
+        <div class="subtitle">Celina & Hamou</div>
       </div>
     </div>
   </header>
@@ -20,7 +21,6 @@
   <main class="layout">
     <!-- GAUCHE -->
     <aside class="sidebar">
-
       <div class="sideCard">
         <div class="sideTitle">Infos partie</div>
 
@@ -43,28 +43,29 @@
         </div>
 
         <div class="sideCard">
-        <div class="sideTitle">Paramètres joueur</div>
+          <div class="sideTitle">Paramètres joueur</div>
 
-        <div class="stat">
-          <div class="label">Nom rouge</div>
-          <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
-        </div>
+          <div class="stat">
+            <div class="label">Nom rouge</div>
+            <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
+          </div>
 
-        <div class="stat">
-          <div class="label">Nom jaune</div>
-          <input id="playerNameJ" type="text" placeholder="Joueur jaune" class="input" />
-        </div>
+          <div class="stat">
+            <div class="label">Nom jaune</div>
+            <input id="playerNameJ" type="text" placeholder="Joueur jaune / IA" class="input" />
+          </div>
 
-        <div class="stat">
-          <div class="label">Couleur (vous débutez)</div>
-          <select id="colorSelect" class="select">
-            <option value="R" selected>Rouge</option>
-            <option value="J">Jaune</option>
-          </select>
+          <div class="stat">
+            <div class="label">Qui commence ?</div>
+            <select id="colorSelect" class="select">
+              <option value="R" selected>Rouge commence</option>
+              <option value="J">Jaune commence</option>
+            </select>
+          </div>
         </div>
-      </div>
 
         <button id="btnNew" class="btn primary full">Nouvelle partie</button>
+        <button id="btnHint" class="btn full">IA jouerait (suggestion)</button>
 
         <div class="stat">
           <div class="label">Lien de la partie</div>
@@ -73,15 +74,17 @@
             <button id="btnCopyLink" class="btn small" type="button">Copier</button>
           </div>
         </div>
-
       </div>
-
-      
-
     </aside>
 
     <!-- CENTRE -->
     <section class="content">
+      <!-- ✅ Bandeau sticky pour mobile -->
+      <div class="statusBar">
+        <div id="turnInfo" class="statusLine">Chargement…</div>
+        <div id="aiThinking" class="statusLine thinking" hidden>🤖 IA réfléchit…</div>
+      </div>
+
       <div id="colHeader" class="colHeader"></div>
 
       <div class="boardWrap">

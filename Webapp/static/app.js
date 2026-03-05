@@ -19,7 +19,7 @@ window.addEventListener("error", (ev) => {
 });
 
 // ====== UI params ======
-let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur";
+let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur Rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "IA";
 let playerColor = localStorage.getItem("playerColor") || "R";
 
@@ -34,10 +34,35 @@ let busy = false;
 let GAME_ID = null; // pour mode ONLINE
 let pollTimer = null;
 
-// ====== helpers DOM safe ======
+// ====== helpers DOM ======
 function $(id) { return document.getElementById(id); }
-function setText(id, txt) { const el = $(id); if (el) el.textContent = txt; }
-function setHTML(id, html) { const el = $(id); if (el) el.innerHTML = html; }
+
+function setThinking(on) {
+  const el = $("aiThinking");
+  if (!el) return;
+  el.hidden = !on;
+}
+
+function updateTurnInfo(state) {
+  const el = $("turnInfo");
+  if (!el || !state) return;
+
+  const turn = state.current_player;
+  const turnName = nameFor(turn);
+
+  if (!lastMove) {
+    el.innerHTML = `Début de partie — À <b>${escapeHtml(turnName)}</b> de jouer.`;
+    return;
+  }
+
+  const lastPlayer = (turn === "R") ? "J" : "R";
+  const lastName = nameFor(lastPlayer);
+  const colHuman = lastMove.c + 1;
+
+  el.innerHTML =
+    `Dernier coup : <b>${escapeHtml(lastName)}</b> en colonne <b>${colHuman}</b> — ` +
+    `À <b>${escapeHtml(turnName)}</b> de jouer.`;
+}
 
 // ====== API ======
 async function getState(id) {
@@ -46,8 +71,7 @@ async function getState(id) {
   const res = await fetch(url);
   const data = await res.json();
   if (!res.ok) {
-    if (res.status === 404) setMessageOnly("Partie introuvable. Crée une nouvelle partie.");
-    else setMessageOnly(data.error || "Erreur récupération état");
+    setMessageOnly(data.error || "Erreur récupération état");
     return null;
   }
   return data;
@@ -58,6 +82,7 @@ async function newGame() {
   hideMessage();
   lastMove = null;
   cancelAiTimer();
+  setThinking(false);
 
   const mode = ($("modeSelect")?.value || "IA").toUpperCase();
   const difficulty = ($("diffSelect")?.value || "medium").toLowerCase();
@@ -118,6 +143,11 @@ async function newGame() {
   }
 
   render(lastState);
+
+  // si IA commence
+  if (lastState.type_partie === "IA" && lastState.current_player === lastState.ai_player && !lastState.game_over) {
+    aiTimer = setTimeout(aiMove, AI_DELAY_MS);
+  }
 }
 
 async function play(col) {
@@ -207,17 +237,29 @@ async function aiMove() {
   aiTimer = null;
   if (!lastState || lastState.game_over) return;
 
+  setThinking(true);
+  const t0 = performance.now();
+
   const res = await fetch("/api/ai_move", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID })
   });
   const data = await res.json();
-  if (!res.ok) return;
+
+  setThinking(false);
+  const dt = Math.round(performance.now() - t0);
+
+  if (!res.ok) {
+    showMessage(data.error || "Erreur IA");
+    return;
+  }
 
   lastMove = findLastMove(lastState.board, data.board);
   lastState = data;
   render(lastState);
+
+  showMessage(`🤖 IA a joué en ${dt} ms`);
 
   if (lastState.game_over) {
     showMessage(`🏁 Victoire de ${nameFor(lastState.current_player)} !`);
@@ -258,16 +300,6 @@ function stopPolling(){
 
 // ====== UI / render ======
 function render(state) {
-  // Hint
-  if ($("hint")) {
-    $("hint").textContent =
-      state.game_over ? "Partie terminée. Lance une nouvelle partie 👇"
-      : (state.type_partie === "IA" && state.current_player === state.ai_player)
-        ? "Tour de l’IA…"
-        : "Clique sur une colonne 👇";
-  }
-
-  // Message: tour / victoire
   const msg = $("message");
   if (msg) {
     msg.hidden = false;
@@ -285,6 +317,8 @@ function render(state) {
   applyPreview();
   applyLastMove();
   applyWinningLine(state);
+
+  updateTurnInfo(state);
 }
 
 function renderHeader(state){
@@ -421,11 +455,9 @@ function applyWinningLine(state){
 function cancelAiTimer(){
   if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; }
 }
-
 function isColumnFull(col){
   return lastState?.board?.[0]?.[col] !== 0;
 }
-
 function findLastMove(prevBoard, newBoard){
   if (!prevBoard || !newBoard) return null;
   for (let r = 0; r < ROWS; r++){
@@ -437,13 +469,11 @@ function findLastMove(prevBoard, newBoard){
   }
   return null;
 }
-
 function nameFor(letter){
   if (letter === "R") return PLAYER_R_NAME;
   if (letter === "J") return PLAYER_J_NAME;
   return "?";
 }
-
 function showMessage(txt){
   const historyDiv = $("history");
   if (historyDiv) {
@@ -455,24 +485,19 @@ function showMessage(txt){
   }
   setMessageOnly(txt);
 }
-
 function setMessageOnly(txt){
   const msg = $("message");
   if (msg) { msg.hidden = false; msg.innerHTML = txt; }
 }
-
 function hideMessage(){
   const msg = $("message");
   if (msg) { msg.hidden = true; msg.textContent = ""; }
 }
-
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, m => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
   }[m]));
 }
-
-// local-mode win check
 function jsFindWinningLine(r, c, board){
   const dirs = [[0,1],[1,0],[1,1],[1,-1]];
   const player = board[r][c];
@@ -491,12 +516,39 @@ function jsFindWinningLine(r, c, board){
 
 // ====== init ======
 window.addEventListener("load", async () => {
-  // init UI inputs
   if ($("playerNameR")) $("playerNameR").value = PLAYER_R_NAME;
   if ($("playerNameJ")) $("playerNameJ").value = PLAYER_J_NAME;
   if ($("colorSelect")) $("colorSelect").value = playerColor;
 
   $("btnNew")?.addEventListener("click", newGame);
+
+  $("btnHint")?.addEventListener("click", async () => {
+    if (!lastState) return;
+
+    // LOCAL: pas de hint serveur
+    if (lastState.mode === "LOCAL") {
+      showMessage("Mode LOCAL : suggestion IA non disponible (utilise mode IA).");
+      return;
+    }
+
+    if (!GAME_ID) {
+      showMessage("Crée une partie d’abord 🙂");
+      return;
+    }
+
+    const res = await fetch("/api/hint", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showMessage(data.error || "Erreur suggestion");
+      return;
+    }
+    const colHuman = data.suggested_col + 1;
+    showMessage(`💡 Suggestion IA : jouer en colonne ${colHuman}`);
+  });
 
   $("btnCopyLink")?.addEventListener("click", () => {
     const link = $("shareLink")?.value || "";
@@ -511,7 +563,7 @@ window.addEventListener("load", async () => {
   });
 
   $("playerNameR")?.addEventListener("input", (e) => {
-    PLAYER_R_NAME = e.target.value || "Joueur";
+    PLAYER_R_NAME = e.target.value || "Joueur Rouge";
     localStorage.setItem("playerNameR", PLAYER_R_NAME);
     if (lastState) render(lastState);
   });
@@ -525,24 +577,28 @@ window.addEventListener("load", async () => {
     localStorage.setItem("playerColor", playerColor);
   });
 
-  // if URL has game_id
+  // URL game_id
   const params = new URLSearchParams(window.location.search);
   if (params.has("game_id")) {
     GAME_ID = params.get("game_id");
     lastState = await getState(GAME_ID);
+
     if (!lastState) {
       GAME_ID = null;
       lastState = await getState();
     } else {
       if ($("shareLink")) $("shareLink").value = window.location.href;
       if (lastState.mode === "WEB") startPolling();
+
+      if (lastState.game_over) {
+        setMessageOnly("Cette partie est terminée. Clique sur “Nouvelle partie” 🙂");
+      }
     }
   } else {
     lastState = await getState();
   }
 
   if (!lastState) {
-    // fallback minimal state so UI renders
     lastState = {
       mode: "LOCAL",
       type_partie: "HUMAIN",
