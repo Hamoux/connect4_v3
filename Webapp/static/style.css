@@ -3,12 +3,13 @@
   --bg2: #070b14;
 
   --panel: rgba(255,255,255,.08);
+  --panel2: rgba(255,255,255,.06);
   --border: rgba(255,255,255,.12);
 
   --text: #eaf0ff;
   --muted: rgba(234,240,255,.68);
 
-  --accent: #3b82f6;
+  --accent: #3b82f6;   /* bleu BGA-ish */
   --accent2: #1d4ed8;
 
   --red: #ff3b3b;
@@ -48,6 +49,7 @@ body{
   background: linear-gradient(135deg, var(--accent), rgba(59,130,246,.55));
   box-shadow: var(--shadow2);
   font-weight: 900;
+  letter-spacing: .5px;
 }
 .title{ font-weight: 900; font-size: 18px; line-height: 1.1; }
 .subtitle{ color: var(--muted); font-size: 13px; margin-top: 2px; }
@@ -63,6 +65,7 @@ body{
   align-items:start;
 }
 
+/* sticky panels */
 .sidebar, .rightbar{
   display:grid;
   gap: 14px;
@@ -75,29 +78,7 @@ body{
   gap: 12px;
 }
 
-/* ===== sticky status bar (mobile-friendly) ===== */
-.statusBar{
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(11,16,32,.65);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 14px;
-  padding: 10px 12px;
-  box-shadow: var(--shadow2);
-}
-.statusLine{
-  font-weight: 850;
-  font-size: 13px;
-  color: rgba(234,240,255,.92);
-}
-.statusLine.thinking{
-  margin-top: 6px;
-  color: rgba(255,211,56,.95);
-}
-
-/* ===== cards ===== */
+/* ===== cards like BGA blocks ===== */
 .sideCard{
   background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
   border: 1px solid var(--border);
@@ -108,12 +89,14 @@ body{
 
 .sideTitle{
   font-weight: 900;
+  letter-spacing: .2px;
   margin: 2px 0 10px;
   display:flex;
   align-items:center;
   justify-content:space-between;
 }
 
+/* stat block inside card */
 .stat{
   background: rgba(0,0,0,.18);
   border: 1px solid rgba(255,255,255,.10);
@@ -128,6 +111,7 @@ body{
   margin-bottom: 6px;
 }
 
+/* ===== inputs ===== */
 .select, .input{
   width:100%;
   padding: 11px 12px;
@@ -147,7 +131,9 @@ body{
   color: var(--text);
 }
 
+/* ===== buttons ===== */
 .btn{
+  width:auto;
   border: 1px solid rgba(255,255,255,.14);
   background: rgba(255,255,255,.06);
   color: var(--text);
@@ -160,13 +146,27 @@ body{
 .btn:hover{ background: rgba(255,255,255,.10); }
 .btn:active{ transform: translateY(1px); }
 .btn:disabled{ opacity:.55; cursor:not-allowed; }
+
 .btn.primary{
   background: linear-gradient(180deg, var(--accent), var(--accent2));
   border-color: rgba(59,130,246,.45);
 }
-.btn.full{ width:100%; }
-.btn.small{ padding: 9px 12px; border-radius: 11px; }
 
+.btn.full{ width:100%; }
+
+.btn.small{
+  padding: 9px 12px;
+  border-radius: 11px;
+}
+
+/* hint */
+.hint{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+/* message box */
 .message{
   padding: 12px 14px;
   border-radius: 14px;
@@ -175,8 +175,11 @@ body{
   box-shadow: var(--shadow2);
   font-weight: 900;
 }
+.message b{ font-weight: 950; }
+.message .red{ color: var(--red); }
+.message .yellow{ color: var(--yellow); }
 
-/* ===== board ===== */
+/* ===== board area ===== */
 .colHeader{
   display:grid;
   grid-template-columns: repeat(9, min(60px, calc((100vw - 60px) / 9.5)));
@@ -199,7 +202,11 @@ body{
 .colBtn:active{ transform: translateY(1px); }
 .colBtn.full{ opacity:.35; cursor:not-allowed; }
 
-.boardWrap{ display:flex; justify-content:center; width:100%; }
+.boardWrap{
+  display:flex;
+  justify-content:center;
+  width:100%;
+}
 
 .board{
   --cell: min(62px, calc((100vw - 60px) / 9.5));
@@ -211,9 +218,11 @@ body{
   background: linear-gradient(180deg, rgba(59,130,246,.95), rgba(29,78,216,.75));
   border: 1px solid rgba(255,255,255,.14);
   box-shadow: var(--shadow);
+  position: relative;
   user-select: none;
 }
 
+/* holes */
 .cell{
   width: var(--cell);
   height: var(--cell);
@@ -225,6 +234,7 @@ body{
   overflow: hidden;
 }
 
+/* pieces drop */
 .piece{
   position:absolute;
   inset: 6px;
@@ -238,19 +248,15 @@ body{
     radial-gradient(circle at 28% 25%, rgba(255,255,255,.45), rgba(255,255,255,0) 35%),
     radial-gradient(circle at 45% 40%, #ff6b6b, var(--red));
 }
+
 .piece.yellow{
   background:
     radial-gradient(circle at 28% 25%, rgba(255,255,255,.45), rgba(255,255,255,0) 35%),
     radial-gradient(circle at 45% 40%, #ffe27a, var(--yellow));
 }
 
-/* ✅ FIX : pas de "drop" sur tous les pions à chaque render */
 .cell.filled .piece{
   transform: translateY(0);
-  animation: none;
-}
-/* ✅ animation seulement pour le dernier coup */
-.cell.last.filled .piece{
   animation: drop .18s ease-out;
 }
 @keyframes drop{
@@ -258,6 +264,7 @@ body{
   to   { transform: translateY(0); }
 }
 
+/* hover preview */
 .cell.preview::after{
   content:"";
   position:absolute;
@@ -267,6 +274,7 @@ body{
   background: rgba(255,255,255,.85);
 }
 
+/* last move + win */
 .cell.last{
   outline: 3px solid rgba(255,255,255,.25);
   box-shadow: 0 0 0 6px rgba(255,255,255,.06);
@@ -276,7 +284,7 @@ body{
   box-shadow: 0 0 0 6px rgba(255,255,255,.14), 0 16px 40px rgba(0,0,0,.40);
 }
 
-/* history */
+/* ===== history (BGA-like log) ===== */
 .historyLog{
   display:grid;
   gap: 8px;
@@ -284,6 +292,7 @@ body{
   overflow:auto;
   padding-right: 6px;
 }
+
 .logItem{
   padding: 10px 12px;
   border-radius: 12px;
@@ -302,10 +311,12 @@ body{
   font-size: 11px;
   color: rgba(234,240,255,.55);
 }
+
 .logItem.lastMove{
   border-color: rgba(255,255,255,.26);
   background: rgba(255,255,255,.06);
 }
+
 .logItem.system{
   text-align:center;
   font-style: italic;
@@ -313,7 +324,7 @@ body{
   border-color: rgba(255,255,255,.18);
 }
 
-/* responsive */
+/* ===== responsive ===== */
 @media (max-width: 1080px){
   .layout{ grid-template-columns: 320px 1fr; }
   .rightbar{ position: static; }

@@ -361,32 +361,55 @@ def api_new():
     diff = str(data.get("difficulty") or "medium").lower()
     starting_player = str(data.get("starting_player") or "R").upper()
 
+    # ONLINE: starting player random (comme avant)
     if mode == "ONLINE":
         import random
         starting_player = random.choice(["R", "J"])
 
+    # LOCAL: UI only
     if mode == "LOCAL":
         g = make_fresh_state()
         g["mode"] = "LOCAL"
         g["type_partie"] = "HUMAIN"
         g["ai_enabled"] = False
-        g["current_player"] = starting_player if starting_player in ("R","J") else "R"
+        g["ai_depth"] = 0
+        g["current_player"] = starting_player if starting_player in ("R", "J") else "R"
         g["starting_player"] = g["current_player"]
         g["status"] = "EN_COURS"
+        g["winning_line"] = None
         return jsonify(g)
 
-    # create new WEB game
+    # ✅ ONLINE matchmaking: rejoindre une partie humaine en attente
+    if mode == "ONLINE" and not data.get("game_id"):
+        for existing in games.values():
+            if (
+                existing.get("mode") == "WEB"
+                and existing.get("type_partie") == "HUMAIN"
+                and not existing.get("game_over")
+                and len(existing.get("client_ids", [])) < 2
+            ):
+                try:
+                    register_client(existing, client_id)
+                    return jsonify(_export_state(existing))
+                except ValueError:
+                    pass  # partie pleine -> continue
+
+    # Sinon: créer une nouvelle partie WEB
     g = make_fresh_state()
     g["mode"] = "WEB"
     g["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
     g["ai_enabled"] = (mode == "IA")
     g["ai_depth"] = DIFF_TO_DEPTH.get(diff, 4)
 
-    g["current_player"] = starting_player if starting_player in ("R","J") else "R"
+    g["current_player"] = starting_player if starting_player in ("R", "J") else "R"
     g["starting_player"] = g["current_player"]
+
     if g["ai_enabled"]:
         g["ai_player"] = "J" if g["current_player"] == "R" else "R"
+    else:
+        g["ai_player"] = None
 
+    # slots couleur ONLINE HUMAIN
     g["client_r"] = None
     g["client_j"] = None
 
@@ -394,6 +417,7 @@ def api_new():
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"
+    g["winning_line"] = None
 
     games[pid] = g
     try:
@@ -413,6 +437,7 @@ def api_play():
     game = get_game_state(game_id)
     if game_id is not None and game is None:
         return jsonify({"error": "Partie introuvable"}), 404
+
     try:
         register_client(game, client_id)
     except ValueError as e:
@@ -425,6 +450,23 @@ def api_play():
     if s["game_over"]:
         return jsonify(_export_state(s))
 
+    # ✅ ONLINE HUMAIN: attendre 2 joueurs
+    if s.get("mode") == "WEB" and s.get("type_partie") == "HUMAIN":
+        if len(s.get("client_ids", [])) < 2:
+            return jsonify({"error": "En attente d'un adversaire."}), 400
+
+    # ✅ ONLINE HUMAIN: bloquer si pas ton tour
+    if s.get("mode") == "WEB" and s.get("type_partie") == "HUMAIN" and client_id:
+        if s.get("client_r") == client_id and s["current_player"] == "J":
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+        if s.get("client_j") == client_id and s["current_player"] == "R":
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+
+        expected = s.get("client_r") if s["current_player"] == "R" else s.get("client_j")
+        if expected and client_id != expected:
+            return jsonify({"error": "Ce n'est pas ton tour."}), 400
+
+    # IA: bloquer si c'est au tour IA
     if s.get("ai_enabled", False) and s["current_player"] == s.get("ai_player"):
         return jsonify({"error": "C'est au tour de l'IA."}), 400
 
@@ -503,6 +545,7 @@ def api_hint():
         return jsonify({"error": "Aucun coup possible"}), 400
 
     return jsonify({"suggested_col": col})
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
