@@ -1,6 +1,8 @@
+# app.py
 import os
 import sys
 import time
+import ast
 from flask import Flask, render_template, jsonify, request
 
 import psycopg2
@@ -24,46 +26,52 @@ DIFF_TO_DEPTH = {"easy": 2, "medium": 4, "hard": 6}
 ai_engine = MinimaxAI(ROWS, COLS)
 
 # =======================
-# MULTI-GAME STORAGE
+# MULTI-GAME STORAGE (RAM)
 # =======================
 games = {}
 
 _default_state_template = {
     "id_partie": None,
-    "mode": "WEB",
-    "type_partie": "IA",
+    "mode": "WEB",          # "WEB" (online) or "LOCAL" (UI only)
+    "type_partie": "IA",    # "IA" or "HUMAIN"
     "status": "Aucune partie",
 
     "ai_enabled": True,
     "ai_depth": 4,
 
-    "board": None,
+    "board": None,            # filled per instance
     "current_player": "R",
     "game_over": False,
-    "starting_player": None,
-    "ai_player": "J",
+    "starting_player": None,  # "R" or "J"
+    "ai_player": "J",         # if IA
 
     "signature": "init",
     "last_situation_id": None,
+
     "winning_line": None,
 
+    # online: who joined (max 2)
     "client_ids": [],
+    # online human slots
+    "client_r": None,
+    "client_j": None,
 }
+
 
 def make_fresh_state():
     s = {k: (v.copy() if isinstance(v, (list, dict)) else v) for k, v in _default_state_template.items()}
     s["board"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]
     s["client_ids"] = []
+    s["client_r"] = None
+    s["client_j"] = None
     return s
 
-def get_game_state(game_id):
-    if game_id is None:
-        return state
-    return games.get(game_id)
 
 def register_client(game, client_id):
-    if not client_id:
+    """Register a new client for WEB games (max 2 clients). Assign slots R/J for HUMAN games."""
+    if not game or not client_id:
         return
+
     clients = game.setdefault("client_ids", [])
     if client_id in clients:
         return
@@ -71,14 +79,18 @@ def register_client(game, client_id):
         raise ValueError("Partie pleine")
     clients.append(client_id)
 
+    # assign colour slot for human-vs-human web games
     if game.get("mode") == "WEB" and game.get("type_partie") == "HUMAIN":
-        first = game.get("starting_player", "R")
+        first = (game.get("starting_player") or "R").upper()
         second = "J" if first == "R" else "R"
+
         if game.get(f"client_{first.lower()}") is None:
             game[f"client_{first.lower()}"] = client_id
         elif game.get(f"client_{second.lower()}") is None and client_id != game.get(f"client_{first.lower()}"):
             game[f"client_{second.lower()}"] = client_id
 
+
+# global fallback single game (legacy)
 state = make_fresh_state()
 state["mode"] = "WEB"
 
@@ -95,6 +107,7 @@ def get_conn():
         host=host, port=port, dbname=dbname, user=user, password=password,
         cursor_factory=RealDictCursor
     )
+
 
 def ensure_tables():
     ddl_partie = """
@@ -130,7 +143,9 @@ def ensure_tables():
             cur.execute(ddl_situation)
         conn.commit()
 
+
 ensure_tables()
+
 
 def q_one(sql, params=()):
     with get_conn() as conn:
@@ -138,15 +153,19 @@ def q_one(sql, params=()):
             cur.execute(sql, params)
             return cur.fetchone()
 
+
 def exec_sql(sql, params=()):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(sql, params)
             conn.commit()
 
+
 def board_to_text(board):
     return "\n".join("".join(str(x) if x == 0 else x for x in row) for row in board)
 
+
+# ---- partie
 def create_partie_db(type_partie):
     sig = f"init_{int(time.time() * 1000)}"
     row = q_one(
@@ -159,12 +178,16 @@ def create_partie_db(type_partie):
     )
     return int(row["id_partie"]), sig
 
+
 def update_partie_signature_db(id_partie, signature):
     try:
         exec_sql("UPDATE partie SET signature=%s WHERE id_partie=%s", (signature, id_partie))
     except psycopg2.errors.UniqueViolation:
+        # collisions (rare) due to UNIQUE signature, ignore
         pass
 
+
+# ---- situation
 def insert_situation_db(id_partie, numero_coup, plateau, joueur, precedent_id):
     row = q_one(
         """
@@ -176,38 +199,124 @@ def insert_situation_db(id_partie, numero_coup, plateau, joueur, precedent_id):
     )
     return int(row["id_situation"])
 
+
 def link_situations_db(prev_id, next_id):
     if prev_id is None:
         return
     exec_sql("UPDATE situation SET suivant=%s WHERE id_situation=%s", (next_id, prev_id))
     exec_sql("UPDATE situation SET precedent=%s WHERE id_situation=%s", (prev_id, next_id))
 
+
+# ---- finish
 def try_finish_partie_db(id_partie, winner, ligne=None):
     exec_sql("UPDATE partie SET status=%s WHERE id_partie=%s", ("TERMINEE", id_partie))
     exec_sql("UPDATE partie SET joueur_gagnant=%s WHERE id_partie=%s", (winner, id_partie))
     if ligne is not None:
         exec_sql("UPDATE partie SET ligne_gagnante=%s WHERE id_partie=%s", (ligne, id_partie))
 
+
 # =======================
-# Win check helper (pour hint / obvious move)
+# DB fallback (Render) : reconstruire une partie depuis signature
+# =======================
+def signature_to_board(signature: str, starting_player: str):
+    board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    sig = str(signature or "")
+    if sig.startswith("init_"):
+        sig = ""
+    moves = [int(ch) for ch in sig if ch.isdigit()]  # 1..9
+
+    player = starting_player if starting_player in ("R", "J") else "R"
+
+    for m in moves:
+        col = m - 1
+        # drop
+        for r in range(ROWS - 1, -1, -1):
+            if board[r][col] == 0:
+                board[r][col] = player
+                break
+        player = "J" if player == "R" else "R"
+
+    current_player = player
+    return board, current_player, len(moves)
+
+
+def load_game_from_db(game_id: int):
+    row = q_one(
+        """
+        SELECT id_partie, mode, type_partie, status, joueur_depart, signature, ligne_gagnante
+        FROM partie
+        WHERE id_partie = %s
+        """,
+        (game_id,),
+    )
+    if not row:
+        return None
+
+    g = make_fresh_state()
+    g["id_partie"] = int(row["id_partie"])
+    g["mode"] = "WEB"
+    g["type_partie"] = (row.get("type_partie") or "HUMAIN")
+    g["ai_enabled"] = (g["type_partie"] == "IA")
+    g["ai_depth"] = 4  # défaut; tu peux ajuster si tu stockes la diff en DB
+    g["status"] = (row.get("status") or "EN_COURS")
+    g["starting_player"] = (row.get("joueur_depart") or "R").upper()
+    g["signature"] = row.get("signature") or "init"
+
+    board, current_player, _ = signature_to_board(g["signature"], g["starting_player"])
+    g["board"] = board
+    g["current_player"] = current_player
+
+    if g["ai_enabled"]:
+        # ai_player = l'autre couleur que le joueur humain qui commence
+        # (même logique que ta création)
+        g["ai_player"] = "J" if g["starting_player"] == "R" else "R"
+    else:
+        g["ai_player"] = None
+
+    if g["status"] == "TERMINEE":
+        g["game_over"] = True
+        lg = row.get("ligne_gagnante")
+        if lg:
+            try:
+                g["winning_line"] = ast.literal_eval(lg)
+            except Exception:
+                g["winning_line"] = None
+
+    games[g["id_partie"]] = g
+    return g
+
+
+def get_game_state(game_id):
+    if game_id is None:
+        return state
+    g = games.get(game_id)
+    if g is not None:
+        return g
+    # ✅ fallback DB (important sur Render)
+    return load_game_from_db(game_id)
+
+
+# =======================
+# AI helpers (win/block + minimax)
 # =======================
 def check_win(board, r, c, player):
-    dirs = [(0,1),(1,0),(1,1),(1,-1)]
+    dirs = [(0, 1), (1, 0), (1, 1), (1, -1)]
     for dr, dc in dirs:
         count = 1
-        # forward
-        rr, cc = r+dr, c+dc
+        rr, cc = r + dr, c + dc
         while 0 <= rr < ROWS and 0 <= cc < COLS and board[rr][cc] == player:
             count += 1
-            rr += dr; cc += dc
-        # backward
-        rr, cc = r-dr, c-dc
+            rr += dr
+            cc += dc
+        rr, cc = r - dr, c - dc
         while 0 <= rr < ROWS and 0 <= cc < COLS and board[rr][cc] == player:
             count += 1
-            rr -= dr; cc -= dc
+            rr -= dr
+            cc -= dc
         if count >= 4:
             return True
     return False
+
 
 def immediate_win_or_block(board, player):
     opponent = "J" if player == "R" else "R"
@@ -216,7 +325,7 @@ def immediate_win_or_block(board, player):
     # 1) win now
     for col in valid:
         r = ai_engine.next_open_row(board, col)
-        if r is None: 
+        if r is None:
             continue
         board[r][col] = player
         ok = check_win(board, r, col, player)
@@ -237,15 +346,12 @@ def immediate_win_or_block(board, player):
 
     return None
 
-# =======================
-# AI move selection
-# =======================
+
 def best_ai_col(board, ai_player, depth):
     valid = ai_engine.valid_cols(board)
     if not valid:
         return None
 
-    # ✅ stratégie “coup évident d’abord”
     obvious = immediate_win_or_block(board, ai_player)
     if obvious is not None:
         return obvious
@@ -258,25 +364,25 @@ def best_ai_col(board, ai_player, depth):
         if r is None:
             continue
         board[r][col] = ai_player
-        score = ai_engine.minimax(board, depth-1, -10**18, 10**18, False, ai_player)
+        score = ai_engine.minimax(board, depth - 1, -10**18, 10**18, False, ai_player)
         board[r][col] = 0
-
         if score > best_score:
             best_score = score
             best_col = col
 
     return best_col
 
+
 # =======================
 # Game logic
 # =======================
 def find_winning_line(r, c, s):
-    directions = [(0,1), (1,0), (1,1), (1,-1)]
+    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
     player = s["board"][r][c]
     for dr, dc in directions:
         coords = []
         for i in range(-3, 4):
-            nr, nc = r + dr*i, c + dc*i
+            nr, nc = r + dr * i, c + dc * i
             if 0 <= nr < ROWS and 0 <= nc < COLS and s["board"][nr][nc] == player:
                 coords.append((nr, nc))
                 if len(coords) == 4:
@@ -284,6 +390,7 @@ def find_winning_line(r, c, s):
             else:
                 coords = []
     return None
+
 
 def apply_move(col, s):
     if col is None or not isinstance(col, int) or not (0 <= col < COLS):
@@ -315,11 +422,13 @@ def apply_move(col, s):
     line = find_winning_line(placed_row, col, s)
     return placed_row, line, joueur
 
+
 def finalize_win(winner, line, s):
     s["game_over"] = True
     s["status"] = "TERMINEE"
     s["winning_line"] = [[r, c] for (r, c) in line]
     try_finish_partie_db(s["id_partie"], winner, ligne=str(s["winning_line"]))
+
 
 # =======================
 # Routes
@@ -328,6 +437,7 @@ def finalize_win(winner, line, s):
 def home():
     return render_template("index.html")
 
+
 def _export_state(game):
     if game is None:
         return None
@@ -335,6 +445,7 @@ def _export_state(game):
     clients = g.pop("client_ids", [])
     g["player_count"] = len(clients)
     return g
+
 
 @app.get("/api/state")
 def api_state():
@@ -352,6 +463,7 @@ def api_state():
 
     return jsonify(_export_state(game))
 
+
 @app.post("/api/new")
 def api_new():
     data = request.json or {}
@@ -361,7 +473,7 @@ def api_new():
     diff = str(data.get("difficulty") or "medium").lower()
     starting_player = str(data.get("starting_player") or "R").upper()
 
-    # ONLINE: starting player random (comme avant)
+    # ONLINE: random start
     if mode == "ONLINE":
         import random
         starting_player = random.choice(["R", "J"])
@@ -379,7 +491,7 @@ def api_new():
         g["winning_line"] = None
         return jsonify(g)
 
-    # ✅ ONLINE matchmaking: rejoindre une partie humaine en attente
+    # ✅ ONLINE matchmaking: join existing waiting human game
     if mode == "ONLINE" and not data.get("game_id"):
         for existing in games.values():
             if (
@@ -392,9 +504,9 @@ def api_new():
                     register_client(existing, client_id)
                     return jsonify(_export_state(existing))
                 except ValueError:
-                    pass  # partie pleine -> continue
+                    pass
 
-    # Sinon: créer une nouvelle partie WEB
+    # Otherwise create a new WEB game
     g = make_fresh_state()
     g["mode"] = "WEB"
     g["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
@@ -409,10 +521,6 @@ def api_new():
     else:
         g["ai_player"] = None
 
-    # slots couleur ONLINE HUMAIN
-    g["client_r"] = None
-    g["client_j"] = None
-
     pid, sig = create_partie_db(g["type_partie"])
     g["id_partie"] = pid
     g["signature"] = sig
@@ -420,12 +528,14 @@ def api_new():
     g["winning_line"] = None
 
     games[pid] = g
+
     try:
         register_client(g, client_id)
     except ValueError:
         pass
 
     return jsonify(_export_state(g))
+
 
 @app.post("/api/play")
 def api_play():
@@ -445,17 +555,12 @@ def api_play():
 
     s = game or state
 
-    if s["id_partie"] is None and s.get("mode") != "LOCAL":
-        return jsonify({"error": "Aucune partie. Clique sur 'Nouvelle partie'."}), 400
-    if s["game_over"]:
-        return jsonify(_export_state(s))
-
-    # ✅ ONLINE HUMAIN: attendre 2 joueurs
+    # block moves until opponent joined
     if s.get("mode") == "WEB" and s.get("type_partie") == "HUMAIN":
         if len(s.get("client_ids", [])) < 2:
             return jsonify({"error": "En attente d'un adversaire."}), 400
 
-    # ✅ ONLINE HUMAIN: bloquer si pas ton tour
+    # enforce turn ownership (human online)
     if s.get("mode") == "WEB" and s.get("type_partie") == "HUMAIN" and client_id:
         if s.get("client_r") == client_id and s["current_player"] == "J":
             return jsonify({"error": "Ce n'est pas ton tour."}), 400
@@ -466,7 +571,12 @@ def api_play():
         if expected and client_id != expected:
             return jsonify({"error": "Ce n'est pas ton tour."}), 400
 
-    # IA: bloquer si c'est au tour IA
+    if s["id_partie"] is None and s.get("mode") != "LOCAL":
+        return jsonify({"error": "Aucune partie. Clique sur 'Nouvelle partie'."}), 400
+    if s["game_over"]:
+        return jsonify(_export_state(s))
+
+    # IA turn lock
     if s.get("ai_enabled", False) and s["current_player"] == s.get("ai_player"):
         return jsonify({"error": "C'est au tour de l'IA."}), 400
 
@@ -482,6 +592,7 @@ def api_play():
     s["current_player"] = "J" if s["current_player"] == "R" else "R"
     return jsonify(_export_state(s))
 
+
 @app.post("/api/ai_move")
 def api_ai_move():
     data = request.json or {}
@@ -491,6 +602,7 @@ def api_ai_move():
     game = get_game_state(game_id)
     if game_id is not None and game is None:
         return jsonify({"error": "Partie introuvable"}), 404
+
     try:
         register_client(game, client_id)
     except ValueError as e:
@@ -509,6 +621,7 @@ def api_ai_move():
 
     depth = int(s.get("ai_depth", 4))
     ai_player = s.get("ai_player")
+
     ai_col = best_ai_col(s["board"], ai_player, depth=depth)
     if ai_col is None:
         return jsonify({"error": "Aucun coup IA possible"}), 400
@@ -522,7 +635,7 @@ def api_ai_move():
     s["current_player"] = "R" if s["current_player"] == "J" else "J"
     return jsonify(_export_state(s))
 
-# ✅ NOUVEAU : suggestion IA sans jouer
+
 @app.post("/api/hint")
 def api_hint():
     data = request.json or {}
@@ -549,4 +662,5 @@ def api_hint():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    # ✅ important pour accès réseau (Render/phone)
     app.run(host="0.0.0.0", port=port, debug=False)
