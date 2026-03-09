@@ -34,6 +34,11 @@
         </div>
 
         <div class="stat">
+          <div class="label">Votre rôle</div>
+          <div class="value" id="yourRole">-</div>
+        </div>
+
+        <div class="stat">
           <div class="label">Difficulté IA</div>
           <select id="diffSelect" class="select">
             <option value="easy">Facile</option>
@@ -42,30 +47,18 @@
           </select>
         </div>
 
-        <div class="sideCard">
-          <div class="sideTitle">Paramètres joueur</div>
-
-          <div class="stat">
-            <div class="label">Nom rouge</div>
-            <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
-          </div>
-
-          <div class="stat">
-            <div class="label">Nom jaune</div>
-            <input id="playerNameJ" type="text" placeholder="Joueur jaune / IA" class="input" />
-          </div>
-
-          <div class="stat">
-            <div class="label">Qui commence ?</div>
-            <select id="colorSelect" class="select">
-              <option value="R" selected>Rouge commence</option>
-              <option value="J">Jaune commence</option>
-            </select>
-          </div>
+        <div class="stat">
+          <div class="label">Mode affiché</div>
+          <div class="value"><span class="pill" id="turnPill">-</span></div>
         </div>
 
-        <button id="btnNew" class="btn primary full">Nouvelle partie</button>
-        <button id="btnHint" class="btn full">IA jouerait (suggestion)</button>
+        <div class="stat">
+          <div class="label">Statut</div>
+          <div class="value" id="statusTxt">-</div>
+        </div>
+
+        <button id="btnNew" class="btn primary full" type="button">Nouvelle partie</button>
+        <button id="btnHint" class="btn full" type="button">IA jouerait (suggestion)</button>
 
         <div class="stat">
           <div class="label">Lien de la partie</div>
@@ -74,12 +67,35 @@
             <button id="btnCopyLink" class="btn small" type="button">Copier</button>
           </div>
         </div>
+
+        <div class="hint" id="hint">Clique sur une colonne 👇</div>
+      </div>
+
+      <div class="sideCard">
+        <div class="sideTitle">Paramètres joueur</div>
+
+        <div class="stat">
+          <div class="label">Nom rouge</div>
+          <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
+        </div>
+
+        <div class="stat">
+          <div class="label">Nom jaune</div>
+          <input id="playerNameJ" type="text" placeholder="Joueur jaune / IA" class="input" />
+        </div>
+
+        <div class="stat">
+          <div class="label">Qui commence ?</div>
+          <select id="colorSelect" class="select">
+            <option value="R" selected>Rouge commence</option>
+            <option value="J">Jaune commence</option>
+          </select>
+        </div>
       </div>
     </aside>
 
     <!-- CENTRE -->
     <section class="content">
-      <!-- ✅ Bandeau sticky pour mobile -->
       <div class="statusBar">
         <div id="turnInfo" class="statusLine">Chargement…</div>
         <div id="aiThinking" class="statusLine thinking" hidden>🤖 IA réfléchit…</div>
@@ -104,7 +120,6 @@
         <div id="history" class="historyLog"></div>
       </div>
     </aside>
-
   </main>
 
   <script src="/static/app.js"></script>

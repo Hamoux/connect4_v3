@@ -694,6 +694,24 @@
         "documentation": {}
     },
     {
+        "label": "uuid",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "uuid",
+        "description": "uuid",
+        "detail": "uuid",
+        "documentation": {}
+    },
+    {
+        "label": "ast",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "ast",
+        "description": "ast",
+        "detail": "ast",
+        "documentation": {}
+    },
+    {
         "label": "Flask",
         "importPath": "flask",
         "description": "flask",
@@ -1620,11 +1638,29 @@
         "documentation": {}
     },
     {
+        "label": "make_empty_state",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def make_empty_state():\n    \"\"\"Etat vide renvoyé quand aucune partie serveur n'est ciblée.\"\"\"\n    return {\n        \"id_partie\": None,\n        \"mode\": \"LOCAL\",\n        \"type_partie\": \"HUMAIN\",\n        \"status\": \"Aucune partie\",\n        \"ai_enabled\": False,\n        \"ai_depth\": 0,\n        \"board\": [[0 for _ in range(COLS)] for _ in range(ROWS)],",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
         "label": "make_fresh_state",
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def make_fresh_state():\n    s = {k: (v.copy() if isinstance(v, (list, dict)) else v) for k, v in _default_state_template.items()}\n    s[\"board\"] = [[0 for _ in range(COLS)] for _ in range(ROWS)]\n    s[\"client_ids\"] = []\n    return s\ndef get_game_state(game_id):\n    if game_id is None:\n        return state\n    return games.get(game_id)\ndef register_client(game, client_id):",
+        "peekOfCode": "def make_fresh_state():\n    \"\"\"Nouvel état de partie côté serveur.\"\"\"\n    return {\n        \"id_partie\": None,\n        \"mode\": \"WEB\",              # WEB pour serveur\n        \"type_partie\": \"IA\",        # IA ou HUMAIN\n        \"status\": \"Aucune partie\",\n        \"ai_enabled\": True,\n        \"ai_depth\": 4,\n        \"board\": [[0 for _ in range(COLS)] for _ in range(ROWS)],",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "normalize_game_id",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def normalize_game_id(game_id):\n    if game_id is None:\n        return None\n    try:\n        return int(game_id)\n    except (TypeError, ValueError):\n        return None\ndef get_game_state(game_id):\n    game_id = normalize_game_id(game_id)\n    if game_id is None:",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1633,7 +1669,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def get_game_state(game_id):\n    if game_id is None:\n        return state\n    return games.get(game_id)\ndef register_client(game, client_id):\n    if not client_id:\n        return\n    clients = game.setdefault(\"client_ids\", [])\n    if client_id in clients:\n        return",
+        "peekOfCode": "def get_game_state(game_id):\n    game_id = normalize_game_id(game_id)\n    if game_id is None:\n        return None\n    game = games.get(game_id)\n    if game is not None:\n        return game\n    # fallback DB\n    game = load_game_from_db(game_id)\n    if game is not None:",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1642,7 +1678,16 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def register_client(game, client_id):\n    if not client_id:\n        return\n    clients = game.setdefault(\"client_ids\", [])\n    if client_id in clients:\n        return\n    if len(clients) >= 2:\n        raise ValueError(\"Partie pleine\")\n    clients.append(client_id)\n    if game.get(\"mode\") == \"WEB\" and game.get(\"type_partie\") == \"HUMAIN\":",
+        "peekOfCode": "def register_client(game, client_id):\n    \"\"\"\n    Enregistre un navigateur dans une partie WEB/HUMAIN.\n    - max 2 clients joueurs\n    - attribue client_r / client_j selon starting_player\n    \"\"\"\n    if game is None or not client_id:\n        return\n    if game.get(\"mode\") != \"WEB\" or game.get(\"type_partie\") != \"HUMAIN\":\n        return",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "export_state",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def export_state(game):\n    if game is None:\n        return make_empty_state()\n    g = dict(game)\n    clients = list(g.pop(\"client_ids\", []))\n    g[\"player_count\"] = len(clients)\n    return g\n# =======================\n# DB HELPERS\n# =======================",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1651,7 +1696,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host, port=port, dbname=dbname, user=user, password=password,\n        cursor_factory=RealDictCursor\n    )",
+        "peekOfCode": "def get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")\n    return psycopg2.connect(\n        host=host,\n        port=port,\n        dbname=dbname,",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1678,7 +1723,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def exec_sql(sql, params=()):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params)\n            conn.commit()\ndef board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(",
+        "peekOfCode": "def exec_sql(sql, params=()):\n    with get_conn() as conn:\n        with conn.cursor() as cur:\n            cur.execute(sql, params)\n            conn.commit()\ndef board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef text_to_board(plateau_text):\n    if not plateau_text:\n        return [[0 for _ in range(COLS)] for _ in range(ROWS)]",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1687,7 +1732,25 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(\n        \"\"\"\n        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)\n        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)\n        RETURNING id_partie\n        \"\"\",",
+        "peekOfCode": "def board_to_text(board):\n    return \"\\n\".join(\"\".join(str(x) if x == 0 else x for x in row) for row in board)\ndef text_to_board(plateau_text):\n    if not plateau_text:\n        return [[0 for _ in range(COLS)] for _ in range(ROWS)]\n    lines = plateau_text.strip().splitlines()\n    board = []\n    for line in lines:\n        row = []\n        for ch in line.strip():",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "text_to_board",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def text_to_board(plateau_text):\n    if not plateau_text:\n        return [[0 for _ in range(COLS)] for _ in range(ROWS)]\n    lines = plateau_text.strip().splitlines()\n    board = []\n    for line in lines:\n        row = []\n        for ch in line.strip():\n            if ch == \"0\":\n                row.append(0)",
+        "detail": "Webapp.app",
+        "documentation": {}
+    },
+    {
+        "label": "load_game_from_db",
+        "kind": 2,
+        "importPath": "Webapp.app",
+        "description": "Webapp.app",
+        "peekOfCode": "def load_game_from_db(game_id):\n    partie = q_one(\n        \"SELECT * FROM partie WHERE id_partie=%s\",\n        (game_id,)\n    )\n    if not partie:\n        return None\n    g = make_fresh_state()\n    g[\"id_partie\"] = int(partie[\"id_partie\"])\n    g[\"mode\"] = \"WEB\"",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1696,7 +1759,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def create_partie_db(type_partie):\n    sig = f\"init_{int(time.time() * 1000)}\"\n    row = q_one(\n        \"\"\"\n        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)\n        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)\n        RETURNING id_partie\n        \"\"\",\n        (\"WEB\", type_partie, \"EN_COURS\", \"R\", sig, ROWS, COLS, COLS, CONFIANCE_WEB),\n    )",
+        "peekOfCode": "def create_partie_db(type_partie, joueur_depart):\n    sig = f\"init_{uuid.uuid4().hex[:12]}_{int(time.time() * 1000)}\"\n    row = q_one(\n        \"\"\"\n        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)\n        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)\n        RETURNING id_partie\n        \"\"\",\n        (\"WEB\", type_partie, \"EN_COURS\", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),\n    )",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1732,7 +1795,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def try_finish_partie_db(id_partie, winner, ligne=None):\n    exec_sql(\"UPDATE partie SET status=%s WHERE id_partie=%s\", (\"TERMINEE\", id_partie))\n    exec_sql(\"UPDATE partie SET joueur_gagnant=%s WHERE id_partie=%s\", (winner, id_partie))\n    if ligne is not None:\n        exec_sql(\"UPDATE partie SET ligne_gagnante=%s WHERE id_partie=%s\", (ligne, id_partie))\n# =======================\n# Win check helper (pour hint / obvious move)\n# =======================\ndef check_win(board, r, c, player):\n    dirs = [(0,1),(1,0),(1,1),(1,-1)]",
+        "peekOfCode": "def try_finish_partie_db(id_partie, winner, ligne=None):\n    exec_sql(\"UPDATE partie SET status=%s WHERE id_partie=%s\", (\"TERMINEE\", id_partie))\n    exec_sql(\"UPDATE partie SET joueur_gagnant=%s WHERE id_partie=%s\", (winner, id_partie))\n    if ligne is not None:\n        exec_sql(\"UPDATE partie SET ligne_gagnante=%s WHERE id_partie=%s\", (ligne, id_partie))\n# =======================\n# GAME LOGIC\n# =======================\ndef check_win(board, r, c, player):\n    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1741,7 +1804,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def check_win(board, r, c, player):\n    dirs = [(0,1),(1,0),(1,1),(1,-1)]\n    for dr, dc in dirs:\n        count = 1\n        # forward\n        rr, cc = r+dr, c+dc\n        while 0 <= rr < ROWS and 0 <= cc < COLS and board[rr][cc] == player:\n            count += 1\n            rr += dr; cc += dc\n        # backward",
+        "peekOfCode": "def check_win(board, r, c, player):\n    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]\n    for dr, dc in directions:\n        count = 1\n        rr, cc = r + dr, c + dc\n        while 0 <= rr < ROWS and 0 <= cc < COLS and board[rr][cc] == player:\n            count += 1\n            rr += dr\n            cc += dc\n        rr, cc = r - dr, c - dc",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1750,7 +1813,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def immediate_win_or_block(board, player):\n    opponent = \"J\" if player == \"R\" else \"R\"\n    valid = ai_engine.valid_cols(board)\n    # 1) win now\n    for col in valid:\n        r = ai_engine.next_open_row(board, col)\n        if r is None: \n            continue\n        board[r][col] = player\n        ok = check_win(board, r, col, player)",
+        "peekOfCode": "def immediate_win_or_block(board, player):\n    opponent = \"J\" if player == \"R\" else \"R\"\n    valid = ai_engine.valid_cols(board)\n    # gagner immédiatement\n    for col in valid:\n        r = ai_engine.next_open_row(board, col)\n        if r is None:\n            continue\n        board[r][col] = player\n        ok = check_win(board, r, col, player)",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1759,7 +1822,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def best_ai_col(board, ai_player, depth):\n    valid = ai_engine.valid_cols(board)\n    if not valid:\n        return None\n    # ✅ stratégie “coup évident d’abord”\n    obvious = immediate_win_or_block(board, ai_player)\n    if obvious is not None:\n        return obvious\n    best_score = -10**18\n    best_col = valid[0]",
+        "peekOfCode": "def best_ai_col(board, ai_player, depth):\n    valid = ai_engine.valid_cols(board)\n    if not valid:\n        return None\n    obvious = immediate_win_or_block(board, ai_player)\n    if obvious is not None:\n        return obvious\n    best_score = -10**18\n    best_col = valid[0]\n    for col in ai_engine.ordered_valid_cols(board, ai_player, maximizing=True):",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1768,7 +1831,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def find_winning_line(r, c, s):\n    directions = [(0,1), (1,0), (1,1), (1,-1)]\n    player = s[\"board\"][r][c]\n    for dr, dc in directions:\n        coords = []\n        for i in range(-3, 4):\n            nr, nc = r + dr*i, c + dc*i\n            if 0 <= nr < ROWS and 0 <= nc < COLS and s[\"board\"][nr][nc] == player:\n                coords.append((nr, nc))\n                if len(coords) == 4:",
+        "peekOfCode": "def find_winning_line(r, c, s):\n    directions = [(0, 1), (1, 0), (1, 1), (1, -1)]\n    player = s[\"board\"][r][c]\n    for dr, dc in directions:\n        coords = []\n        for i in range(-3, 4):\n            nr = r + dr * i\n            nc = c + dc * i\n            if 0 <= nr < ROWS and 0 <= nc < COLS and s[\"board\"][nr][nc] == player:\n                coords.append((nr, nc))",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1777,7 +1840,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def apply_move(col, s):\n    if col is None or not isinstance(col, int) or not (0 <= col < COLS):\n        raise ValueError(\"col invalide\")\n    placed_row = None\n    for r in range(ROWS - 1, -1, -1):\n        if s[\"board\"][r][col] == 0:\n            s[\"board\"][r][col] = s[\"current_player\"]\n            placed_row = r\n            break\n    if placed_row is None:",
+        "peekOfCode": "def apply_move(col, s):\n    if col is None or not isinstance(col, int) or not (0 <= col < COLS):\n        raise ValueError(\"Colonne invalide\")\n    placed_row = None\n    for r in range(ROWS - 1, -1, -1):\n        if s[\"board\"][r][col] == 0:\n            s[\"board\"][r][col] = s[\"current_player\"]\n            placed_row = r\n            break\n    if placed_row is None:",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1786,7 +1849,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def finalize_win(winner, line, s):\n    s[\"game_over\"] = True\n    s[\"status\"] = \"TERMINEE\"\n    s[\"winning_line\"] = [[r, c] for (r, c) in line]\n    try_finish_partie_db(s[\"id_partie\"], winner, ligne=str(s[\"winning_line\"]))\n# =======================\n# Routes\n# =======================\n@app.get(\"/\")\ndef home():",
+        "peekOfCode": "def finalize_win(winner, line, s):\n    s[\"game_over\"] = True\n    s[\"status\"] = \"TERMINEE\"\n    s[\"winning_line\"] = [[r, c] for (r, c) in line]\n    try_finish_partie_db(\n        s[\"id_partie\"],\n        winner,\n        ligne=str(s[\"winning_line\"])\n    )\n# =======================",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1795,7 +1858,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def home():\n    return render_template(\"index.html\")\ndef _export_state(game):\n    if game is None:\n        return None\n    g = dict(game)\n    clients = g.pop(\"client_ids\", [])\n    g[\"player_count\"] = len(clients)\n    return g\n@app.get(\"/api/state\")",
+        "peekOfCode": "def home():\n    return render_template(\"index.html\")\n@app.get(\"/api/state\")\ndef api_state():\n    game_id = request.args.get(\"game_id\", type=int)\n    client_id = request.args.get(\"client_id\")\n    if game_id is None:\n        return jsonify(make_empty_state())\n    game = get_game_state(game_id)\n    if game is None:",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1804,7 +1867,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def api_state():\n    game_id = request.args.get(\"game_id\", type=int)\n    client_id = request.args.get(\"client_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)\n    except ValueError as e:\n        return jsonify({\"error\": str(e)}), 400",
+        "peekOfCode": "def api_state():\n    game_id = request.args.get(\"game_id\", type=int)\n    client_id = request.args.get(\"client_id\")\n    if game_id is None:\n        return jsonify(make_empty_state())\n    game = get_game_state(game_id)\n    if game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1813,7 +1876,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def api_new():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    mode = str(data.get(\"mode\") or \"IA\").upper()      # IA / LOCAL / ONLINE\n    diff = str(data.get(\"difficulty\") or \"medium\").lower()\n    starting_player = str(data.get(\"starting_player\") or \"R\").upper()\n    if mode == \"ONLINE\":\n        import random\n        starting_player = random.choice([\"R\", \"J\"])\n    if mode == \"LOCAL\":",
+        "peekOfCode": "def api_new():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    mode = str(data.get(\"mode\") or \"IA\").upper()           # IA / LOCAL / ONLINE\n    diff = str(data.get(\"difficulty\") or \"medium\").lower()\n    starting_player = str(data.get(\"starting_player\") or \"R\").upper()\n    if mode == \"ONLINE\":\n        import random\n        starting_player = random.choice([\"R\", \"J\"])\n    if mode == \"LOCAL\":",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1822,7 +1885,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def api_play():\n    data = request.json or {}\n    col = data.get(\"col\", None)\n    client_id = data.get(\"client_id\")\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)",
+        "peekOfCode": "def api_play():\n    data = request.json or {}\n    col = data.get(\"col\")\n    client_id = data.get(\"client_id\")\n    game_id = normalize_game_id(data.get(\"game_id\"))\n    game = get_game_state(game_id)\n    if game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1831,7 +1894,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def api_ai_move():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    try:\n        register_client(game, client_id)\n    except ValueError as e:",
+        "peekOfCode": "def api_ai_move():\n    data = request.json or {}\n    client_id = data.get(\"client_id\")\n    game_id = normalize_game_id(data.get(\"game_id\"))\n    game = get_game_state(game_id)\n    if game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    # inutile pour IA, mais on le tolère\n    _ = client_id\n    s = game",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1840,7 +1903,7 @@
         "kind": 2,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "def api_hint():\n    data = request.json or {}\n    game_id = data.get(\"game_id\")\n    game = get_game_state(game_id)\n    if game_id is not None and game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    s = game or state\n    if s.get(\"game_over\"):\n        return jsonify({\"error\": \"Partie terminée\"}), 400\n    depth = int(s.get(\"ai_depth\", 4))",
+        "peekOfCode": "def api_hint():\n    data = request.json or {}\n    game_id = normalize_game_id(data.get(\"game_id\"))\n    game = get_game_state(game_id)\n    if game is None:\n        return jsonify({\"error\": \"Partie introuvable\"}), 404\n    s = game\n    if s.get(\"game_over\"):\n        return jsonify({\"error\": \"Partie terminée\"}), 400\n    depth = int(s.get(\"ai_depth\", 4))",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1849,7 +1912,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "app = Flask(__name__)\n# =======================\n# CONFIG\n# =======================\nROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================",
+        "peekOfCode": "app = Flask(__name__)\n# =======================\n# CONFIG\n# =======================\nROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\n    \"easy\": 2,\n    \"medium\": 4,",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1858,7 +1921,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {",
+        "peekOfCode": "ROWS = 9\nCOLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\n    \"easy\": 2,\n    \"medium\": 4,\n    \"hard\": 6\n}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1867,7 +1930,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "COLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,",
+        "peekOfCode": "COLS = 9\nCONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\n    \"easy\": 2,\n    \"medium\": 4,\n    \"hard\": 6\n}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1876,7 +1939,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "CONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",",
+        "peekOfCode": "CONFIANCE_WEB = 2\nDIFF_TO_DEPTH = {\n    \"easy\": 2,\n    \"medium\": 4,\n    \"hard\": 6\n}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1885,7 +1948,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "DIFF_TO_DEPTH = {\"easy\": 2, \"medium\": 4, \"hard\": 6}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",",
+        "peekOfCode": "DIFF_TO_DEPTH = {\n    \"easy\": 2,\n    \"medium\": 4,\n    \"hard\": 6\n}\nai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1894,7 +1957,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "ai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",",
+        "peekOfCode": "ai_engine = MinimaxAI(ROWS, COLS)\n# =======================\n# MULTI-GAME STORAGE\n# =======================\ngames = {}\ndef make_empty_state():\n    \"\"\"Etat vide renvoyé quand aucune partie serveur n'est ciblée.\"\"\"\n    return {\n        \"id_partie\": None,\n        \"mode\": \"LOCAL\",",
         "detail": "Webapp.app",
         "documentation": {}
     },
@@ -1903,34 +1966,7 @@
         "kind": 5,
         "importPath": "Webapp.app",
         "description": "Webapp.app",
-        "peekOfCode": "games = {}\n_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",\n    \"ai_enabled\": True,\n    \"ai_depth\": 4,\n    \"board\": None,\n    \"current_player\": \"R\",",
-        "detail": "Webapp.app",
-        "documentation": {}
-    },
-    {
-        "label": "_default_state_template",
-        "kind": 5,
-        "importPath": "Webapp.app",
-        "description": "Webapp.app",
-        "peekOfCode": "_default_state_template = {\n    \"id_partie\": None,\n    \"mode\": \"WEB\",\n    \"type_partie\": \"IA\",\n    \"status\": \"Aucune partie\",\n    \"ai_enabled\": True,\n    \"ai_depth\": 4,\n    \"board\": None,\n    \"current_player\": \"R\",\n    \"game_over\": False,",
-        "detail": "Webapp.app",
-        "documentation": {}
-    },
-    {
-        "label": "state",
-        "kind": 5,
-        "importPath": "Webapp.app",
-        "description": "Webapp.app",
-        "peekOfCode": "state = make_fresh_state()\nstate[\"mode\"] = \"WEB\"\n# =======================\n# DB helpers\n# =======================\ndef get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")",
-        "detail": "Webapp.app",
-        "documentation": {}
-    },
-    {
-        "label": "state[\"mode\"]",
-        "kind": 5,
-        "importPath": "Webapp.app",
-        "description": "Webapp.app",
-        "peekOfCode": "state[\"mode\"] = \"WEB\"\n# =======================\n# DB helpers\n# =======================\ndef get_conn():\n    host = os.getenv(\"PGHOST\", \"localhost\")\n    port = int(os.getenv(\"PGPORT\", \"5432\"))\n    dbname = os.getenv(\"PGDATABASE\", \"Connect4DB\")\n    user = os.getenv(\"PGUSER\", \"postgres\")\n    password = os.getenv(\"PGPASSWORD\", \"Celina123\")",
+        "peekOfCode": "games = {}\ndef make_empty_state():\n    \"\"\"Etat vide renvoyé quand aucune partie serveur n'est ciblée.\"\"\"\n    return {\n        \"id_partie\": None,\n        \"mode\": \"LOCAL\",\n        \"type_partie\": \"HUMAIN\",\n        \"status\": \"Aucune partie\",\n        \"ai_enabled\": False,\n        \"ai_depth\": 0,",
         "detail": "Webapp.app",
         "documentation": {}
     },
