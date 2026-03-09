@@ -55,6 +55,9 @@ def make_empty_state():
         "player_count": 0,
         "client_r": None,
         "client_j": None,
+        
+        "player_r_name": "Joueur Rouge",
+        "player_j_name": "Joueur Jaune",
     }
 
 
@@ -82,6 +85,9 @@ def make_fresh_state():
         "client_ids": [],
         "client_r": None,
         "client_j": None,
+        
+        "player_r_name": "Joueur Rouge",
+        "player_j_name": "Joueur Jaune",
     }
 
 def normalize_game_id(game_id):
@@ -573,10 +579,17 @@ def api_new():
     diff = str(data.get("difficulty") or "medium").lower()
     starting_player = str(data.get("starting_player") or "R").upper()
 
+    # nouveaux noms envoyés par le front
+    player_r_name = str(data.get("player_r_name") or "Joueur Rouge").strip()
+    player_j_name = str(data.get("player_j_name") or "Joueur Jaune").strip()
+
     if mode == "ONLINE":
         import random
         starting_player = random.choice(["R", "J"])
 
+    # -------------------------
+    # MODE LOCAL
+    # -------------------------
     if mode == "LOCAL":
         g = make_empty_state()
         g["mode"] = "LOCAL"
@@ -584,22 +597,43 @@ def api_new():
         g["status"] = "EN_COURS"
         g["current_player"] = starting_player if starting_player in ("R", "J") else "R"
         g["starting_player"] = g["current_player"]
+
+        g["player_r_name"] = player_r_name or "Joueur Rouge"
+        g["player_j_name"] = player_j_name or "Joueur Jaune"
+
         return jsonify(g)
 
+    # -------------------------
+    # MODE SERVEUR
+    # -------------------------
     g = make_fresh_state()
+
     g["mode"] = "WEB"
     g["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
+
     g["ai_enabled"] = (mode == "IA")
     g["ai_depth"] = DIFF_TO_DEPTH.get(diff, 4)
+
     g["current_player"] = starting_player if starting_player in ("R", "J") else "R"
     g["starting_player"] = g["current_player"]
 
+    # stockage des noms
+    g["player_r_name"] = player_r_name or "Joueur Rouge"
+    g["player_j_name"] = player_j_name or "Joueur Jaune"
+
+    # gestion IA
     if g["ai_enabled"]:
         g["ai_player"] = "J" if g["current_player"] == "R" else "R"
+
+        if g["ai_player"] == "R":
+            g["player_r_name"] = "IA"
+        else:
+            g["player_j_name"] = "IA"
     else:
         g["ai_player"] = None
 
     pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
+
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"

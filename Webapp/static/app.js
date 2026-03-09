@@ -51,8 +51,8 @@ function escapeHtml(s) {
 }
 
 function nameFor(letter) {
-  if (letter === "R") return PLAYER_R_NAME;
-  if (letter === "J") return PLAYER_J_NAME;
+  if (letter === "R") return lastState?.player_r_name || PLAYER_R_NAME || "Joueur Rouge";
+  if (letter === "J") return lastState?.player_j_name || PLAYER_J_NAME || "Joueur Jaune";
   return "?";
 }
 
@@ -203,7 +203,9 @@ async function newGame() {
     mode,
     difficulty,
     starting_player,
-    client_id: CLIENT_ID
+    client_id: CLIENT_ID,
+    player_r_name: PLAYER_R_NAME,
+    player_j_name: PLAYER_J_NAME
   };
 
   const res = await fetch("/api/new", {
