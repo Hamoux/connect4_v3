@@ -3,125 +3,154 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Connect4 Web</title>
+  <title>Puissance 4</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
+  <div id="confirmOverlay" class="modal-overlay" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div class="modal-card">
+      <p class="modal-title" id="confirmModalTitle">Confirmation</p>
+      <p class="modal-text" id="confirmModalText"></p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="confirmModalYes">Oui</button>
+        <button type="button" class="btn" id="confirmModalNo">Annuler</button>
+      </div>
+    </div>
+  </div>
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">C4</div>
-      <div>
-        <div class="title">Connect4 Web</div>
-        <div class="subtitle">Celina & Hamou</div>
+  <div id="pauseOverlay" class="pause-overlay" hidden aria-hidden="true">
+    <div class="pause-card">
+      <p class="pause-title">Partie en pause</p>
+      <p class="pause-desc">Les interactions sont désactivées. Reprends quand tu es prêt.</p>
+      <button type="button" class="btn btn-primary" id="btnResume">Reprendre</button>
+    </div>
+  </div>
+
+  <header class="site-header">
+    <div class="site-header__inner">
+      <div class="brand">
+        <span class="brand__mark" aria-hidden="true">4</span>
+        <div>
+          <h1 class="brand__title">Puissance 4</h1>
+          <p class="brand__subtitle">Celina &amp; Hamou</p>
+        </div>
+      </div>
+      <div class="header-status" id="headerStatus" role="status">
+        <span class="header-status__dot" id="statusDot"></span>
+        <span id="headerStatusText">Chargement…</span>
       </div>
     </div>
   </header>
 
-  <main class="layout">
-    <!-- GAUCHE -->
-    <aside class="sidebar">
-      <div class="sideCard">
-        <div class="sideTitle">Infos partie</div>
+  <main class="app">
+    <section class="panel panel--controls" aria-label="Paramètres et contrôle">
+      <h2 class="panel__title">Partie</h2>
 
-        <div class="stat">
-          <div class="label">Mode de jeu</div>
-          <select id="modeSelect" class="select">
-            <option value="LOCAL">J vs J (locale)</option>
-            <option value="ONLINE">J vs J (en ligne)</option>
-            <option value="IA" selected>J vs IA</option>
-          </select>
-        </div>
-
-        <div class="stat">
-          <div class="label">Votre rôle</div>
-          <div class="value" id="yourRole">-</div>
-        </div>
-
-        <div class="stat">
-          <div class="label">Difficulté IA</div>
-          <select id="diffSelect" class="select">
-            <option value="easy">Facile</option>
-            <option value="medium" selected>Moyen</option>
-            <option value="hard">Difficile</option>
-          </select>
-        </div>
-
-        <div class="stat">
-          <div class="label">Mode affiché</div>
-          <div class="value"><span class="pill" id="turnPill">-</span></div>
-        </div>
-
-        <div class="stat">
-          <div class="label">Statut</div>
-          <div class="value" id="statusTxt">-</div>
-        </div>
-
-        <button id="btnNew" class="btn primary full" type="button">Nouvelle partie</button>
-        <button id="btnHint" class="btn full" type="button">IA jouerait (suggestion)</button>
-
-        <div class="stat">
-          <div class="label">Lien de la partie</div>
-          <div class="value">
-            <input id="shareLink" type="text" readonly class="input" />
-            <button id="btnCopyLink" class="btn small" type="button">Copier</button>
-          </div>
-        </div>
-
-        <div class="hint" id="hint">Clique sur une colonne 👇</div>
+      <div class="field">
+        <label class="field__label" for="modeSelect">Mode de jeu</label>
+        <select id="modeSelect" class="field__input">
+          <option value="LOCAL">Joueur contre joueur (local)</option>
+          <option value="IA">Joueur contre IA</option>
+          <option value="ONLINE">Joueur contre joueur (en ligne)</option>
+        </select>
       </div>
 
-      <div class="sideCard">
-        <div class="sideTitle">Paramètres joueur</div>
-
-        <div class="stat">
-          <div class="label">Nom rouge</div>
-          <input id="playerNameR" type="text" placeholder="Joueur rouge" class="input" />
-        </div>
-
-        <div class="stat">
-          <div class="label">Nom jaune</div>
-          <input id="playerNameJ" type="text" placeholder="Joueur jaune / IA" class="input" />
-        </div>
-
-        <div class="stat">
-          <div class="label">Qui commence ?</div>
-          <select id="colorSelect" class="select">
-            <option value="R" selected>Rouge commence</option>
-            <option value="J">Jaune commence</option>
-          </select>
-        </div>
-      </div>
-    </aside>
-
-    <!-- CENTRE -->
-    <section class="content">
-      <div class="statusBar">
-        <div id="turnInfo" class="statusLine">Chargement…</div>
-        <div id="aiThinking" class="statusLine thinking" hidden>🤖 IA réfléchit…</div>
+      <div class="field" id="difficultyField">
+        <label class="field__label" for="diffSelect">Difficulté de l’IA</label>
+        <select id="diffSelect" class="field__input">
+          <option value="easy">Facile</option>
+          <option value="medium" selected>Moyen</option>
+          <option value="hard">Difficile</option>
+        </select>
       </div>
 
-      <div id="colHeader" class="colHeader"></div>
+      <div class="field">
+        <label class="field__label" for="colorSelect">Qui commence ?</label>
+        <select id="colorSelect" class="field__input">
+          <option value="R">Rouge commence</option>
+          <option value="J">Jaune commence</option>
+        </select>
+        <p class="field__hint" id="startHint">En ligne, le premier joueur est tiré au sort côté serveur.</p>
+      </div>
 
-      <div class="boardWrap">
-        <div id="board" class="board" aria-label="Plateau"></div>
+      <div class="field">
+        <label class="field__label" for="playerNameR">Nom du joueur rouge</label>
+        <input id="playerNameR" type="text" class="field__input" autocomplete="nickname" />
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="playerNameJ">Nom du joueur jaune</label>
+        <input id="playerNameJ" type="text" class="field__input" autocomplete="nickname" />
+      </div>
+
+      <div class="field" id="shareLinkField" hidden>
+        <label class="field__label" for="shareLink">Lien de la partie (en ligne)</label>
+        <div class="field__row">
+          <input id="shareLink" type="text" readonly class="field__input field__input--grow" />
+          <button type="button" class="btn" id="btnCopyLink">Copier</button>
+        </div>
+      </div>
+
+      <div class="toolbar toolbar--primary">
+        <button type="button" class="btn btn-primary btn-block" id="btnNew">Nouvelle partie</button>
+      </div>
+
+      <div class="toolbar">
+        <button type="button" class="btn" id="btnUndo" title="Local : un coup. Contre l’IA : ton coup et celui de l’IA.">Annuler</button>
+        <button type="button" class="btn" id="btnRedo" title="Rétablit le même type d’action qu’annuler.">Rétablir</button>
+        <button type="button" class="btn" id="btnPause">Pause</button>
+      </div>
+
+      <p class="help-text" id="undoHelp">Annuler et rétablir : selon le mode de jeu.</p>
+
+      <div class="field">
+        <label class="field__label" for="yourRole">Ton rôle</label>
+        <div id="yourRole" class="field__value">—</div>
       </div>
     </section>
 
-    <!-- DROITE -->
-    <aside class="rightbar">
-      <div class="sideCard">
-        <div class="sideTitle">Messages</div>
-        <div class="message" id="message" hidden></div>
+    <section class="panel panel--board" aria-label="Plateau">
+      <div class="board-toolbar">
+        <div class="turn-banner" id="turnBanner" role="status">
+          <span id="turnInfo">Chargement…</span>
+        </div>
+        <div class="thinking" id="aiThinking" hidden>
+          <span class="thinking__spinner" aria-hidden="true"></span>
+          <span>L’IA réfléchit…</span>
+        </div>
       </div>
 
-      <div class="sideCard">
-        <div class="sideTitle">Historique</div>
-        <div id="history" class="historyLog"></div>
+      <div class="col-header" id="colHeader"></div>
+
+      <div class="board-frame">
+        <div id="board" class="board" aria-label="Grille du jeu"></div>
       </div>
-    </aside>
+
+      <div class="board-actions">
+        <button type="button" class="btn btn-ghost" id="btnHint">Coup suggéré</button>
+      </div>
+    </section>
+
+    <section class="panel panel--side" aria-label="Messages et historique">
+      <h2 class="panel__title">État</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <span class="stat__label">Mode affiché</span>
+          <span class="stat__value"><span class="pill" id="turnPill">—</span></span>
+        </div>
+        <div class="stat">
+          <span class="stat__label">Statut partie</span>
+          <span class="stat__value" id="statusTxt">—</span>
+        </div>
+      </div>
+
+      <div class="message-box" id="message" role="alert" hidden></div>
+
+      <h2 class="panel__title panel__title--sub">Historique des coups</h2>
+      <div id="history" class="history-log"></div>
+    </section>
   </main>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js" defer></script>
 </body>
 </html>
