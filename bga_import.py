@@ -55,10 +55,11 @@ def _canonical_signature_from_cols(cols_list, nb_cols: int) -> str:
     return s if s <= m else m
 
 
-def import_bga_moves(moves, rows=9, cols=9, confiance=3):
+def import_bga_moves(moves, rows=9, cols=9, confiance=3, mode="BGA", type_partie="HUMAIN"):
     """
     moves: list of dicts like {"move_id":2, "col":5, "player_id":"3368422"}
     col is 1..9
+    mode: ex. BGA, AI_VS_AI, SCRAPER (stocké dans partie.mode)
     """
 
     # 1) tri + construction signature (canonical to dedupe mirror games)
@@ -75,8 +76,8 @@ def import_bga_moves(moves, rows=9, cols=9, confiance=3):
 
     # 3) créer partie (on fixera rows/cols dans db.create_partie, voir section 3)
     pid = create_partie(
-        mode="BGA",
-        type_partie="HUMAIN",
+        mode=mode,
+        type_partie=type_partie,
         status="EN_COURS",
         joueur_depart="R",
         rows=rows,

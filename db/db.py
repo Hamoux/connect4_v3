@@ -7,7 +7,7 @@ def get_conn():
     port = int(os.getenv("PGPORT", "5432"))
     dbname = os.getenv("PGDATABASE", "Connect4DB")  # ✅ ton nom exact
     user = os.getenv("PGUSER", "postgres")
-    password = os.getenv("Celina123")  # set via env; can be None if local trust auth  # mets en variable d'env si tu veux
+    password = os.getenv("PGPASSWORD")
 
     return psycopg2.connect(
         host=host, port=port, dbname=dbname, user=user, password=password,
