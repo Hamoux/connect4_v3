@@ -56,11 +56,24 @@
       </div>
 
       <div class="field" id="difficultyField">
-        <label class="field__label" for="diffSelect">Difficulté de l’IA</label>
+        <label class="field__label" for="diffSelect">Profondeur Minimax</label>
         <select id="diffSelect" class="field__input">
-          <option value="easy">Facile</option>
-          <option value="medium" selected>Moyen</option>
-          <option value="hard">Difficile</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="humanColorSelect">Couleur du joueur humain</label>
+        <select id="humanColorSelect" class="field__input">
+          <option value="R">Je joue rouge</option>
+          <option value="J">Je joue jaune</option>
         </select>
       </div>
 
@@ -99,6 +112,16 @@
         <button type="button" class="btn" id="btnUndo" title="Local : un coup. Contre l’IA : ton coup et celui de l’IA.">Annuler</button>
         <button type="button" class="btn" id="btnRedo" title="Rétablit le même type d’action qu’annuler.">Rétablir</button>
         <button type="button" class="btn" id="btnPause">Pause</button>
+      </div>
+
+      <div class="toolbar">
+        <button type="button" class="btn" id="btnAiRed">IA joue rouge</button>
+        <button type="button" class="btn" id="btnHumanRed">Humain reprend rouge</button>
+      </div>
+
+      <div class="toolbar">
+        <button type="button" class="btn" id="btnAiYellow">IA joue jaune</button>
+        <button type="button" class="btn" id="btnHumanYellow">Humain reprend jaune</button>
       </div>
 
       <p class="help-text" id="undoHelp">Annuler et rétablir : selon le mode de jeu.</p>
