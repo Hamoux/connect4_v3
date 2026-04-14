@@ -605,16 +605,27 @@ def api_new():
     if mode == "LOCAL":
         g = make_empty_state()
         g["mode"] = "LOCAL"
-        g["type_partie"] = "HUMAIN"
+        g["type_partie"] = "IA" if human_player in ("R", "J") and str(data.get("enable_local_ai", False)).lower() in ("true", "1") else "HUMAIN"
         g["status"] = "EN_COURS"
         g["current_player"] = starting_player
         g["starting_player"] = starting_player
         g["player_r_name"] = player_r_name or "Joueur Rouge"
         g["player_j_name"] = player_j_name or "Joueur Jaune"
-        g["ai_players"] = {"R": False, "J": False}
-        g["ai_enabled"] = False
-        g["ai_player"] = None
         g["ai_depth"] = depth
+
+        if g["type_partie"] == "IA":
+            ai_player = "J" if human_player == "R" else "R"
+            g["ai_enabled"] = True
+            g["ai_player"] = ai_player
+            g["ai_players"] = {"R": ai_player == "R", "J": ai_player == "J"}
+            if ai_player == "R":
+                g["player_r_name"] = "IA"
+            else:
+                g["player_j_name"] = "IA"
+        else:
+            g["ai_players"] = {"R": False, "J": False}
+            g["ai_enabled"] = False
+            g["ai_player"] = None
 
         pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
         g["id_partie"] = pid

@@ -567,12 +567,6 @@ async function newGame() {
   GAME_ID = null;
   history.replaceState({}, "", location.pathname);
 
-  if (mode === "LOCAL") {
-    const start = starting_player === "R" || starting_player === "J" ? starting_player : "R";
-    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS", ai_enabled: false, ai_depth: Number(difficulty), ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: start, starting_player: start, signature: "init", game_over: false, winning_line: null, player_count: 1, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
-    stopPolling(); resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); return;
-  }
-
   const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   const { ok, data: state } = await postNewGame(payload);
   if (!ok) { setMessageOnly(state.error || "Erreur lors de la création de la partie."); return; }
@@ -583,7 +577,7 @@ async function newGame() {
     history.replaceState({}, "", `?game_id=${GAME_ID}`);
     const linkInput = $("shareLink");
     if (linkInput) linkInput.value = window.location.href;
-    if (state.mode === "WEB") startPolling();
+    startPolling();
   }
   resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); scheduleAiIfNeeded();
 }
