@@ -275,7 +275,7 @@ def load_game_from_db(game_id):
 
     g = make_fresh_state()
     g["id_partie"] = int(partie["id_partie"])
-    g["mode"] = (partie["mode"] or "WEB").upper()
+    g["mode"] = "WEB"
     g["type_partie"] = partie["type_partie"] or "HUMAIN"
     g["status"] = partie["status"] or "EN_COURS"
     g["starting_player"] = (partie["joueur_depart"] or "R").upper()
@@ -549,6 +549,48 @@ def signature_to_moves(sig):
     return out
 
 
+def clean_signature(sig):
+    s = str(sig or "")
+    if s.startswith("init_"):
+        s = ""
+    out = []
+    for ch in s:
+        if ch.isdigit():
+            d = int(ch)
+            if 1 <= d <= COLS:
+                out.append(str(d))
+    return "".join(out)
+
+
+def replay_signature_to_states(signature, starting_player):
+    board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    player = starting_player
+    situations = []
+
+    for i, ch in enumerate(signature, start=1):
+        col = int(ch) - 1
+        placed = False
+
+        for r in range(ROWS - 1, -1, -1):
+            if board[r][col] == 0:
+                board[r][col] = player
+                placed = True
+                break
+
+        if not placed:
+            raise ValueError(f"Signature invalide: colonne {col + 1} pleine au coup {i}")
+
+        situations.append({
+            "numero_coup": i,
+            "plateau": board_to_text(board),
+            "joueur": player
+        })
+
+        player = "J" if player == "R" else "R"
+
+    return board, situations
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Routes existantes
 # ─────────────────────────────────────────────────────────────────────────────
@@ -671,6 +713,115 @@ def api_new():
         pass
 
     return jsonify(export_state(g))
+
+
+@app.post("/api/local_new")
+def api_local_new():
+    data = request.json or {}
+    starting_player = str(data.get("starting_player") or "R").upper()
+    type_partie = str(data.get("type_partie") or "HUMAIN").upper()
+
+    if starting_player not in ("R", "J"):
+        starting_player = "R"
+    if type_partie not in ("HUMAIN", "IA"):
+        type_partie = "HUMAIN"
+
+    pid, sig = create_partie_db("LOCAL", type_partie, starting_player)
+    return jsonify({"id_partie": pid, "signature": sig})
+
+
+@app.post("/api/local_sync")
+def api_local_sync():
+    data = request.json or {}
+
+    game_id = normalize_game_id(data.get("game_id"))
+    if game_id is None:
+        return jsonify({"error": "game_id invalide"}), 400
+
+    starting_player = str(data.get("starting_player") or "R").upper()
+    if starting_player not in ("R", "J"):
+        starting_player = "R"
+
+    signature = clean_signature(data.get("signature"))
+    status = str(data.get("status") or "EN_COURS").upper()
+    if status not in ("EN_COURS", "TERMINEE"):
+        status = "EN_COURS"
+
+    type_partie = str(data.get("type_partie") or "HUMAIN").upper()
+    if type_partie not in ("HUMAIN", "IA"):
+        type_partie = "HUMAIN"
+
+    winning_line = data.get("winning_line")
+    line_str = str(winning_line) if winning_line else None
+
+    try:
+        board, situations = replay_signature_to_states(signature, starting_player)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    winner = ai_engine.winner_on_board([row[:] for row in board])
+    if status != "TERMINEE":
+        winner = None
+        line_str = None
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM situation WHERE id_partie=%s", (game_id,))
+
+            prev_id = None
+            for step in situations:
+                cur.execute(
+                    """
+                    INSERT INTO situation (id_partie, numero_coup, plateau, joueur, precedent, suivant)
+                    VALUES (%s,%s,%s,%s,%s,%s)
+                    RETURNING id_situation
+                    """,
+                    (
+                        game_id,
+                        step["numero_coup"],
+                        step["plateau"],
+                        step["joueur"],
+                        prev_id,
+                        None,
+                    ),
+                )
+                sid = int(cur.fetchone()["id_situation"])
+
+                if prev_id is not None:
+                    cur.execute(
+                        "UPDATE situation SET suivant=%s WHERE id_situation=%s",
+                        (sid, prev_id),
+                    )
+
+                prev_id = sid
+
+            cur.execute(
+                """
+                UPDATE partie
+                SET mode=%s,
+                    type_partie=%s,
+                    status=%s,
+                    joueur_depart=%s,
+                    signature=%s,
+                    joueur_gagnant=%s,
+                    ligne_gagnante=%s
+                WHERE id_partie=%s
+                """,
+                (
+                    "LOCAL",
+                    type_partie,
+                    status,
+                    starting_player,
+                    signature,
+                    winner,
+                    line_str,
+                    game_id,
+                ),
+            )
+
+        conn.commit()
+
+    return jsonify({"ok": True, "winner": winner})
 
 
 @app.post("/api/set_ai_color")

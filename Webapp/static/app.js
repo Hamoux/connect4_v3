@@ -355,6 +355,50 @@ async function postLocalAiMove(board, player, depth) {
   return { ok: true, col: data.col };
 }
 
+let localSyncQueue = Promise.resolve();
+
+async function postLocalNew(payload) {
+  const res = await fetch("/api/local_new", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postLocalSync(payload) {
+  const res = await fetch("/api/local_sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+function queueLocalDbSync() {
+  if (!lastState || lastState.mode !== "LOCAL" || !GAME_ID) return;
+
+  const payload = {
+    game_id: GAME_ID,
+    starting_player: lastState.starting_player,
+    signature: lastState.signature,
+    status: lastState.status,
+    type_partie: ((lastState.ai_players?.R || lastState.ai_players?.J) ? "IA" : "HUMAIN"),
+    winning_line: lastState.winning_line || null
+  };
+
+  localSyncQueue = localSyncQueue
+    .then(() => postLocalSync(payload))
+    .then((res) => {
+      if (!res.ok) console.error("Local DB sync failed", res.data);
+    })
+    .catch((err) => {
+      console.error("Local DB sync exception", err);
+    });
+}
+
 async function postPredict(board, currentPlayer, depth) {
   const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 6 }) });
   const data = await res.json();
@@ -515,7 +559,7 @@ async function undo() {
     redoStack.push(current);
     applySnapshot(lastState, prev);
     lastMove = null; clearHint(); hideMessageBox();
-    render(lastState); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); queueLocalDbSync(); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -536,7 +580,7 @@ async function redo() {
     undoStack.push(current);
     applySnapshot(lastState, next);
     lastMove = null; clearHint();
-    render(lastState); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); queueLocalDbSync(); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -567,6 +611,24 @@ async function newGame() {
   GAME_ID = null;
   history.replaceState({}, "", location.pathname);
 
+  if (mode === "LOCAL") {
+    const start = starting_player === "R" || starting_player === "J" ? starting_player : "R";
+    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS", ai_enabled: false, ai_depth: Number(difficulty), ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: start, starting_player: start, signature: "init", game_over: false, winning_line: null, player_count: 1, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
+    stopPolling(); resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState);
+
+    const save = await postLocalNew({
+      starting_player: start,
+      type_partie: "HUMAIN"
+    });
+    if (save.ok && save.data?.id_partie) {
+      GAME_ID = save.data.id_partie;
+    } else {
+      GAME_ID = null;
+      console.error("Impossible de créer la partie locale en DB", save.data);
+    }
+    return;
+  }
+
   const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   const { ok, data: state } = await postNewGame(payload);
   if (!ok) { setMessageOnly(state.error || "Erreur lors de la création de la partie."); return; }
@@ -578,7 +640,7 @@ async function newGame() {
     const linkInput = $("shareLink");
     if (linkInput) linkInput.value = window.location.href;
     if (state.mode === "WEB") startPolling();
-}
+  }
   resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); scheduleAiIfNeeded();
 }
 
@@ -592,6 +654,41 @@ async function play(col) {
 
   if (isAiTurn(lastState)) return;
 
+  if (lastState.mode === "LOCAL") {
+    if (lastState.game_over) return;
+    if (isColumnFull(col)) return;
+
+    undoStack.push(snapshotForUndo(lastState));
+    redoStack.length = 0;
+
+    let placed = null;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = lastState.current_player; break; }
+    }
+    if (placed === null) return;
+
+    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
+    lastState.signature += String(col + 1);
+    lastMove = { r: placed, c: col };
+    clearHint();
+
+    const line = jsFindWinningLine(placed, col, lastState.board);
+    if (line) {
+      lastState.game_over = true; lastState.status = "TERMINEE";
+      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
+      render(lastState);
+      queueLocalDbSync();
+      setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
+      return;
+    }
+
+    lastState.current_player = lastState.current_player === "R" ? "J" : "R";
+    render(lastState);
+    queueLocalDbSync();
+    scheduleAiIfNeeded();
+    return;
+  }
+
   if (!lastState.id_partie) { showMessage("Clique d'abord sur « Nouvelle partie »."); return; }
   if (lastState.game_over) return;
   if (isColumnFull(col)) return;
@@ -599,21 +696,6 @@ async function play(col) {
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") { undoStack.push(cloneFullState(lastState)); redoStack.length = 0; }
 
   cancelAiTimer(); busy = true; clearHint();
-
-  // ── AFFICHAGE IMMÉDIAT du pion humain avant l'appel serveur ──────────────
-  const playingPlayer = lastState.current_player;
-  let placedRow = null;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (lastState.board[r][col] === 0) { placedRow = r; lastState.board[r][col] = playingPlayer; break; }
-  }
-  if (placedRow !== null) {
-    lastMove = { r: placedRow, c: col };
-    lastState.current_player = playingPlayer === "R" ? "J" : "R"; // afficher à qui c'est
-    render(lastState); // affiche immédiatement
-    lastState.current_player = playingPlayer; // on remet pour la cohérence serveur
-    lastState.board[placedRow][col] = 0;      // on annule l'optimiste pour le serveur
-  }
-  // ─────────────────────────────────────────────────────────────────────────
 
   let res;
   try { res = await postPlay(col); } catch {
@@ -625,7 +707,6 @@ async function play(col) {
   busy = false;
   if (!res.ok) {
     if (lastState.mode === "WEB" && lastState.type_partie === "IA" && undoStack.length) undoStack.pop();
-    // Annule l'affichage optimiste en rechargeant l'état réel
     if (GAME_ID) {
       const recovered = await getState(GAME_ID);
       if (recovered) { lastState = recovered; render(lastState); }
@@ -653,6 +734,44 @@ async function aiMove() {
   setThinking(true);
   const t0 = performance.now();
 
+  if (lastState.mode === "LOCAL") {
+    const player = lastState.current_player;
+    const depth = Number(lastState.ai_depth || 4);
+    let res;
+    try { res = await postLocalAiMove(lastState.board, player, depth); } catch { setThinking(false); showMessage("Erreur locale de l'IA."); return; }
+    if (!res.ok) { setThinking(false); showMessage(res.error || "Erreur de l'IA."); return; }
+
+    const col = res.col;
+    let placed = null;
+    for (let r = ROWS - 1; r >= 0; r--) { if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = player; break; } }
+    if (placed === null) { showMessage("Coup IA impossible."); return; }
+
+    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
+    lastState.signature += String(col + 1);
+
+    const dt = Math.round(performance.now() - t0);
+    lastMove = { r: placed, c: col }; clearHint();
+
+    const line = jsFindWinningLine(placed, col, lastState.board);
+    if (line) {
+      lastState.game_over = true; lastState.status = "TERMINEE";
+      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
+      render(lastState);
+      queueLocalDbSync();
+      setThinking(false);
+      showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
+      setMessageOnly(`Victoire de <span class="name-${player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(player))}</span> !`);
+      return;
+    }
+
+    lastState.current_player = player === "R" ? "J" : "R";
+    render(lastState);
+    queueLocalDbSync();
+    setThinking(false);
+    showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
+    scheduleAiIfNeeded(); return;
+  }
+
   let res;
   try { res = await postAiMove(); } catch { setThinking(false); showMessage("Erreur réseau."); return; }
   const data = res.data;
@@ -661,8 +780,8 @@ async function aiMove() {
   const dt = Math.round(performance.now() - t0);
   lastMove = findLastMove(lastState.board, data.board);
   lastState = data;
-  render(lastState);         // plateau mis à jour EN PREMIER
-  setThinking(false);        // spinner s'arrête APRÈS le rendu → cohérent
+  render(lastState);
+  setThinking(false);
   showHistoryLine(`L'IA a joué (${dt} ms).`, "log-item--system");
 
   if (lastState.game_over) {
@@ -771,6 +890,7 @@ function exitPaintMode(apply = true) {
       lastState.current_player = winnerNow;
       lastState.winning_line = winLine;
       render(lastState);
+      if (lastState.mode === "LOCAL" && GAME_ID) queueLocalDbSync();
       setMessageOnly(`Position peinte : victoire de <span class="name-${winnerNow === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(winnerNow))}</span> déjà présente. Lance une nouvelle partie ou repeinds.`);
       showHistoryLine(`Mode peinture validé — victoire de ${winnerNow === "R" ? "Rouge" : "Jaune"} détectée.`, "log-item--system");
     } else {
@@ -778,6 +898,7 @@ function exitPaintMode(apply = true) {
       lastState.status = "EN_COURS";
       lastState.winning_line = null;
       render(lastState);
+      if (lastState.mode === "LOCAL" && GAME_ID) queueLocalDbSync();
       showHistoryLine(`Mode peinture validé. À ${cp === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer.`, "log-item--system");
       scheduleAiIfNeeded();
     }
@@ -1501,6 +1622,7 @@ window.addEventListener("load", async () => {
       lastState.ai_depth = depth;
       lastState.player_r_name = "IA";
       render(lastState);
+      queueLocalDbSync();
       showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system");
       scheduleAiIfNeeded();
       return;
@@ -1520,6 +1642,7 @@ window.addEventListener("load", async () => {
       lastState.player_r_name = localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge";
       cancelAiTimer();
       render(lastState);
+      queueLocalDbSync();
       showHistoryLine("Rouge redevient humain.", "log-item--system");
       return;
     }
@@ -1538,6 +1661,7 @@ window.addEventListener("load", async () => {
       lastState.ai_depth = depth;
       lastState.player_j_name = "IA";
       render(lastState);
+      queueLocalDbSync();
       showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system");
       scheduleAiIfNeeded();
       return;
@@ -1557,6 +1681,7 @@ window.addEventListener("load", async () => {
       lastState.player_j_name = localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune";
       cancelAiTimer();
       render(lastState);
+      queueLocalDbSync();
       showHistoryLine("Jaune redevient humain.", "log-item--system");
       return;
     }
