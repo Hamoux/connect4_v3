@@ -314,36 +314,6 @@ async function postNewGame(payload) {
   return { ok: res.ok, data };
 }
 
-let localSyncQueue = Promise.resolve();
-
-async function postLocalNew(payload) {
-  const res = await fetch("/api/local_new", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-async function postLocalSync(payload) {
-  const res = await fetch("/api/local_sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-function queueLocalDbSync() {
-  if (!lastState || lastState.mode !== "LOCAL" || !GAME_ID) return;
-  const payload = {
-    game_id: GAME_ID,
-    starting_player: lastState.starting_player,
-    signature: lastState.signature,
-    status: lastState.status,
-    type_partie: ((lastState.ai_players?.R || lastState.ai_players?.J) ? "IA" : "HUMAIN"),
-    winning_line: lastState.winning_line || null
-  };
-  localSyncQueue = localSyncQueue
-    .then(() => postLocalSync(payload))
-    .then((res) => { if (!res.ok) console.error("Local DB sync failed", res.data); })
-    .catch((err) => console.error("Local DB sync exception", err));
-}
-
 async function postPlay(col) {
   const res = await fetch("/api/play", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ col, game_id: GAME_ID, client_id: CLIENT_ID }) });
   const data = await res.json();
@@ -545,7 +515,7 @@ async function undo() {
     redoStack.push(current);
     applySnapshot(lastState, prev);
     lastMove = null; clearHint(); hideMessageBox();
-    render(lastState); queueLocalDbSync(); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -566,7 +536,7 @@ async function redo() {
     undoStack.push(current);
     applySnapshot(lastState, next);
     lastMove = null; clearHint();
-    render(lastState); queueLocalDbSync(); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -600,16 +570,7 @@ async function newGame() {
   if (mode === "LOCAL") {
     const start = starting_player === "R" || starting_player === "J" ? starting_player : "R";
     lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS", ai_enabled: false, ai_depth: Number(difficulty), ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: start, starting_player: start, signature: "init", game_over: false, winning_line: null, player_count: 1, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
-    stopPolling();
-    const save = await postLocalNew({ starting_player: start, type_partie: "HUMAIN" });
-    if (save.ok && save.data?.id_partie) {
-      GAME_ID = save.data.id_partie;
-      lastState.id_partie = GAME_ID;
-    } else {
-      GAME_ID = null;
-      console.error("Impossible de créer la partie locale en DB", save.data);
-    }
-    resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); return;
+    stopPolling(); resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); return;
   }
 
   const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
@@ -660,14 +621,12 @@ async function play(col) {
       lastState.game_over = true; lastState.status = "TERMINEE";
       lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
       render(lastState);
-      queueLocalDbSync();
       setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
       return;
     }
 
     lastState.current_player = lastState.current_player === "R" ? "J" : "R";
     render(lastState);
-    queueLocalDbSync();
     scheduleAiIfNeeded();
     return;
   }
@@ -756,7 +715,6 @@ async function aiMove() {
       lastState.game_over = true; lastState.status = "TERMINEE";
       lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
       render(lastState);
-      queueLocalDbSync();
       setThinking(false);        // spinner s'arrête APRÈS le rendu
       showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
       setMessageOnly(`Victoire de <span class="name-${player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(player))}</span> !`);
@@ -765,7 +723,6 @@ async function aiMove() {
 
     lastState.current_player = player === "R" ? "J" : "R";
     render(lastState);         // plateau mis à jour EN PREMIER
-    queueLocalDbSync();
     setThinking(false);        // spinner s'arrête APRÈS le rendu
     showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
     scheduleAiIfNeeded(); return;
@@ -889,7 +846,6 @@ function exitPaintMode(apply = true) {
       lastState.current_player = winnerNow;
       lastState.winning_line = winLine;
       render(lastState);
-      if (lastState.mode === "LOCAL" && GAME_ID) queueLocalDbSync();
       setMessageOnly(`Position peinte : victoire de <span class="name-${winnerNow === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(winnerNow))}</span> déjà présente. Lance une nouvelle partie ou repeinds.`);
       showHistoryLine(`Mode peinture validé — victoire de ${winnerNow === "R" ? "Rouge" : "Jaune"} détectée.`, "log-item--system");
     } else {
@@ -897,7 +853,6 @@ function exitPaintMode(apply = true) {
       lastState.status = "EN_COURS";
       lastState.winning_line = null;
       render(lastState);
-      if (lastState.mode === "LOCAL" && GAME_ID) queueLocalDbSync();
       showHistoryLine(`Mode peinture validé. À ${cp === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer.`, "log-item--system");
       scheduleAiIfNeeded();
     }
@@ -1621,7 +1576,6 @@ window.addEventListener("load", async () => {
       lastState.ai_depth = depth;
       lastState.player_r_name = "IA";
       render(lastState);
-      queueLocalDbSync();
       showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system");
       scheduleAiIfNeeded();
       return;
@@ -1641,7 +1595,6 @@ window.addEventListener("load", async () => {
       lastState.player_r_name = localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge";
       cancelAiTimer();
       render(lastState);
-      queueLocalDbSync();
       showHistoryLine("Rouge redevient humain.", "log-item--system");
       return;
     }
@@ -1660,7 +1613,6 @@ window.addEventListener("load", async () => {
       lastState.ai_depth = depth;
       lastState.player_j_name = "IA";
       render(lastState);
-      queueLocalDbSync();
       showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system");
       scheduleAiIfNeeded();
       return;
@@ -1680,7 +1632,6 @@ window.addEventListener("load", async () => {
       lastState.player_j_name = localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune";
       cancelAiTimer();
       render(lastState);
-      queueLocalDbSync();
       showHistoryLine("Jaune redevient humain.", "log-item--system");
       return;
     }
