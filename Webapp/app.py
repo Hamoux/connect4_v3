@@ -11,6 +11,14 @@ from psycopg2.extras import RealDictCursor
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from ai import MinimaxAI  # noqa
 
+try:
+    from ai_model_bridge import MLModelAI
+except Exception as e:
+    MLModelAI = None
+    MODEL_BRIDGE_ERROR = str(e)
+else:
+    MODEL_BRIDGE_ERROR = None
+
 app = Flask(__name__)
 
 ROWS = 9
@@ -23,6 +31,13 @@ MAX_DEPTH = 9
 
 ai_engine = MinimaxAI(ROWS, COLS)
 games = {}
+
+MODEL_CHECKPOINT_ENV = os.getenv("AI_MODEL_CHECKPOINT") or os.getenv("CONNECT4_MODEL_CHECKPOINT")
+MODEL_PY_ENV = os.getenv("AI_MODEL_PY") or os.getenv("CONNECT4_MODEL_PY")
+DEFAULT_MODEL_CHECKPOINT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "runs", "cpu_test", "best_modelv1.pt"))
+DEFAULT_MODEL_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "model.py"))
+
+hybrid_ai = None
 
 
 def normalize_depth(value, default=DEFAULT_DEPTH):
@@ -518,6 +533,46 @@ def best_ai_col(board, ai_player, depth, moves_history=None):
     return best_col
 
 
+def get_default_model_paths():
+    checkpoint = MODEL_CHECKPOINT_ENV or DEFAULT_MODEL_CHECKPOINT
+    model_py = MODEL_PY_ENV or DEFAULT_MODEL_PY
+    return checkpoint, model_py
+
+
+def try_load_hybrid_ai(depth=DEFAULT_DEPTH):
+    global hybrid_ai
+    if hybrid_ai is not None:
+        hybrid_ai.set_minimax_depth(depth)
+        return hybrid_ai
+
+    if MLModelAI is None:
+        return None
+
+    checkpoint, model_py = get_default_model_paths()
+    if not checkpoint or not os.path.exists(checkpoint):
+        return None
+
+    model_py_path = model_py if model_py and os.path.exists(model_py) else None
+    try:
+        hybrid_ai = MLModelAI(minimax_depth=depth)
+        hybrid_ai.load(checkpoint, model_py_path=model_py_path, device="cpu")
+        return hybrid_ai
+    except Exception:
+        hybrid_ai = None
+        return None
+
+
+def choose_ai_move(board, player, depth, enforce_max_depth=False):
+    depth_value = MAX_DEPTH if enforce_max_depth else normalize_depth(depth, DEFAULT_DEPTH)
+    model_ai = try_load_hybrid_ai(depth_value)
+    if model_ai is not None:
+        try:
+            return model_ai.choose_move([row[:] for row in board], player)
+        except Exception:
+            pass
+    return best_ai_col(board, player, depth_value)
+
+
 def find_winning_line(r, c, s):
     directions = [(0, 1), (1, 0), (1, 1), (1, -1)]
     player = s["board"][r][c]
@@ -878,19 +933,15 @@ def api_ai_move():
     depth = int(s.get("ai_depth", DEFAULT_DEPTH))
     ai_player = s.get("current_player")
 
-    # Extraire l'historique des coups pour la bibliothèque d'ouverture
-    moves_history = signature_to_moves(s.get("signature", ""))
-
     try:
-        # On ne vide plus le cache entre les coups pour réutiliser la table de transposition
-        ai_col = best_ai_col(
+        ai_col = choose_ai_move(
             [row[:] for row in s["board"]],
             ai_player,
             depth,
-            moves_history=moves_history
+            enforce_max_depth=False
         )
     except Exception as e:
-        return jsonify({"error": f"Erreur Minimax: {str(e)}"}), 500
+        return jsonify({"error": f"Erreur IA: {str(e)}"}), 500
 
     if ai_col is None:
         return jsonify({"error": "Aucun coup IA possible"}), 400
@@ -928,17 +979,15 @@ def api_local_ai_move():
         if player not in ("R", "J"):
             return jsonify({"error": "Joueur IA invalide"}), 400
 
-        moves_history = signature_to_moves(s.get("signature", ""))
-
         try:
-            ai_col = best_ai_col(
+            ai_col = choose_ai_move(
                 [row[:] for row in s["board"]],
                 player,
                 depth,
-                moves_history=moves_history
+                enforce_max_depth=True
             )
         except Exception as e:
-            return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
+            return jsonify({"error": f"Erreur pendant le calcul IA locale: {str(e)}"}), 500
 
         if ai_col is None:
             return jsonify({"error": "Aucun coup possible"}), 400
@@ -964,14 +1013,14 @@ def api_local_ai_move():
 
     try:
         board_copy = [row[:] for row in board]
-        col = best_ai_col(
+        col = choose_ai_move(
             board_copy,
             player,
             depth,
-            moves_history=moves_history if isinstance(moves_history, list) else None
+            enforce_max_depth=True
         )
     except Exception as e:
-        return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
+        return jsonify({"error": f"Erreur pendant le calcul IA locale: {str(e)}"}), 500
 
     if col is None:
         return jsonify({"error": "Aucun coup possible"}), 400
@@ -996,12 +1045,11 @@ def api_hint():
     depth = int(s.get("ai_depth", DEFAULT_DEPTH))
     player = s.get("current_player", "R")
     board_copy = [row[:] for row in s["board"]]
-    moves_history = signature_to_moves(s.get("signature", ""))
 
     try:
-        col = best_ai_col(board_copy, player, depth, moves_history=moves_history)
+        col = choose_ai_move(board_copy, player, depth)
     except Exception as e:
-        return jsonify({"error": f"Erreur Minimax hint: {str(e)}"}), 500
+        return jsonify({"error": f"Erreur IA hint: {str(e)}"}), 500
 
     if col is None:
         return jsonify({"error": "Aucun coup possible"}), 400
@@ -1253,7 +1301,7 @@ def api_simulate():
                     "message": "Match nul."
                 })
 
-            col = best_ai_col(sim_board, player, depth)
+            col = choose_ai_move(sim_board, player, depth)
             if col is None:
                 break
 
@@ -1307,7 +1355,7 @@ def api_paint_hint():
     board = [row[:] for row in board_raw]
 
     try:
-        col = best_ai_col(board, current_player, depth)
+        col = choose_ai_move(board, current_player, depth, enforce_max_depth=True)
     except Exception as e:
         return jsonify({"error": f"Erreur IA: {str(e)}"}), 500
 
