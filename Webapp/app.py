@@ -602,7 +602,7 @@ def api_new():
         import random
         starting_player = random.choice(["R", "J"])
 
-    if mode == "LOCAL":
+        if mode == "LOCAL":
         g = make_empty_state()
         g["mode"] = "LOCAL"
         g["type_partie"] = "HUMAIN"
@@ -615,7 +615,13 @@ def api_new():
         g["ai_enabled"] = False
         g["ai_player"] = None
         g["ai_depth"] = depth
-        return jsonify(g)
+
+        pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
+        g["id_partie"] = pid
+        g["signature"] = sig
+        games[pid] = g
+
+        return jsonify(export_state(g))
 
     g = make_fresh_state()
     g["mode"] = "WEB"
