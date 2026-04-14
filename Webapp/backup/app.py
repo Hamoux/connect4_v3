@@ -11,14 +11,6 @@ from psycopg2.extras import RealDictCursor
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from ai import MinimaxAI  # noqa
 
-try:
-    from ai_model_bridge import MLModelAI
-except Exception as e:
-    MLModelAI = None
-    MODEL_BRIDGE_ERROR = str(e)
-else:
-    MODEL_BRIDGE_ERROR = None
-
 app = Flask(__name__)
 
 ROWS = 9
@@ -31,12 +23,6 @@ MAX_DEPTH = 9
 
 ai_engine = MinimaxAI(ROWS, COLS)
 games = {}
-
-MODEL_CHECKPOINT_ENV = os.getenv("AI_MODEL_CHECKPOINT") or os.getenv("CONNECT4_MODEL_CHECKPOINT")
-MODEL_PY_ENV = os.getenv("AI_MODEL_PY") or os.getenv("CONNECT4_MODEL_PY")
-DEFAULT_MODEL_CHECKPOINT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "runs", "cpu_test", "best_modelv1.pt"))
-DEFAULT_MODEL_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "model.py"))
-hybrid_ai = None
 
 
 def normalize_depth(value, default=DEFAULT_DEPTH):
@@ -250,13 +236,6 @@ def q_one(sql, params=()):
         with conn.cursor() as cur:
             cur.execute(sql, params)
             return cur.fetchone()
-
-
-def q_all(sql, params=()):
-    with get_conn() as conn:
-        with conn.cursor() as cur:
-            cur.execute(sql, params)
-            return cur.fetchall()
 
 
 def exec_sql(sql, params=()):
@@ -539,97 +518,6 @@ def best_ai_col(board, ai_player, depth, moves_history=None):
             best_col = col
 
     return best_col
-
-
-def get_default_model_paths():
-    checkpoint = MODEL_CHECKPOINT_ENV or DEFAULT_MODEL_CHECKPOINT
-    model_py = MODEL_PY_ENV or DEFAULT_MODEL_PY
-    return checkpoint, model_py
-
-
-def try_load_hybrid_ai(depth=DEFAULT_DEPTH):
-    global hybrid_ai
-    if hybrid_ai is not None:
-        hybrid_ai.set_minimax_depth(depth)
-        return hybrid_ai
-
-    if MLModelAI is None:
-        return None
-
-    checkpoint, model_py = get_default_model_paths()
-    if not checkpoint or not os.path.exists(checkpoint):
-        return None
-
-    model_py_path = model_py if model_py and os.path.exists(model_py) else None
-    try:
-        hybrid_ai = MLModelAI(minimax_depth=depth)
-        hybrid_ai.load(checkpoint, model_py_path=model_py_path, device="cpu")
-        return hybrid_ai
-    except Exception:
-        hybrid_ai = None
-        return None
-
-
-def choose_ai_move(board, player, depth, enforce_max_depth=False, moves_history=None):
-    depth_value = MAX_DEPTH if enforce_max_depth else normalize_depth(depth, DEFAULT_DEPTH)
-    model_ai = try_load_hybrid_ai(depth_value)
-    if model_ai is not None:
-        return model_ai.choose_move([row[:] for row in board], player)
-    return best_ai_col(board, player, depth_value, moves_history=moves_history)
-
-
-def build_state_snapshots(game_id):
-    partie = q_one("SELECT * FROM partie WHERE id_partie=%s", (game_id,))
-    if not partie:
-        return []
-    starting = (partie.get("joueur_depart") or "R").upper()
-    player_r_name = partie.get("player_r_name") or "Joueur Rouge"
-    player_j_name = partie.get("player_j_name") or "Joueur Jaune"
-    ai_red = bool(partie.get("ai_red", False))
-    ai_yellow = bool(partie.get("ai_yellow", False))
-    ai_player = (partie.get("ai_player") or "").upper() or None
-    ai_depth = normalize_depth(partie.get("ai_depth"), DEFAULT_DEPTH)
-    type_partie = partie.get("type_partie") or "HUMAIN"
-    mode = (partie.get("mode") or "LOCAL").upper()
-    rows = q_all("SELECT * FROM situation WHERE id_partie=%s ORDER BY numero_coup ASC, id_situation ASC", (game_id,))
-
-    def base_snapshot(board, current_player, sig, game_over=False, winning_line=None, status="EN_COURS"):
-        return {
-            "board": board,
-            "current_player": current_player,
-            "starting_player": starting,
-            "signature": sig,
-            "game_over": game_over,
-            "status": status,
-            "winning_line": winning_line,
-            "ai_enabled": bool(ai_red or ai_yellow),
-            "ai_players": {"R": ai_red, "J": ai_yellow},
-            "ai_depth": ai_depth,
-            "ai_player": ai_player,
-            "player_r_name": player_r_name,
-            "player_j_name": player_j_name,
-            "mode": mode,
-            "type_partie": type_partie,
-        }
-
-    snaps = [base_snapshot([[0 for _ in range(COLS)] for _ in range(ROWS)], starting, "init", False, None, "EN_COURS")]
-    sig = str(partie.get("signature") or "")
-    digits = ''.join(ch for ch in sig if ch.isdigit())
-    total = len(rows)
-    for i, row in enumerate(rows, start=1):
-        board = text_to_board(row.get("plateau"))
-        current = starting if i % 2 == 0 else ("J" if starting == "R" else "R")
-        is_last = i == total
-        game_over = bool(is_last and (partie.get("status") == "TERMINEE" or partie.get("status") == "NULLE"))
-        wl = None
-        if is_last and partie.get("ligne_gagnante"):
-            try:
-                wl = ast.literal_eval(partie["ligne_gagnante"])
-            except Exception:
-                wl = None
-        status = partie.get("status") if is_last else "EN_COURS"
-        snaps.append(base_snapshot(board, current if not game_over else (partie.get("joueur_gagnant") or current), digits[:i], game_over, wl, status))
-    return snaps
 
 
 def find_winning_line(r, c, s):
@@ -1233,7 +1121,7 @@ def api_hint():
     moves_history = signature_to_moves(s.get("signature", ""))
 
     try:
-        col = choose_ai_move(board_copy, player, depth, moves_history=moves_history)
+        col = best_ai_col(board_copy, player, depth, moves_history=moves_history)
     except Exception as e:
         return jsonify({"error": f"Erreur Minimax hint: {str(e)}"}), 500
 
@@ -1249,42 +1137,10 @@ def api_hint():
 
 
 
-@app.get("/api/db_games")
-def api_db_games():
-    limit = min(max(int(request.args.get("limit", 100)), 1), 500)
-    rows = q_all(
-        """
-        SELECT id_partie, mode, type_partie, status, joueur_depart, joueur_gagnant, signature,
-               ai_player, ai_red, ai_yellow, ai_depth, player_r_name, player_j_name
-        FROM partie
-        ORDER BY id_partie DESC
-        LIMIT %s
-        """,
-        (limit,),
-    )
-    return jsonify({"games": rows})
-
-
-@app.post("/api/load_game")
-def api_load_game():
-    data = request.json or {}
-    game_id = normalize_game_id(data.get("game_id"))
-    if game_id is None:
-        return jsonify({"error": "game_id invalide"}), 400
-    game = load_game_from_db(game_id)
-    if game is None:
-        return jsonify({"error": "Partie introuvable"}), 404
-    games[game_id] = game
-    return jsonify({
-        "state": export_state(game),
-        "snapshots": build_state_snapshots(game_id),
-    })
-
-
 @app.get("/api/model_status")
 def api_model_status():
     checkpoint, model_py = get_default_model_paths()
-    model_ai = try_load_hybrid_ai(DEFAULT_DEPTH)
+    model_loaded = try_load_hybrid_ai(DEFAULT_DEPTH) is not None
     return jsonify({
         "model_bridge_available": MLModelAI is not None,
         "model_bridge_error": MODEL_BRIDGE_ERROR,
@@ -1292,10 +1148,9 @@ def api_model_status():
         "checkpoint_exists": bool(checkpoint and os.path.exists(checkpoint)),
         "model_py_path": model_py,
         "model_py_exists": bool(model_py and os.path.exists(model_py)),
-        "model_loaded": model_ai is not None,
-        "fallback": "minimax" if model_ai is None else "hybrid_ml"
+        "model_loaded": model_loaded,
+        "fallback": "minimax" if not model_loaded else "hybrid_ml"
     })
-
 
 @app.post("/api/predict")
 def api_predict():
@@ -1445,44 +1300,35 @@ def api_paint():
             "nb_yellow": nb_j
         }), 400
 
-    # Mettre à jour la partie si elle existe, sinon créer une nouvelle partie locale.
-    game = get_game_state(game_id) if game_id is not None else None
-    if game is None:
-        player_r_name = "Joueur Rouge"
-        player_j_name = "Joueur Jaune"
-        pid, sig = create_partie_db("LOCAL", "HUMAIN", starting_player, ai_player=None, ai_depth=DEFAULT_DEPTH, ai_players={"R": False, "J": False}, player_r_name=player_r_name, player_j_name=player_j_name)
-        game = make_empty_state()
-        game["id_partie"] = pid
-        game["mode"] = "LOCAL"
-        game["type_partie"] = "HUMAIN"
-        game["starting_player"] = starting_player
-        game["player_r_name"] = player_r_name
-        game["player_j_name"] = player_j_name
-        games[pid] = game
-    game["board"] = board
-    game["current_player"] = inferred_player
-    game["starting_player"] = starting_player
-    game["game_over"] = bool(winner_now)
-    game["status"] = "TERMINEE" if winner_now else "EN_COURS"
-    game["winning_line"] = None
-    game["signature"] = "init_painted"
-    game["last_situation_id"] = None
+    # Mettre à jour la partie si elle existe, sinon créer un état temporaire
+    if game_id is not None:
+        game = get_game_state(game_id)
+        if game and not game["game_over"]:
+            game["board"] = board
+            game["current_player"] = inferred_player
+            if winner_now:
+                game["game_over"] = True
+                game["status"] = "TERMINEE"
+                game["current_player"] = winner_now
+            return jsonify({
+                **export_state(game),
+                "inferred_player": inferred_player,
+                "nb_red": nb_r,
+                "nb_yellow": nb_j,
+                "winner_detected": winner_now
+            })
 
-    # Réinitialiser la persistance pour que la partie peinte devienne la nouvelle base.
-    exec_sql("DELETE FROM situation WHERE id_partie=%s", (game["id_partie"],))
-    numero_coup = nb_r + nb_j
-    joueur_last = "J" if inferred_player == "R" else "R"
-    sid = insert_situation_db(game["id_partie"], numero_coup, board_to_text(board), joueur_last, None)
-    game["last_situation_id"] = sid
-    update_partie_signature_db(game["id_partie"], game["signature"])
-    exec_sql("UPDATE partie SET status=%s, joueur_depart=%s WHERE id_partie=%s", (game["status"], starting_player, game["id_partie"]))
-
+    # Retour état peint sans partie DB
     return jsonify({
-        **export_state(game),
+        "board": board,
+        "current_player": inferred_player,
+        "starting_player": starting_player,
         "inferred_player": inferred_player,
         "nb_red": nb_r,
         "nb_yellow": nb_j,
-        "winner_detected": winner_now
+        "winner_detected": winner_now,
+        "game_over": bool(winner_now),
+        "valid": True
     })
 
 
@@ -1600,7 +1446,7 @@ def api_paint_hint():
     board = [row[:] for row in board_raw]
 
     try:
-        col = choose_ai_move(board, current_player, depth)
+        col = best_ai_col(board, current_player, depth)
     except Exception as e:
         return jsonify({"error": f"Erreur IA: {str(e)}"}), 500
 

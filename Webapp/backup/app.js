@@ -276,8 +276,8 @@ function syncSelectsFromLoadedState(state) {
   if (!state) return;
   suppressSelectChange = true;
   try {
-    if (state.mode === "LOCAL" && state.type_partie === "IA") { if ($("modeSelect")) $("modeSelect").value = "IA"; }
-    else if (state.mode === "LOCAL") { if ($("modeSelect")) $("modeSelect").value = "LOCAL"; }
+    if (state.mode === "LOCAL") { if ($("modeSelect")) $("modeSelect").value = "LOCAL"; }
+    else if (state.type_partie === "IA") { if ($("modeSelect")) $("modeSelect").value = "IA"; }
     else { if ($("modeSelect")) $("modeSelect").value = "ONLINE"; }
     if (state.ai_depth != null && $("diffSelect")) $("diffSelect").value = String(state.ai_depth);
     if (state.starting_player && $("colorSelect")) $("colorSelect").value = state.starting_player;
@@ -387,30 +387,6 @@ async function postPaintAnalyze(board, startingPlayer) {
 
 async function postPaintHint(board, currentPlayer, depth) {
   const res = await fetch("/api/paint_hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth }) });
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-async function fetchDbGames(limit = 100) {
-  const res = await fetch(`/api/db_games?limit=${encodeURIComponent(limit)}`);
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-async function postLoadGame(gameId) {
-  const res = await fetch("/api/load_game", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: gameId }) });
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-async function fetchModelStatus() {
-  const res = await fetch("/api/model_status");
-  const data = await res.json();
-  return { ok: res.ok, data };
-}
-
-async function postPaintCommit(board, startingPlayer) {
-  const res = await fetch("/api/paint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID || lastState?.id_partie || null, board, starting_player: startingPlayer }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -624,8 +600,6 @@ async function newGame() {
   syncUiPrefsFromForm();
   render(lastState);
   scheduleAiIfNeeded();
-  refreshDbGames().catch(() => {});
-  refreshModelStatus().catch(() => {});
 }
 
 // --- Jouer ---
@@ -751,7 +725,7 @@ function enterPaintMode() {
   updateHeaderStatus(lastState);
 }
 
-async function exitPaintMode(apply = true) {
+function exitPaintMode(apply = true) {
   if (!paintMode) return;
   paintMode = false;
   // Mettre à jour l'UI immédiatement — le bouton Valider disparaît tout de suite
@@ -763,39 +737,79 @@ async function exitPaintMode(apply = true) {
     const diff = Math.abs(nb_r - nb_j);
 
     if (diff > 1) {
+      // Position invalide : on reste en mode peinture
       paintMode = true;
       showMessage(`Position invalide : ${nb_r} rouges, ${nb_j} jaunes (différence ${diff}). Corrige avant de valider.`);
       updatePaintUI();
       return;
     }
 
-    const startingPlayer = ($("colorSelect")?.value || "R").toUpperCase();
-    const res = await postPaintCommit(deepCloneBoard(paintBoard), startingPlayer);
-    if (!res.ok) {
-      paintMode = true;
-      showMessage(res.data?.error || "Impossible de valider le mode peinture.");
-      updatePaintUI();
-      return;
+    // ── Déduire qui a commencé ET à qui c'est de jouer depuis les pions ─────
+    // Règle : celui qui a le PLUS de pions a commencé (ou égalité → Rouge commence)
+    // Si nb_r > nb_j  → Rouge a commencé, c'est à Jaune de jouer
+    // Si nb_j > nb_r  → Jaune a commencé, c'est à Rouge de jouer
+    // Si nb_r == nb_j → celui qui a commencé joue (on déduit depuis le select)
+    let inferredStarting, cp;
+    if (nb_r > nb_j) {
+      inferredStarting = "R";  // Rouge a plus de pions → Rouge a commencé
+      cp = "J";                // c'est à Jaune de jouer
+    } else if (nb_j > nb_r) {
+      inferredStarting = "J";  // Jaune a plus de pions → Jaune a commencé
+      cp = "R";                // c'est à Rouge de jouer
+    } else {
+      // Égalité → on utilise le select "qui commence"
+      inferredStarting = ($("colorSelect")?.value || "R").toUpperCase();
+      cp = inferredStarting;   // celui qui commence joue en premier
     }
 
-    lastState = res.data;
-    GAME_ID = lastState.id_partie || GAME_ID;
+    // Reconstruire un état LOCAL propre à partir de zéro
+    const depth_for_paint = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    lastState = {
+      id_partie:       null,
+      mode:            "LOCAL",
+      type_partie:     "HUMAIN",
+      status:          "EN_COURS",
+      ai_enabled:      false,
+      ai_depth:        depth_for_paint,
+      ai_player:       null,
+      ai_players:      { R: false, J: false },
+      board:           deepCloneBoard(paintBoard),
+      current_player:  cp,
+      starting_player: inferredStarting,
+      signature:       "init",
+      game_over:       false,
+      winning_line:    null,
+      player_count:    1,
+      client_r:        null,
+      client_j:        null,
+      player_r_name:   localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge",
+      player_j_name:   localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune",
+    };
     lastMove = null;
     lastBoardSnapshot = null;
     clearHint();
-    // Après validation, l'état peint devient la nouvelle base.
     undoStack.length = 0;
     redoStack.length = 0;
     predictionResult = null;
-    history.replaceState({}, "", location.pathname);
-    stopPolling();
-    render(lastState);
-    if (lastState.game_over) {
-      const winner = lastState.current_player;
-      setMessageOnly(`Position peinte : victoire de <span class="name-${winner === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(winner))}</span>.`);
-      showHistoryLine(`Mode peinture validé — victoire de ${winner === "R" ? "Rouge" : "Jaune"} détectée.`, "log-item--system");
+
+    // Vérifier si le plateau peint contient déjà une victoire
+    const winnerNow = jsWinnerOnBoard(paintBoard);
+    if (winnerNow) {
+      // Trouver la ligne gagnante
+      const winLine = jsFindFirstWinLine(paintBoard, winnerNow);
+      lastState.game_over = true;
+      lastState.status = "TERMINEE";
+      lastState.current_player = winnerNow;
+      lastState.winning_line = winLine;
+      render(lastState);
+      setMessageOnly(`Position peinte : victoire de <span class="name-${winnerNow === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(winnerNow))}</span> déjà présente. Lance une nouvelle partie ou repeinds.`);
+      showHistoryLine(`Mode peinture validé — victoire de ${winnerNow === "R" ? "Rouge" : "Jaune"} détectée.`, "log-item--system");
     } else {
-      showHistoryLine(`Mode peinture validé. À ${lastState.current_player === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer.`, "log-item--system");
+      lastState.game_over = false;
+      lastState.status = "EN_COURS";
+      lastState.winning_line = null;
+      render(lastState);
+      showHistoryLine(`Mode peinture validé. À ${cp === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer.`, "log-item--system");
       scheduleAiIfNeeded();
     }
   } else {
@@ -1390,78 +1404,6 @@ function render(state) {
   if (paintMode) updatePaintCounters();
 }
 
-function ensureDbControls() {
-  let container = document.getElementById("dbImportBox");
-  if (container) return;
-  const panel = document.querySelector('.panel--controls');
-  if (!panel) return;
-  container = document.createElement('div');
-  container.id = 'dbImportBox';
-  container.className = 'field';
-  container.innerHTML = `
-    <label class="field__label" for="dbGameSelect">Importer depuis la BDD</label>
-    <select id="dbGameSelect" class="field__input"></select>
-    <div class="toolbar"><button type="button" class="btn" id="btnRefreshDbGames">↻ Rafraîchir</button><button type="button" class="btn btn-primary" id="btnLoadDbGame">Charger</button></div>
-    <div class="help-text" id="modelStatusTxt"></div>
-  `;
-  panel.appendChild(container);
-}
-
-async function refreshModelStatus() {
-  const el = $("modelStatusTxt");
-  if (!el) return;
-  const res = await fetchModelStatus();
-  if (!res.ok) { el.textContent = "Statut modèle indisponible"; return; }
-  const d = res.data;
-  el.textContent = d.model_loaded ? `Modèle IA actif : ${d.checkpoint_path}` : `Modèle IA non chargé — fallback ${d.fallback}`;
-}
-
-async function refreshDbGames() {
-  const sel = $("dbGameSelect");
-  if (!sel) return;
-  const res = await fetchDbGames(200);
-  if (!res.ok) return;
-  const prev = sel.value;
-  sel.innerHTML = '';
-  for (const g of res.data.games || []) {
-    const opt = document.createElement('option');
-    opt.value = g.id_partie;
-    opt.textContent = `#${g.id_partie} | ${g.mode} | ${g.type_partie} | ${g.status} | ${g.signature || ''}`;
-    sel.appendChild(opt);
-  }
-  if (prev) sel.value = prev;
-}
-
-function rebuildUndoFromSnapshots(snapshots, activeState) {
-  undoStack.length = 0;
-  redoStack.length = 0;
-  if (!Array.isArray(snapshots) || snapshots.length === 0) return;
-  for (let i = 0; i < snapshots.length - 1; i++) {
-    undoStack.push(cloneFullState(snapshots[i]));
-  }
-}
-
-async function loadSelectedDbGame() {
-  const sel = $("dbGameSelect");
-  if (!sel || !sel.value) return;
-  const res = await postLoadGame(Number(sel.value));
-  if (!res.ok) { showMessage(res.data?.error || 'Impossible de charger la partie.'); return; }
-  lastState = res.data.state;
-  GAME_ID = lastState.id_partie || null;
-  rebuildUndoFromSnapshots(res.data.snapshots || [], lastState);
-  lastMove = lastMoveFromSignature(lastState);
-  if (lastState.mode === 'WEB' && GAME_ID) {
-    history.replaceState({}, '', `?game_id=${GAME_ID}`);
-    startPolling();
-  } else {
-    history.replaceState({}, '', location.pathname);
-    stopPolling();
-  }
-  syncSelectsFromLoadedState(lastState);
-  render(lastState);
-  scheduleAiIfNeeded();
-}
-
 // ─────────────────────────────────────────────────────────────────────────────
 // INITIALISATION
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1481,7 +1423,6 @@ window.addEventListener("load", async () => {
   new ResizeObserver(updateHeaderHeight).observe(document.querySelector(".site-header") || document.body);
 
   if ($("playerNameR")) $("playerNameR").value = PLAYER_R_NAME;
-  ensureDbControls();
   if ($("playerNameJ")) $("playerNameJ").value = PLAYER_J_NAME;
   if ($("humanColorSelect")) $("humanColorSelect").value = humanColor;
   if ($("colorSelect")) $("colorSelect").value = uiPrefs.startingPlayer || "R";
@@ -1570,7 +1511,7 @@ window.addEventListener("load", async () => {
     if (lastState.mode === "LOCAL") {
       const player = lastState.current_player;
       const depth = Number(lastState.ai_depth || 4);
-      const res = GAME_ID ? await (async () => { const rr = await fetch("/api/local_ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, depth }) }); const dd = await rr.json(); return { ok: rr.ok, data: dd, error: dd.error, col: dd.col }; })() : await postLocalAiMove(lastState.board, player, depth);
+      const res = await postLocalAiMove(lastState.board, player, depth);
       if (!res.ok) { showMessage(res.error || "Aucune suggestion."); return; }
       const col = res.col;
       if (typeof col !== "number") { showMessage("Réponse inattendue."); return; }
@@ -1590,9 +1531,6 @@ window.addEventListener("load", async () => {
     showHistoryLine(`Suggestion : colonne ${col + 1}.`, "log-item--system");
     scheduleHintClear(8000);
   });
-
-  $("btnRefreshDbGames")?.addEventListener("click", () => void refreshDbGames());
-  $("btnLoadDbGame")?.addEventListener("click", () => void loadSelectedDbGame());
 
   $("btnCopyLink")?.addEventListener("click", () => {
     const link = $("shareLink")?.value || "";
@@ -1722,9 +1660,6 @@ window.addEventListener("load", async () => {
   if (!lastState) {
     lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "Aucune partie", ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: "R", starting_player: "R", signature: "init", game_over: false, winning_line: null, player_count: 0, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   }
-  refreshDbGames().catch(() => {});
-  refreshModelStatus().catch(() => {});
-
   // Final safety check
   if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
     lastState.ai_players = { R: false, J: false };
