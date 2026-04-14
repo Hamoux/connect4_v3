@@ -602,7 +602,7 @@ def api_new():
         import random
         starting_player = random.choice(["R", "J"])
 
-        if mode == "LOCAL":
+    if mode == "LOCAL":
         g = make_empty_state()
         g["mode"] = "LOCAL"
         g["type_partie"] = "HUMAIN"
