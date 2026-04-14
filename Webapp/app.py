@@ -821,33 +821,8 @@ def api_play():
 
     s = game
 
-    # SAFETY: Ensure ai_players is valid
-    if not isinstance(s.get("ai_players"), dict):
-        s["ai_players"] = {"R": False, "J": False}
-    # SAFETY: Prevent both players from being AI
-    ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
-        ai_players["J"] = False
-        s["ai_players"] = ai_players
-        s["ai_enabled"] = True
-    s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
-
     if s["id_partie"] is None:
-        if s["mode"] == "LOCAL":
-            # Create partie for LOCAL games
-            ai_players_to_save = s.get("ai_players") or {"R": False, "J": False}
-            pid, sig = create_partie_db(
-                "LOCAL", s.get("type_partie") or "HUMAIN", s.get("starting_player") or "R",
-                ai_player=s.get("ai_player"), ai_depth=s.get("ai_depth") or DEFAULT_DEPTH,
-                ai_players=ai_players_to_save,
-                player_r_name=s.get("player_r_name") or "Joueur Rouge",
-                player_j_name=s.get("player_j_name") or "Joueur Jaune"
-            )
-            s["id_partie"] = pid
-            s["signature"] = sig
-            games[pid] = s
-        else:
-            return jsonify({"error": "Aucune partie. Clique sur Nouvelle partie."}), 400
+        return jsonify({"error": "Aucune partie. Clique sur Nouvelle partie."}), 400
 
     if s["game_over"]:
         return jsonify(export_state(s))
@@ -869,11 +844,6 @@ def api_play():
 
     if current_color_is_ai(s):
         return jsonify({"error": "C'est au tour de l'IA."}), 400
-
-    # Prevent both players from being AI (safety check)
-    ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
-        return jsonify({"error": "Erreur: les deux joueurs ne peuvent pas être IA."}), 400
 
     try:
         _, line, joueur = apply_move(col, s)
@@ -898,34 +868,6 @@ def api_ai_move():
         return jsonify({"error": "Partie introuvable"}), 404
 
     s = game
-
-    # SAFETY: Ensure ai_players is valid
-    if not isinstance(s.get("ai_players"), dict):
-        s["ai_players"] = {"R": False, "J": False}
-    # SAFETY: Prevent both players from being AI
-    ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
-        ai_players["J"] = False
-        s["ai_players"] = ai_players
-        s["ai_enabled"] = True
-    s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
-
-    if s["id_partie"] is None:
-        if s["mode"] == "LOCAL":
-            # Create partie for LOCAL games
-            ai_players_to_save = s.get("ai_players") or {"R": False, "J": False}
-            pid, sig = create_partie_db(
-                "LOCAL", s.get("type_partie") or "HUMAIN", s.get("starting_player") or "R",
-                ai_player=s.get("ai_player"), ai_depth=s.get("ai_depth") or DEFAULT_DEPTH,
-                ai_players=ai_players_to_save,
-                player_r_name=s.get("player_r_name") or "Joueur Rouge",
-                player_j_name=s.get("player_j_name") or "Joueur Jaune"
-            )
-            s["id_partie"] = pid
-            s["signature"] = sig
-            games[pid] = s
-        else:
-            return jsonify({"error": "Aucune partie"}), 400
 
     if s["game_over"]:
         return jsonify(export_state(s))
