@@ -336,7 +336,7 @@ def load_game_from_db(game_id):
     return g
 
 
-def create_partie_db(mode, type_partie, joueur_depart):
+def create_partie_db(type_partie, joueur_depart):
     sig = f"init_{uuid.uuid4().hex[:12]}_{int(time.time() * 1000)}"
 
     row = q_one(
@@ -345,9 +345,10 @@ def create_partie_db(mode, type_partie, joueur_depart):
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         RETURNING id_partie
         """,
-        (mode, type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
+        ("WEB", type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
     )
     return int(row["id_partie"]), sig
+
 
 def update_partie_signature_db(id_partie, signature):
     try:
@@ -549,48 +550,6 @@ def signature_to_moves(sig):
     return out
 
 
-def clean_signature(sig):
-    s = str(sig or "")
-    if s.startswith("init_"):
-        s = ""
-    out = []
-    for ch in s:
-        if ch.isdigit():
-            d = int(ch)
-            if 1 <= d <= COLS:
-                out.append(str(d))
-    return "".join(out)
-
-
-def replay_signature_to_states(signature, starting_player):
-    board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-    player = starting_player
-    situations = []
-
-    for i, ch in enumerate(signature, start=1):
-        col = int(ch) - 1
-        placed = False
-
-        for r in range(ROWS - 1, -1, -1):
-            if board[r][col] == 0:
-                board[r][col] = player
-                placed = True
-                break
-
-        if not placed:
-            raise ValueError(f"Signature invalide: colonne {col + 1} pleine au coup {i}")
-
-        situations.append({
-            "numero_coup": i,
-            "plateau": board_to_text(board),
-            "joueur": player
-        })
-
-        player = "J" if player == "R" else "R"
-
-    return board, situations
-
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Routes existantes
 # ─────────────────────────────────────────────────────────────────────────────
@@ -646,34 +605,17 @@ def api_new():
     if mode == "LOCAL":
         g = make_empty_state()
         g["mode"] = "LOCAL"
-        g["type_partie"] = "IA" if human_player in ("R", "J") and str(data.get("enable_local_ai", False)).lower() in ("true", "1") else "HUMAIN"
+        g["type_partie"] = "HUMAIN"
         g["status"] = "EN_COURS"
         g["current_player"] = starting_player
         g["starting_player"] = starting_player
         g["player_r_name"] = player_r_name or "Joueur Rouge"
         g["player_j_name"] = player_j_name or "Joueur Jaune"
+        g["ai_players"] = {"R": False, "J": False}
+        g["ai_enabled"] = False
+        g["ai_player"] = None
         g["ai_depth"] = depth
-
-        if g["type_partie"] == "IA":
-            ai_player = "J" if human_player == "R" else "R"
-            g["ai_enabled"] = True
-            g["ai_player"] = ai_player
-            g["ai_players"] = {"R": ai_player == "R", "J": ai_player == "J"}
-            if ai_player == "R":
-                g["player_r_name"] = "IA"
-            else:
-                g["player_j_name"] = "IA"
-        else:
-            g["ai_players"] = {"R": False, "J": False}
-            g["ai_enabled"] = False
-            g["ai_player"] = None
-
-        pid, sig = create_partie_db("LOCAL", g["type_partie"], g["starting_player"])
-        g["id_partie"] = pid
-        g["signature"] = sig
-        games[pid] = g
-
-        return jsonify(export_state(g))
+        return jsonify(g)
 
     g = make_fresh_state()
     g["mode"] = "WEB"
@@ -699,7 +641,7 @@ def api_new():
         g["ai_player"] = None
         g["ai_players"] = {"R": False, "J": False}
 
-    pid, sig = create_partie_db("WEB", g["type_partie"], g["starting_player"])
+    pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"
@@ -713,6 +655,50 @@ def api_new():
         pass
 
     return jsonify(export_state(g))
+
+
+
+
+def clean_signature(sig):
+    s = str(sig or "")
+    if s.startswith("init_"):
+        s = ""
+    out = []
+    for ch in s:
+        if ch.isdigit():
+            d = int(ch)
+            if 1 <= d <= COLS:
+                out.append(str(d))
+    return "".join(out)
+
+
+def replay_signature_to_states(signature, starting_player):
+    board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    player = starting_player
+    situations = []
+
+    for i, ch in enumerate(signature, start=1):
+        col = int(ch) - 1
+        placed = False
+
+        for r in range(ROWS - 1, -1, -1):
+            if board[r][col] == 0:
+                board[r][col] = player
+                placed = True
+                break
+
+        if not placed:
+            raise ValueError(f"Signature invalide: colonne {col + 1} pleine au coup {i}")
+
+        situations.append({
+            "numero_coup": i,
+            "plateau": board_to_text(board),
+            "joueur": player
+        })
+
+        player = "J" if player == "R" else "R"
+
+    return board, situations
 
 
 @app.post("/api/local_new")
