@@ -578,6 +578,33 @@ def choose_ai_move(board, player, depth, enforce_max_depth=False, moves_history=
     return best_ai_col(board, player, depth_value, moves_history=moves_history)
 
 
+
+def compute_move_scores(board, player, depth, moves_history=None):
+    depth_value = normalize_depth(depth, DEFAULT_DEPTH)
+    scores = {}
+    valid = ai_engine.valid_cols(board)
+    if not valid:
+        return scores
+
+    for col in ai_engine.ordered_valid_cols(board, player, True):
+        r = ai_engine.next_open_row(board, col)
+        if r is None:
+            continue
+        board[r][col] = player
+        score = ai_engine.minimax(
+            board=board,
+            depth=max(0, depth_value - 1),
+            alpha=-10**18,
+            beta=10**18,
+            maximizing=False,
+            ai_player=player
+        )
+        board[r][col] = 0
+        scores[str(col)] = int(score)
+
+    # also expose invalid/full columns as null? keep only legal ones
+    return scores
+
 def build_state_snapshots(game_id):
     partie = q_one("SELECT * FROM partie WHERE id_partie=%s", (game_id,))
     if not partie:
@@ -1170,7 +1197,8 @@ def api_local_ai_move():
             ai_col = choose_ai_move(
                 [row[:] for row in s["board"]],
                 player,
-                depth
+                depth,
+                moves_history=moves_history
             )
         except Exception as e:
             return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
@@ -1234,13 +1262,14 @@ def api_hint():
 
     try:
         col = choose_ai_move(board_copy, player, depth, moves_history=moves_history)
+        scores = compute_move_scores([row[:] for row in s["board"]], player, depth, moves_history=moves_history)
     except Exception as e:
-        return jsonify({"error": f"Erreur Minimax hint: {str(e)}"}), 500
+        return jsonify({"error": f"Erreur IA hint: {str(e)}"}), 500
 
     if col is None:
         return jsonify({"error": "Aucun coup possible"}), 400
 
-    return jsonify({"suggested_col": col})
+    return jsonify({"suggested_col": col, "scores": scores})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1293,7 +1322,8 @@ def api_model_status():
         "model_py_path": model_py,
         "model_py_exists": bool(model_py and os.path.exists(model_py)),
         "model_loaded": model_ai is not None,
-        "fallback": "minimax" if model_ai is None else "hybrid_ml"
+        "fallback": "minimax" if model_ai is None else "hybrid_ml",
+        "debug": getattr(model_ai, "last_debug", "") if model_ai is not None else ""
     })
 
 

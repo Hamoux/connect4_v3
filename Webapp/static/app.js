@@ -45,6 +45,7 @@ const redoStack = [];
 let lastBoardSnapshot = null;
 
 let hintColumn = null;
+let hintScores = null;
 let hintTimer = null;
 
 // ── Mode peinture ─────────────────────────────────────────────────────────────
@@ -297,6 +298,7 @@ function syncSelectsFromLoadedState(state) {
 function clearHint() {
   if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
   hintColumn = null;
+  hintScores = null;
 }
 
 function scheduleHintClear(ms) {
@@ -551,7 +553,7 @@ async function undo() {
     redoStack.push(current);
     applySnapshot(lastState, prev);
     lastMove = null; clearHint(); hideMessageBox();
-    render(lastState); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); if (!lastState.game_over) void runPrediction(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -572,7 +574,7 @@ async function redo() {
     undoStack.push(current);
     applySnapshot(lastState, next);
     lastMove = null; clearHint();
-    render(lastState); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
+    render(lastState); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); if (!lastState.game_over) void runPrediction(); return;
   }
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
@@ -626,6 +628,7 @@ async function newGame() {
   scheduleAiIfNeeded();
   refreshDbGames().catch(() => {});
   refreshModelStatus().catch(() => {});
+  if (!lastState.game_over) void runPrediction();
 }
 
 // --- Jouer ---
@@ -641,6 +644,14 @@ async function play(col) {
   if (isAiTurn(lastState)) return;
   if (lastState.game_over) return;
   if (isColumnFull(col)) return;
+
+  if (lastState.mode === "LOCAL") {
+    undoStack.push(snapshotForUndo(lastState));
+    redoStack.length = 0;
+  } else if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
+    undoStack.push(cloneFullState(lastState));
+    redoStack.length = 0;
+  }
 
   cancelAiTimer(); busy = true; clearHint();
 
@@ -683,6 +694,7 @@ async function play(col) {
     return;
   }
   scheduleAiIfNeeded();
+  if (!lastState.game_over) void runPrediction();
 }
 
 async function aiMove() {
@@ -690,6 +702,14 @@ async function aiMove() {
   if (!lastState || lastState.game_over || paused || paintMode) return;
   if (!isAiTurn(lastState)) return;
   if (!GAME_ID && !lastState.id_partie) { showMessage("Clique d'abord sur « Nouvelle partie »."); return; }
+
+  if (lastState.mode === "LOCAL") {
+    undoStack.push(snapshotForUndo(lastState));
+    redoStack.length = 0;
+  } else if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
+    undoStack.push(cloneFullState(lastState));
+    redoStack.length = 0;
+  }
 
   setThinking(true);
   const t0 = performance.now();
@@ -727,6 +747,7 @@ async function aiMove() {
     return;
   }
   scheduleAiIfNeeded();
+  if (!lastState.game_over) void runPrediction();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1150,14 +1171,17 @@ function renderColHeader(state) {
   const header = $("colHeader");
   if (!header) return;
   header.innerHTML = "";
-  if (paintMode) return; // Pas de boutons colonnes en mode peinture
+  if (paintMode) return;
 
   const locked = interactionLocked(state);
   for (let c = 0; c < COLS; c++) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "col-btn";
-    btn.textContent = String(c + 1);
+    const score = hintScores && Object.prototype.hasOwnProperty.call(hintScores, String(c))
+      ? hintScores[String(c)]
+      : null;
+    btn.textContent = score === null || score === undefined ? String(c + 1) : `${c + 1} (${score})`;
     const full = state.board?.[0]?.[c] !== 0;
     const disabled = locked || full;
     if (disabled) btn.classList.add("col-btn--blocked");
@@ -1413,7 +1437,11 @@ async function refreshModelStatus() {
   const res = await fetchModelStatus();
   if (!res.ok) { el.textContent = "Statut modèle indisponible"; return; }
   const d = res.data;
-  el.textContent = d.model_loaded ? `Modèle IA actif : ${d.checkpoint_path}` : `Modèle IA non chargé — fallback ${d.fallback}`;
+  if (d.model_loaded) {
+    el.textContent = `✅ Modèle ML chargé : ${d.checkpoint_path} | mode=${d.fallback}${d.debug ? " | " + d.debug : ""}`;
+  } else {
+    el.textContent = `⚠️ Modèle ML non chargé — fallback ${d.fallback}${d.model_bridge_error ? " | " + d.model_bridge_error : ""}`;
+  }
 }
 
 async function refreshDbGames() {
@@ -1460,6 +1488,7 @@ async function loadSelectedDbGame() {
   syncSelectsFromLoadedState(lastState);
   render(lastState);
   scheduleAiIfNeeded();
+  if (!lastState.game_over) void runPrediction();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1567,25 +1596,14 @@ window.addEventListener("load", async () => {
     if (!lastState || paused) return;
     if (lastState.game_over) { showMessage("La partie est terminée."); return; }
 
-    if (lastState.mode === "LOCAL") {
-      const player = lastState.current_player;
-      const depth = Number(lastState.ai_depth || 4);
-      const res = GAME_ID ? await (async () => { const rr = await fetch("/api/local_ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, depth }) }); const dd = await rr.json(); return { ok: rr.ok, data: dd, error: dd.error, col: dd.col }; })() : await postLocalAiMove(lastState.board, player, depth);
-      if (!res.ok) { showMessage(res.error || "Aucune suggestion."); return; }
-      const col = res.col;
-      if (typeof col !== "number") { showMessage("Réponse inattendue."); return; }
-      hintColumn = col;
-      render(lastState);
-      showHistoryLine(`Suggestion : colonne ${col + 1}.`, "log-item--system");
-      scheduleHintClear(8000); return;
-    }
-
     if (!GAME_ID) { showMessage("Crée d'abord une partie."); return; }
+
     const res = await postHint();
-    if (!res.ok) { showMessage(res.data.error || "Aucune suggestion."); return; }
+    if (!res.ok) { showMessage((res.data && res.data.error) || "Aucune suggestion."); return; }
     const col = res.data.suggested_col;
     if (typeof col !== "number") { showMessage("Réponse inattendue."); return; }
     hintColumn = col;
+    hintScores = res.data.scores || null;
     render(lastState);
     showHistoryLine(`Suggestion : colonne ${col + 1}.`, "log-item--system");
     scheduleHintClear(8000);
