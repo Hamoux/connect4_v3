@@ -275,7 +275,7 @@ def load_game_from_db(game_id):
 
     g = make_fresh_state()
     g["id_partie"] = int(partie["id_partie"])
-    g["mode"] = "WEB"
+    g["mode"] = (partie["mode"] or "WEB").upper()
     g["type_partie"] = partie["type_partie"] or "HUMAIN"
     g["status"] = partie["status"] or "EN_COURS"
     g["starting_player"] = (partie["joueur_depart"] or "R").upper()
@@ -336,7 +336,7 @@ def load_game_from_db(game_id):
     return g
 
 
-def create_partie_db(type_partie, joueur_depart):
+def create_partie_db(mode, type_partie, joueur_depart):
     sig = f"init_{uuid.uuid4().hex[:12]}_{int(time.time() * 1000)}"
 
     row = q_one(
@@ -345,10 +345,9 @@ def create_partie_db(type_partie, joueur_depart):
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         RETURNING id_partie
         """,
-        ("WEB", type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
+        (mode, type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
     )
     return int(row["id_partie"]), sig
-
 
 def update_partie_signature_db(id_partie, signature):
     try:
@@ -627,7 +626,7 @@ def api_new():
             g["ai_enabled"] = False
             g["ai_player"] = None
 
-        pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
+        pid, sig = create_partie_db("LOCAL", g["type_partie"], g["starting_player"])
         g["id_partie"] = pid
         g["signature"] = sig
         games[pid] = g
@@ -658,7 +657,7 @@ def api_new():
         g["ai_player"] = None
         g["ai_players"] = {"R": False, "J": False}
 
-    pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
+    pid, sig = create_partie_db("WEB", g["type_partie"], g["starting_player"])
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"

@@ -577,8 +577,8 @@ async function newGame() {
     history.replaceState({}, "", `?game_id=${GAME_ID}`);
     const linkInput = $("shareLink");
     if (linkInput) linkInput.value = window.location.href;
-    startPolling();
-  }
+    if (state.mode === "WEB") startPolling();
+}
   resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); scheduleAiIfNeeded();
 }
 
