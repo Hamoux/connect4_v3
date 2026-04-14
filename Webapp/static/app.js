@@ -592,39 +592,6 @@ async function play(col) {
 
   if (isAiTurn(lastState)) return;
 
-  if (lastState.mode === "LOCAL") {
-    if (lastState.game_over) return;
-    if (isColumnFull(col)) return;
-
-    undoStack.push(snapshotForUndo(lastState));
-    redoStack.length = 0;
-
-    let placed = null;
-    for (let r = ROWS - 1; r >= 0; r--) {
-      if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = lastState.current_player; break; }
-    }
-    if (placed === null) return;
-
-    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
-    lastState.signature += String(col + 1);
-    lastMove = { r: placed, c: col };
-    clearHint();
-
-    const line = jsFindWinningLine(placed, col, lastState.board);
-    if (line) {
-      lastState.game_over = true; lastState.status = "TERMINEE";
-      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
-      render(lastState);
-      setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
-      return;
-    }
-
-    lastState.current_player = lastState.current_player === "R" ? "J" : "R";
-    render(lastState);
-    scheduleAiIfNeeded();
-    return;
-  }
-
   if (!lastState.id_partie) { showMessage("Clique d'abord sur « Nouvelle partie »."); return; }
   if (lastState.game_over) return;
   if (isColumnFull(col)) return;
@@ -685,42 +652,6 @@ async function aiMove() {
 
   setThinking(true);
   const t0 = performance.now();
-
-  if (lastState.mode === "LOCAL") {
-    const player = lastState.current_player;
-    const depth = Number(lastState.ai_depth || 4);
-    let res;
-    try { res = await postLocalAiMove(lastState.board, player, depth); } catch { setThinking(false); showMessage("Erreur locale de l'IA."); return; }
-    if (!res.ok) { setThinking(false); showMessage(res.error || "Erreur de l'IA."); return; }
-
-    const col = res.col;
-    let placed = null;
-    for (let r = ROWS - 1; r >= 0; r--) { if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = player; break; } }
-    if (placed === null) { showMessage("Coup IA impossible."); return; }
-
-    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
-    lastState.signature += String(col + 1);
-
-    const dt = Math.round(performance.now() - t0);
-    lastMove = { r: placed, c: col }; clearHint();
-
-    const line = jsFindWinningLine(placed, col, lastState.board);
-    if (line) {
-      lastState.game_over = true; lastState.status = "TERMINEE";
-      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
-      render(lastState);
-      setThinking(false);        // spinner s'arrête APRÈS le rendu
-      showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
-      setMessageOnly(`Victoire de <span class="name-${player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(player))}</span> !`);
-      return;
-    }
-
-    lastState.current_player = player === "R" ? "J" : "R";
-    render(lastState);         // plateau mis à jour EN PREMIER
-    setThinking(false);        // spinner s'arrête APRÈS le rendu
-    showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
-    scheduleAiIfNeeded(); return;
-  }
 
   let res;
   try { res = await postAiMove(); } catch { setThinking(false); showMessage("Erreur réseau."); return; }
