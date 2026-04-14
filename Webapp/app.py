@@ -275,7 +275,7 @@ def load_game_from_db(game_id):
 
     g = make_fresh_state()
     g["id_partie"] = int(partie["id_partie"])
-    g["mode"] = "WEB"
+    g["mode"] = (partie.get("mode") or "WEB").upper()
     g["type_partie"] = partie["type_partie"] or "HUMAIN"
     g["status"] = partie["status"] or "EN_COURS"
     g["starting_player"] = (partie["joueur_depart"] or "R").upper()
@@ -336,7 +336,7 @@ def load_game_from_db(game_id):
     return g
 
 
-def create_partie_db(type_partie, joueur_depart):
+def create_partie_db(mode, type_partie, joueur_depart):
     sig = f"init_{uuid.uuid4().hex[:12]}_{int(time.time() * 1000)}"
 
     row = q_one(
@@ -345,7 +345,7 @@ def create_partie_db(type_partie, joueur_depart):
         VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         RETURNING id_partie
         """,
-        ("WEB", type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
+        (mode, type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
     )
     return int(row["id_partie"]), sig
 
@@ -615,7 +615,13 @@ def api_new():
         g["ai_enabled"] = False
         g["ai_player"] = None
         g["ai_depth"] = depth
-        return jsonify(g)
+
+        pid, sig = create_partie_db("LOCAL", g["type_partie"], g["starting_player"])
+        g["id_partie"] = pid
+        g["signature"] = sig
+        games[pid] = g
+        ai_engine.clear_cache()
+        return jsonify(export_state(g))
 
     g = make_fresh_state()
     g["mode"] = "WEB"
@@ -641,7 +647,7 @@ def api_new():
         g["ai_player"] = None
         g["ai_players"] = {"R": False, "J": False}
 
-    pid, sig = create_partie_db(g["type_partie"], g["starting_player"])
+    pid, sig = create_partie_db("WEB", g["type_partie"], g["starting_player"])
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"
@@ -825,9 +831,52 @@ def api_ai_move():
 @app.post("/api/local_ai_move")
 def api_local_ai_move():
     data = request.json or {}
+    game_id = normalize_game_id(data.get("game_id"))
+    depth = normalize_depth(data.get("depth"), DEFAULT_DEPTH)
+
+    if game_id is not None:
+        game = get_game_state(game_id)
+        if game is None:
+            return jsonify({"error": "Partie introuvable"}), 404
+
+        s = game
+
+        if s.get("mode") != "LOCAL":
+            return jsonify({"error": "Cette route est réservée aux parties locales."}), 400
+
+        if s["game_over"]:
+            return jsonify(export_state(s))
+
+        player = str(s.get("current_player") or "").upper()
+        if player not in ("R", "J"):
+            return jsonify({"error": "Joueur IA invalide"}), 400
+
+        moves_history = signature_to_moves(s.get("signature", ""))
+
+        try:
+            ai_col = best_ai_col(
+                [row[:] for row in s["board"]],
+                player,
+                depth,
+                moves_history=moves_history
+            )
+        except Exception as e:
+            return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
+
+        if ai_col is None:
+            return jsonify({"error": "Aucun coup possible"}), 400
+
+        _, line, joueur = apply_move(ai_col, s)
+
+        if line:
+            finalize_win(joueur, line, s)
+            return jsonify(export_state(s))
+
+        s["current_player"] = "R" if s["current_player"] == "J" else "J"
+        return jsonify(export_state(s))
+
     board = data.get("board")
     player = str(data.get("player") or "").upper()
-    depth = normalize_depth(data.get("depth"), DEFAULT_DEPTH)
     moves_history = data.get("moves_history")  # optionnel, liste 0-based
 
     if player not in ("R", "J"):
