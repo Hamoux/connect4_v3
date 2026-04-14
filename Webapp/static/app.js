@@ -1,6 +1,11 @@
 /**
- * Front-end Puissance 4 — communication avec l’API Flask existante uniquement.
- * Sections : configuration, API, historique annuler/rétablir (mode local), rendu, événements.
+ * Front-end Puissance 4 — communication avec l'API Flask existante + nouvelles fonctionnalités.
+ * Nouvelles features:
+ *  - Mode peinture (peindre/effacer des pions librement)
+ *  - Prédiction "Rouge gagne dans X tours"
+ *  - Bannière dernier coup détaillée (mobile-friendly)
+ *  - Bibliothèque d'ouverture passée à l'IA
+ *  - Analyse "à qui de jouer" après le painting
  */
 
 const ROWS = 9;
@@ -10,14 +15,8 @@ const AI_DELAY_MS = 850;
 // --- Identifiant client (session) ---
 let CLIENT_ID = sessionStorage.getItem("connect4_client_id");
 if (!CLIENT_ID) {
-  try {
-    CLIENT_ID = crypto?.randomUUID?.() ?? null;
-  } catch {
-    CLIENT_ID = null;
-  }
-  if (!CLIENT_ID) {
-    CLIENT_ID = "cid_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
-  }
+  try { CLIENT_ID = crypto?.randomUUID?.() ?? null; } catch { CLIENT_ID = null; }
+  if (!CLIENT_ID) CLIENT_ID = "cid_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
   sessionStorage.setItem("connect4_client_id", CLIENT_ID);
 }
 
@@ -33,54 +32,41 @@ let paused = false;
 
 let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "Joueur jaune";
-let playerColor = localStorage.getItem("playerColor") || "R";
+let humanColor = localStorage.getItem("humanColor") || "R";
 
-/**
- * Préférences UI (mode / difficulté) alignées sur les listes — mises à jour après confirmation
- * ou chargement d’une partie.
- */
-const uiPrefs = {
-  mode: "IA",
-  difficulty: "medium",
-  startingPlayer: "R"
-};
+const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R" };
 let committedMode = "IA";
-let committedDifficulty = "medium";
-
-/** Évite la modale lors du remplissage programmatique des listes. */
+let committedDifficulty = "4";
 let suppressSelectChange = false;
-
 let pendingConfirmCallback = null;
 
-/** Pile annuler / rétablir : mode local, ou partie JvIA serveur (resynchronisation par rejouage). */
 const undoStack = [];
 const redoStack = [];
-
-/** Dernière grille rendue (pour animer uniquement les nouveaux pions). */
 let lastBoardSnapshot = null;
 
-/** Colonne mise en évidence par « Coup suggéré » (API /api/hint). */
 let hintColumn = null;
 let hintTimer = null;
 
+// ── Mode peinture ─────────────────────────────────────────────────────────────
+let paintMode = false;          // true = mode peinture actif
+let paintColor = "R";           // couleur du pinceau courant
+let paintBoard = null;          // copie du plateau en cours de peinture
+let paintStartingPlayer = "R";  // pour déduire à qui de jouer
+
+// ── Prédiction ────────────────────────────────────────────────────────────────
+let predictionResult = null;
+
 // --- Utilitaires DOM ---
-function $(id) {
-  return document.getElementById(id);
-}
+function $(id) { return document.getElementById(id); }
 
 function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (m) =>
+  return String(s).replace(/[&<>"']/g, m =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m])
   );
 }
 
-function deepCloneBoard(board) {
-  return board.map((row) => row.slice());
-}
+function deepCloneBoard(board) { return board.map(row => row.slice()); }
 
-/**
- * Copie l’état jouable nécessaire à l’annulation (mode local).
- */
 function snapshotForUndo(state) {
   return {
     board: deepCloneBoard(state.board),
@@ -89,7 +75,13 @@ function snapshotForUndo(state) {
     signature: state.signature,
     game_over: state.game_over,
     status: state.status,
-    winning_line: state.winning_line ? state.winning_line.map((x) => [...x]) : null
+    winning_line: state.winning_line ? state.winning_line.map(x => [...x]) : null,
+    ai_enabled: !!state.ai_enabled,
+    ai_players: { ...(state.ai_players || { R: false, J: false }) },
+    ai_depth: state.ai_depth || 0,
+    ai_player: state.ai_player || null,
+    player_r_name: state.player_r_name || PLAYER_R_NAME,
+    player_j_name: state.player_j_name || PLAYER_J_NAME
   };
 }
 
@@ -100,44 +92,36 @@ function applySnapshot(state, snap) {
   state.signature = snap.signature;
   state.game_over = snap.game_over;
   state.status = snap.status;
-  state.winning_line = snap.winning_line ? snap.winning_line.map((x) => [...x]) : null;
+  state.winning_line = snap.winning_line ? snap.winning_line.map(x => [...x]) : null;
+  state.ai_enabled = !!snap.ai_enabled;
+  state.ai_players = { ...(snap.ai_players || { R: false, J: false }) };
+  state.ai_depth = snap.ai_depth || 0;
+  state.ai_player = snap.ai_player || null;
+  state.player_r_name = snap.player_r_name || PLAYER_R_NAME;
+  state.player_j_name = snap.player_j_name || PLAYER_J_NAME;
 }
 
 function cloneFullState(state) {
-  try {
-    return JSON.parse(JSON.stringify(state));
-  } catch {
-    return snapshotForUndo(state);
-  }
+  try { return JSON.parse(JSON.stringify(state)); } catch { return snapshotForUndo(state); }
 }
 
 function syncUiPrefsFromForm() {
   uiPrefs.mode = ($("modeSelect")?.value || "IA").toUpperCase();
-  uiPrefs.difficulty = ($("diffSelect")?.value || "medium").toLowerCase();
+  uiPrefs.difficulty = $("diffSelect")?.value || "4";
   uiPrefs.startingPlayer = ($("colorSelect")?.value || "R").toUpperCase();
+  uiPrefs.humanColor = ($("humanColorSelect")?.value || "R").toUpperCase();
   committedMode = uiPrefs.mode;
   committedDifficulty = uiPrefs.difficulty;
 }
 
-function depthToDifficulty(d) {
-  const n = Number(d);
-  if (n <= 2) return "easy";
-  if (n <= 4) return "medium";
-  return "hard";
-}
-
-/** Partie en cours avec au moins un pion ou un coup enregistré. */
 function hasActiveGame() {
   if (!lastState || lastState.game_over) return false;
   let sig = String(lastState.signature || "");
   if (sig.startsWith("init_")) sig = "";
-  const digits = sig.replace(/[^\d]/g, "");
-  if (digits.length > 0) return true;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
+  if (sig.replace(/[^\d]/g, "").length > 0) return true;
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
       if (lastState.board?.[r]?.[c] !== 0) return true;
-    }
-  }
   return false;
 }
 
@@ -160,38 +144,45 @@ function lastMoveFromSignature(state) {
   if (!digits.length) return null;
   const lastCol = parseInt(digits[digits.length - 1], 10) - 1;
   if (lastCol < 0 || lastCol >= COLS) return null;
-  for (let r = ROWS - 1; r >= 0; r--) {
+  for (let r = ROWS - 1; r >= 0; r--)
     if (state.board?.[r]?.[lastCol] !== 0) return { r, c: lastCol };
-  }
   return null;
 }
 
-/**
- * Recrée une partie serveur puis rejoue la séquence jusqu’à l’état cible (annuler / rétablir JvIA).
- */
+function myOnlineColor(state) {
+  if (!state) return null;
+  if (state.client_r === CLIENT_ID) return "R";
+  if (state.client_j === CLIENT_ID) return "J";
+  return null;
+}
+
+function isAiTurn(state) {
+  if (!state || state.game_over) return false;
+  const aiPlayers = state.ai_players || { R: false, J: false };
+  return !!aiPlayers[state.current_player];
+}
+
+// --- Synchronisation serveur pour undo/redo JvIA ---
 async function resyncServerStateFromSnapshot(targetSnap) {
   stopPolling();
   cancelAiTimer();
   clearHint();
+  predictionResult = null;
 
   const mode = uiPrefs.mode;
   const difficulty = uiPrefs.difficulty;
   const starting_player = mode === "ONLINE" ? undefined : (targetSnap.starting_player || "R");
 
   const payload = {
-    mode,
-    difficulty,
-    starting_player,
+    mode, difficulty, starting_player,
+    human_player: uiPrefs.humanColor,
     client_id: CLIENT_ID,
     player_r_name: targetSnap.player_r_name || PLAYER_R_NAME,
     player_j_name: targetSnap.player_j_name || PLAYER_J_NAME
   };
 
   const { ok, data: fresh } = await postNewGame(payload);
-  if (!ok) {
-    showMessage(fresh.error || "Impossible de synchroniser l’état.");
-    return false;
-  }
+  if (!ok) { showMessage(fresh.error || "Impossible de synchroniser l'état."); return false; }
 
   lastState = fresh;
   GAME_ID = fresh.id_partie;
@@ -202,50 +193,36 @@ async function resyncServerStateFromSnapshot(targetSnap) {
   for (let i = 0; i < moves.length; i++) {
     const col = moves[i];
     const st = await getState(GAME_ID);
-    if (!st) {
-      showMessage("Impossible de synchroniser l’état.");
-      return false;
-    }
+    if (!st) { showMessage("Impossible de synchroniser l'état."); return false; }
     lastState = st;
-
     if (st.game_over) break;
-
-    if (st.type_partie === "IA") {
-      if (st.current_player === st.ai_player) {
-        const r = await postAiMove();
-        if (!r.ok) {
-          showMessage(r.data.error || "Erreur lors du coup de l’IA.");
-          return false;
-        }
-        lastState = r.data;
-      } else {
-        const r = await postPlay(col);
-        if (!r.ok) {
-          showMessage(r.data.error || "Erreur lors du coup.");
-          return false;
-        }
-        lastState = r.data;
-      }
+    if (isAiTurn(st)) {
+      const r = await postAiMove();
+      if (!r.ok) { showMessage(r.data.error || "Erreur lors du coup de l'IA."); return false; }
+      lastState = r.data;
     } else {
       const r = await postPlay(col);
-      if (!r.ok) {
-        showMessage(r.data.error || "Erreur lors du coup.");
-        return false;
-      }
+      if (!r.ok) { showMessage(r.data.error || "Erreur lors du coup."); return false; }
       lastState = r.data;
     }
-
     if (lastState.game_over) break;
+  }
+
+  const targetAi = targetSnap.ai_players || { R: false, J: false };
+  for (const color of ["R", "J"]) {
+    const currentAi = !!(lastState.ai_players || {})[color];
+    if (currentAi !== !!targetAi[color]) {
+      const swap = await postSetAiColor(color, !!targetAi[color]);
+      if (!swap.ok) { showMessage(swap.data.error || "Erreur lors de la restauration."); return false; }
+      lastState = swap.data;
+    }
   }
 
   lastBoardSnapshot = null;
   lastMove = lastMoveFromSignature(lastState);
-
   if (lastState.mode === "WEB") startPolling();
-
   const linkInput = $("shareLink");
   if (linkInput) linkInput.value = window.location.href;
-
   render(lastState);
   scheduleAiIfNeeded();
   return true;
@@ -255,19 +232,13 @@ function showConfirmModal(message, onYes) {
   const overlay = $("confirmOverlay");
   const text = $("confirmModalText");
   if (text) text.textContent = message;
-  if (overlay) {
-    overlay.hidden = false;
-    overlay.setAttribute("aria-hidden", "false");
-  }
+  if (overlay) { overlay.hidden = false; overlay.setAttribute("aria-hidden", "false"); }
   pendingConfirmCallback = onYes;
 }
 
 function hideConfirmModal() {
   const overlay = $("confirmOverlay");
-  if (overlay) {
-    overlay.hidden = true;
-    overlay.setAttribute("aria-hidden", "true");
-  }
+  if (overlay) { overlay.hidden = true; overlay.setAttribute("aria-hidden", "true"); }
   pendingConfirmCallback = null;
 }
 
@@ -281,117 +252,129 @@ function updateShareLinkVisibility() {
 function updateUndoHelpText() {
   const help = $("undoHelp");
   if (!help || !lastState) return;
-  if (lastState.mode === "LOCAL") {
-    help.innerHTML =
-      "Annuler / rétablir : un coup à la fois en <strong>joueur contre joueur (local)</strong>.";
-  } else if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
-    help.innerHTML =
-      "Annuler / rétablir : retire le dernier <strong>tour complet</strong> (ton coup et celui de l’IA).";
-  } else {
+  if (lastState.mode === "LOCAL")
+    help.innerHTML = "Annuler / rétablir : un coup à la fois en <strong>joueur contre joueur (local)</strong>.";
+  else if (lastState.mode === "WEB" && lastState.type_partie === "IA")
+    help.innerHTML = "Annuler / rétablir : retire le dernier <strong>tour complet</strong> (ton coup et celui de l'IA).";
+  else
     help.innerHTML = "Annuler / rétablir : non disponible en ligne (deux joueurs).";
-  }
 }
 
 function syncSelectsFromLoadedState(state) {
   if (!state) return;
   suppressSelectChange = true;
   try {
-    if (state.mode === "LOCAL") {
-      if ($("modeSelect")) $("modeSelect").value = "LOCAL";
-    } else if (state.type_partie === "IA") {
-      if ($("modeSelect")) $("modeSelect").value = "IA";
-    } else {
-      if ($("modeSelect")) $("modeSelect").value = "ONLINE";
-    }
-    if (state.ai_depth != null && $("diffSelect")) {
-      $("diffSelect").value = depthToDifficulty(state.ai_depth);
-    }
-    if (state.starting_player && $("colorSelect")) {
-      $("colorSelect").value = state.starting_player;
+    if (state.mode === "LOCAL") { if ($("modeSelect")) $("modeSelect").value = "LOCAL"; }
+    else if (state.type_partie === "IA") { if ($("modeSelect")) $("modeSelect").value = "IA"; }
+    else { if ($("modeSelect")) $("modeSelect").value = "ONLINE"; }
+    if (state.ai_depth != null && $("diffSelect")) $("diffSelect").value = String(state.ai_depth);
+    if (state.starting_player && $("colorSelect")) $("colorSelect").value = state.starting_player;
+    if (state.type_partie === "IA" && $("humanColorSelect")) {
+      const aiColor = state.ai_player === "R" ? "R" : "J";
+      const human = aiColor === "R" ? "J" : "R";
+      $("humanColorSelect").value = human;
+      humanColor = human;
+      localStorage.setItem("humanColor", human);
     }
     syncUiPrefsFromForm();
     updateModeUI();
     updateShareLinkVisibility();
-  } finally {
-    suppressSelectChange = false;
-  }
+  } finally { suppressSelectChange = false; }
 }
 
 function clearHint() {
-  if (hintTimer) {
-    clearTimeout(hintTimer);
-    hintTimer = null;
-  }
+  if (hintTimer) { clearTimeout(hintTimer); hintTimer = null; }
   hintColumn = null;
 }
 
 function scheduleHintClear(ms) {
   clearHint();
-  hintTimer = setTimeout(() => {
-    hintColumn = null;
-    hintTimer = null;
-    if (lastState) render(lastState);
-  }, ms);
+  hintTimer = setTimeout(() => { hintColumn = null; hintTimer = null; if (lastState) render(lastState); }, ms);
 }
 
-// --- Noms affichés ---
 function nameFor(letter) {
   if (letter === "R") return lastState?.player_r_name || PLAYER_R_NAME || "Joueur rouge";
   if (letter === "J") return lastState?.player_j_name || PLAYER_J_NAME || "Joueur jaune";
   return "—";
 }
 
-// --- API (chemins inchangés) ---
+// --- API ---
 async function getState(id) {
   let url = "/api/state";
-  if (id) {
-    url += `?game_id=${encodeURIComponent(id)}&client_id=${encodeURIComponent(CLIENT_ID)}`;
-  }
+  if (id) url += `?game_id=${encodeURIComponent(id)}&client_id=${encodeURIComponent(CLIENT_ID)}`;
   const res = await fetch(url);
   const data = await res.json();
-  if (!res.ok) {
-    setMessageOnly(data.error || "Erreur lors de la récupération de l’état.");
-    return null;
-  }
+  if (!res.ok) { setMessageOnly(data.error || "Erreur lors de la récupération de l'état."); return null; }
   return data;
 }
 
 async function postNewGame(payload) {
-  const res = await fetch("/api/new", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  const res = await fetch("/api/new", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
 
 async function postPlay(col) {
-  const res = await fetch("/api/play", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ col, game_id: GAME_ID, client_id: CLIENT_ID })
-  });
+  const res = await fetch("/api/play", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ col, game_id: GAME_ID, client_id: CLIENT_ID }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
 
 async function postAiMove() {
-  const res = await fetch("/api/ai_move", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID })
-  });
+  const res = await fetch("/api/ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
 
 async function postHint() {
-  const res = await fetch("/api/hint", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID })
+  const res = await fetch("/api/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID }) });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postSetAiColor(color, enabled) {
+  const res = await fetch("/api/set_ai_color", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID, color, enabled, player_r_name: localStorage.getItem("playerNameR") || PLAYER_R_NAME, player_j_name: localStorage.getItem("playerNameJ") || PLAYER_J_NAME })
   });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postLocalAiMove(board, player, depth) {
+  const sig = lastState?.signature || "";
+  // N'utiliser la bibliothèque d'ouverture QUE si la partie a commencé normalement
+  // (signature contient des chiffres = coups réels joués)
+  // Après mode peinture : signature = "init" → pas de moves_history
+  // → l'IA évalue la position réelle avec minimax pur, sans biais d'ouverture
+  const hasRealMoves = sig !== "init" && /\d/.test(sig);
+  const moves_history = hasRealMoves ? parseSignatureToCols(sig) : null;
+  const res = await fetch("/api/local_ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, player, depth, moves_history }) });
+  const data = await res.json();
+  if (!res.ok) return { ok: false, error: data.error || "Erreur IA locale" };
+  return { ok: true, col: data.col };
+}
+
+async function postPredict(board, currentPlayer, depth) {
+  const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 6 }) });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postSimulate(board, currentPlayer, depth) {
+  const res = await fetch("/api/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth }) });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postPaintAnalyze(board, startingPlayer) {
+  const res = await fetch("/api/paint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, starting_player: startingPlayer }) });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postPaintHint(board, currentPlayer, depth) {
+  const res = await fetch("/api/paint_hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -406,10 +389,7 @@ function setMessageOnly(txt) {
 
 function hideMessageBox() {
   const msg = $("message");
-  if (msg) {
-    msg.hidden = true;
-    msg.textContent = "";
-  }
+  if (msg) { msg.hidden = true; msg.textContent = ""; }
 }
 
 function showHistoryLine(txt, className = "log-item--system") {
@@ -422,158 +402,79 @@ function showHistoryLine(txt, className = "log-item--system") {
   historyDiv.scrollTop = historyDiv.scrollHeight;
 }
 
-function showMessage(txt) {
-  showHistoryLine(txt);
-  setMessageOnly(txt);
-}
+function showMessage(txt) { showHistoryLine(txt); setMessageOnly(txt); }
 
-// --- Plateau (logique locale) ---
-function isColumnFull(col) {
-  return lastState?.board?.[0]?.[col] !== 0;
-}
+// --- Plateau local ---
+function isColumnFull(col) { return lastState?.board?.[0]?.[col] !== 0; }
 
 function findLastMove(prevBoard, newBoard) {
   if (!prevBoard || !newBoard) return null;
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (prevBoard?.[r]?.[c] === 0 && (newBoard?.[r]?.[c] === "R" || newBoard?.[r]?.[c] === "J")) {
+  for (let r = 0; r < ROWS; r++)
+    for (let c = 0; c < COLS; c++)
+      if (prevBoard?.[r]?.[c] === 0 && (newBoard?.[r]?.[c] === "R" || newBoard?.[r]?.[c] === "J"))
         return { r, c };
-      }
-    }
-  }
   return null;
 }
 
 function jsFindWinningLine(r, c, board) {
-  const dirs = [
-    [0, 1],
-    [1, 0],
-    [1, 1],
-    [1, -1]
-  ];
+  const dirs = [[0, 1], [1, 0], [1, 1], [1, -1]];
   const player = board[r][c];
   for (const [dr, dc] of dirs) {
     let coords = [];
     for (let i = -3; i < 4; i++) {
-      const nr = r + dr * i;
-      const nc = c + dc * i;
+      const nr = r + dr * i, nc = c + dc * i;
       if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === player) {
         coords.push([nr, nc]);
         if (coords.length === 4) return coords;
-      } else {
-        coords = [];
-      }
+      } else { coords = []; }
     }
   }
   return null;
 }
 
-// --- En-tête statut global ---
+// --- En-tête ---
 function updateHeaderStatus(state) {
   const dot = $("statusDot");
   const text = $("headerStatusText");
   if (!text) return;
-
-  if (!state) {
-    text.textContent = "Aucune donnée";
-    dot?.classList.remove("header-status__dot--play", "header-status__dot--wait", "header-status__dot--done");
-    return;
-  }
-
-  if (state.game_over) {
-    text.textContent = "Terminée";
-    dot?.classList.remove("header-status__dot--play", "header-status__dot--wait");
-    dot?.classList.add("header-status__dot--done");
-    return;
-  }
-
-  if (paused) {
-    text.textContent = "En pause";
-    dot?.classList.remove("header-status__dot--play", "header-status__dot--done");
-    dot?.classList.add("header-status__dot--wait");
-    return;
-  }
-
-  if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) {
-    text.textContent = "En attente d’un adversaire";
-    dot?.classList.remove("header-status__dot--play", "header-status__dot--done");
-    dot?.classList.add("header-status__dot--wait");
-    return;
-  }
-
+  if (!state) { text.textContent = "Aucune donnée"; dot?.classList.remove("header-status__dot--play", "header-status__dot--wait", "header-status__dot--done"); return; }
+  if (paintMode) { text.textContent = "Mode peinture"; dot?.classList.remove("header-status__dot--play", "header-status__dot--done"); dot?.classList.add("header-status__dot--wait"); return; }
+  if (state.game_over) { text.textContent = "Terminée"; dot?.classList.remove("header-status__dot--play", "header-status__dot--wait"); dot?.classList.add("header-status__dot--done"); return; }
+  if (paused) { text.textContent = "En pause"; dot?.classList.remove("header-status__dot--play", "header-status__dot--done"); dot?.classList.add("header-status__dot--wait"); return; }
+  if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) { text.textContent = "En attente d'un adversaire"; dot?.classList.remove("header-status__dot--play", "header-status__dot--done"); dot?.classList.add("header-status__dot--wait"); return; }
   text.textContent = "En cours";
   dot?.classList.remove("header-status__dot--wait", "header-status__dot--done");
   dot?.classList.add("header-status__dot--play");
 }
 
-// --- Polling ---
-function cancelAiTimer() {
-  if (aiTimer) {
-    clearTimeout(aiTimer);
-    aiTimer = null;
-  }
-}
+// --- Polling / IA ---
+function cancelAiTimer() { if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; } }
+function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+function setThinking(on) { const el = $("aiThinking"); if (!el) return; el.hidden = !on; }
 
-function stopPolling() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-function setThinking(on) {
-  const el = $("aiThinking");
-  if (!el) return;
-  el.hidden = !on;
-}
-
-/** Après reprise, relance le tour IA si nécessaire (timer annulé pendant la pause). */
 function scheduleAiIfNeeded() {
-  if (!lastState || lastState.game_over || paused || busy) return;
-  if (lastState.type_partie === "IA" && lastState.current_player === lastState.ai_player) {
-    cancelAiTimer();
-    aiTimer = setTimeout(aiMove, AI_DELAY_MS);
-  }
+  if (!lastState || lastState.game_over || paused || busy || paintMode) return;
+  if (isAiTurn(lastState)) { cancelAiTimer(); aiTimer = setTimeout(aiMove, AI_DELAY_MS); }
 }
 
 function startPolling() {
   if (pollTimer) return;
-
   const tick = async () => {
-    if (!lastState || lastState.game_over || lastState.mode !== "WEB" || !GAME_ID) {
-      stopPolling();
-      return;
-    }
+    if (!lastState || lastState.game_over || lastState.mode !== "WEB" || !GAME_ID) { stopPolling(); return; }
     const data = await getState(GAME_ID);
     if (!data) return;
-    const changed =
-      JSON.stringify(data.board) !== JSON.stringify(lastState.board) ||
-      data.signature !== lastState.signature ||
-      data.current_player !== lastState.current_player ||
-      data.game_over !== lastState.game_over ||
-      data.player_count !== lastState.player_count ||
-      data.client_r !== lastState.client_r ||
-      data.client_j !== lastState.client_j;
-    if (changed) {
-      lastMove = findLastMove(lastState.board, data.board);
-      lastState = data;
-      render(lastState);
-    }
+    const changed = data.signature !== lastState.signature || data.current_player !== lastState.current_player || data.game_over !== lastState.game_over || data.player_count !== lastState.player_count || data.client_r !== lastState.client_r || data.client_j !== lastState.client_j || JSON.stringify(data.ai_players || {}) !== JSON.stringify(lastState.ai_players || {}) || data.player_r_name !== lastState.player_r_name || data.player_j_name !== lastState.player_j_name;
+    if (changed) { lastMove = findLastMove(lastState.board, data.board); lastState = data; render(lastState); scheduleAiIfNeeded(); }
   };
-
   tick();
   pollTimer = setInterval(tick, 800);
 }
 
 // --- Pause ---
-/** Remet l’UI de pause sans re-rendre (utilisé au démarrage d’une nouvelle partie). */
 function resetPauseUiOnly() {
   paused = false;
   const overlay = $("pauseOverlay");
-  if (overlay) {
-    overlay.hidden = true;
-    overlay.setAttribute("aria-hidden", "true");
-  }
+  if (overlay) { overlay.hidden = true; overlay.setAttribute("aria-hidden", "true"); }
   $("board")?.classList.remove("is-paused");
   const bp = $("btnPause");
   if (bp) bp.textContent = "Pause";
@@ -584,168 +485,99 @@ function setPaused(value) {
   if (paused) cancelAiTimer();
   const overlay = $("pauseOverlay");
   const board = $("board");
-  if (overlay) {
-    overlay.hidden = !paused;
-    overlay.setAttribute("aria-hidden", paused ? "false" : "true");
-  }
+  if (overlay) { overlay.hidden = !paused; overlay.setAttribute("aria-hidden", paused ? "false" : "true"); }
   if (board) board.classList.toggle("is-paused", paused);
   updateHeaderStatus(lastState);
   if (lastState) render(lastState);
   if (!paused) scheduleAiIfNeeded();
 }
 
-// --- Annuler / rétablir ---
+// --- Undo / redo ---
 function canUseUndoRedo() {
-  if (!lastState || paused) return false;
+  if (!lastState || paused || paintMode) return false;
   if (lastState.mode === "LOCAL") return true;
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") return true;
   return false;
 }
 
 function updateUndoRedoButtons() {
-  const u = $("btnUndo");
-  const r = $("btnRedo");
+  const u = $("btnUndo"), r = $("btnRedo");
   const allowed = canUseUndoRedo() && !busy;
-  if (u) {
-    u.disabled = !allowed || undoStack.length === 0;
-  }
-  if (r) {
-    r.disabled = !allowed || redoStack.length === 0;
-  }
+  if (u) u.disabled = !allowed || undoStack.length === 0;
+  if (r) r.disabled = !allowed || redoStack.length === 0;
 }
 
 async function undo() {
   if (!canUseUndoRedo() || undoStack.length === 0 || !lastState) return;
-
   if (lastState.mode === "LOCAL") {
     const current = snapshotForUndo(lastState);
     const prev = undoStack.pop();
     redoStack.push(current);
     applySnapshot(lastState, prev);
-    lastMove = null;
-    clearHint();
-    hideMessageBox();
-    render(lastState);
-    showHistoryLine("Coup annulé.", "log-item--system");
-    return;
+    lastMove = null; clearHint(); hideMessageBox();
+    render(lastState); showHistoryLine("Coup annulé.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
-
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
     const prev = undoStack.pop();
     redoStack.push(cloneFullState(lastState));
     const ok = await resyncServerStateFromSnapshot(prev);
     busy = false;
-    if (!ok) {
-      undoStack.push(prev);
-      redoStack.pop();
-      updateUndoRedoButtons();
-      return;
-    }
-    clearHint();
-    hideMessageBox();
-    showHistoryLine("Coup annulé.", "log-item--system");
+    if (!ok) { undoStack.push(prev); redoStack.pop(); updateUndoRedoButtons(); return; }
+    clearHint(); hideMessageBox(); showHistoryLine("Coup annulé.", "log-item--system");
   }
 }
 
 async function redo() {
   if (!canUseUndoRedo() || redoStack.length === 0 || !lastState) return;
-
   if (lastState.mode === "LOCAL") {
     const current = snapshotForUndo(lastState);
     const next = redoStack.pop();
     undoStack.push(current);
     applySnapshot(lastState, next);
-    lastMove = null;
-    clearHint();
-    render(lastState);
-    showHistoryLine("Coup rétabli.", "log-item--system");
-    return;
+    lastMove = null; clearHint();
+    render(lastState); showHistoryLine("Coup rétabli.", "log-item--system"); scheduleAiIfNeeded(); return;
   }
-
   if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
     busy = true;
     const next = redoStack.pop();
     undoStack.push(cloneFullState(lastState));
     const ok = await resyncServerStateFromSnapshot(next);
     busy = false;
-    if (!ok) {
-      redoStack.push(next);
-      undoStack.pop();
-      updateUndoRedoButtons();
-      return;
-    }
-    clearHint();
-    showHistoryLine("Coup rétabli.", "log-item--system");
+    if (!ok) { redoStack.push(next); undoStack.pop(); updateUndoRedoButtons(); return; }
+    clearHint(); showHistoryLine("Coup rétabli.", "log-item--system");
   }
 }
 
 // --- Nouvelle partie ---
 async function newGame() {
-  busy = false;
-  hideMessageBox();
-  lastMove = null;
-  lastBoardSnapshot = null;
-  cancelAiTimer();
-  setThinking(false);
-  clearHint();
-  undoStack.length = 0;
-  redoStack.length = 0;
+  busy = false; hideMessageBox(); lastMove = null; lastBoardSnapshot = null;
+  cancelAiTimer(); setThinking(false); clearHint();
+  undoStack.length = 0; redoStack.length = 0;
+  predictionResult = null;
+
+  // Quitter le mode peinture si actif
+  if (paintMode) exitPaintMode(false);
 
   const mode = ($("modeSelect")?.value || "IA").toUpperCase();
-  const difficulty = ($("diffSelect")?.value || "medium").toLowerCase();
-  const starting_player =
-    mode === "ONLINE" ? undefined : (($("colorSelect")?.value || playerColor || "R").toUpperCase());
+  const difficulty = $("diffSelect")?.value || "4";
+  const starting_player = mode === "ONLINE" ? undefined : (($("colorSelect")?.value || "R").toUpperCase());
+  const human_player = mode === "IA" ? (($("humanColorSelect")?.value || humanColor || "R").toUpperCase()) : undefined;
 
   GAME_ID = null;
   history.replaceState({}, "", location.pathname);
 
   if (mode === "LOCAL") {
     const start = starting_player === "R" || starting_player === "J" ? starting_player : "R";
-    lastState = {
-      id_partie: null,
-      mode: "LOCAL",
-      type_partie: "HUMAIN",
-      status: "EN_COURS",
-      ai_enabled: false,
-      ai_depth: 0,
-      board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
-      current_player: start,
-      starting_player: start,
-      signature: "init",
-      game_over: false,
-      ai_player: null,
-      winning_line: null,
-      player_count: 1,
-      client_r: null,
-      client_j: null,
-      player_r_name: PLAYER_R_NAME,
-      player_j_name: PLAYER_J_NAME
-    };
-    stopPolling();
-    resetPauseUiOnly();
-    syncUiPrefsFromForm();
-    render(lastState);
-    return;
+    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS", ai_enabled: false, ai_depth: Number(difficulty), ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: start, starting_player: start, signature: "init", game_over: false, winning_line: null, player_count: 1, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
+    stopPolling(); resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); return;
   }
 
-  const payload = {
-    mode,
-    difficulty,
-    starting_player,
-    client_id: CLIENT_ID,
-    player_r_name: PLAYER_R_NAME,
-    player_j_name: PLAYER_J_NAME
-  };
-
+  const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   const { ok, data: state } = await postNewGame(payload);
-  if (!ok) {
-    setMessageOnly(state.error || "Erreur lors de la création de la partie.");
-    return;
-  }
+  if (!ok) { setMessageOnly(state.error || "Erreur lors de la création de la partie."); return; }
 
   lastState = state;
-
   if (state.id_partie) {
     GAME_ID = state.id_partie;
     history.replaceState({}, "", `?game_id=${GAME_ID}`);
@@ -753,28 +585,18 @@ async function newGame() {
     if (linkInput) linkInput.value = window.location.href;
     if (state.mode === "WEB") startPolling();
   }
-
-  resetPauseUiOnly();
-  syncUiPrefsFromForm();
-  render(lastState);
-
-  if (lastState.type_partie === "IA" && lastState.current_player === lastState.ai_player && !lastState.game_over) {
-    aiTimer = setTimeout(aiMove, AI_DELAY_MS);
-  }
+  resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); scheduleAiIfNeeded();
 }
 
 // --- Jouer ---
 async function play(col) {
-  if (paused || busy || !lastState) return;
+  if (paintMode || paused || busy || !lastState) return;
 
   if (lastState.mode === "WEB" && lastState.type_partie === "HUMAIN" && lastState.player_count < 2) {
-    setMessageOnly("En attente d’un adversaire… Partage le lien de la partie.");
-    return;
+    setMessageOnly("En attente d'un adversaire… Partage le lien de la partie."); return;
   }
 
-  if (lastState.type_partie === "IA" && lastState.current_player === lastState.ai_player) {
-    return;
-  }
+  if (isAiTurn(lastState)) return;
 
   if (lastState.mode === "LOCAL") {
     if (lastState.game_over) return;
@@ -785,11 +607,7 @@ async function play(col) {
 
     let placed = null;
     for (let r = ROWS - 1; r >= 0; r--) {
-      if (lastState.board[r][col] === 0) {
-        placed = r;
-        lastState.board[r][col] = lastState.current_player;
-        break;
-      }
+      if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = lastState.current_player; break; }
     }
     if (placed === null) return;
 
@@ -800,137 +618,483 @@ async function play(col) {
 
     const line = jsFindWinningLine(placed, col, lastState.board);
     if (line) {
-      lastState.game_over = true;
-      lastState.status = "TERMINEE";
-      lastState.winning_line = line.map(([r, c]) => [r, c]);
+      lastState.game_over = true; lastState.status = "TERMINEE";
+      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
       render(lastState);
-      setMessageOnly(
-        `Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(
-          nameFor(lastState.current_player)
-        )}</span> !`
-      );
+      setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
       return;
     }
 
     lastState.current_player = lastState.current_player === "R" ? "J" : "R";
     render(lastState);
+    scheduleAiIfNeeded();
     return;
   }
 
-  if (!lastState.id_partie) {
-    showMessage("Clique d’abord sur « Nouvelle partie ».");
-    return;
-  }
+  if (!lastState.id_partie) { showMessage("Clique d'abord sur « Nouvelle partie »."); return; }
   if (lastState.game_over) return;
   if (isColumnFull(col)) return;
 
-  if (lastState.mode === "WEB" && lastState.type_partie === "IA") {
-    undoStack.push(cloneFullState(lastState));
-    redoStack.length = 0;
-  }
+  if (lastState.mode === "WEB" && lastState.type_partie === "IA") { undoStack.push(cloneFullState(lastState)); redoStack.length = 0; }
 
-  cancelAiTimer();
-  busy = true;
-  clearHint();
+  cancelAiTimer(); busy = true; clearHint();
+
+  // ── AFFICHAGE IMMÉDIAT du pion humain avant l'appel serveur ──────────────
+  const playingPlayer = lastState.current_player;
+  let placedRow = null;
+  for (let r = ROWS - 1; r >= 0; r--) {
+    if (lastState.board[r][col] === 0) { placedRow = r; lastState.board[r][col] = playingPlayer; break; }
+  }
+  if (placedRow !== null) {
+    lastMove = { r: placedRow, c: col };
+    lastState.current_player = playingPlayer === "R" ? "J" : "R"; // afficher à qui c'est
+    render(lastState); // affiche immédiatement
+    lastState.current_player = playingPlayer; // on remet pour la cohérence serveur
+    lastState.board[placedRow][col] = 0;      // on annule l'optimiste pour le serveur
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   let res;
-  try {
-    res = await postPlay(col);
-  } catch {
+  try { res = await postPlay(col); } catch {
     busy = false;
-    if (lastState.mode === "WEB" && lastState.type_partie === "IA" && undoStack.length) {
-      undoStack.pop();
-    }
-    showMessage("Erreur réseau.");
-    return;
+    if (lastState.mode === "WEB" && lastState.type_partie === "IA" && undoStack.length) undoStack.pop();
+    showMessage("Erreur réseau."); return;
   }
 
   busy = false;
   if (!res.ok) {
-    if (lastState.mode === "WEB" && lastState.type_partie === "IA" && undoStack.length) {
-      undoStack.pop();
+    if (lastState.mode === "WEB" && lastState.type_partie === "IA" && undoStack.length) undoStack.pop();
+    // Annule l'affichage optimiste en rechargeant l'état réel
+    if (GAME_ID) {
+      const recovered = await getState(GAME_ID);
+      if (recovered) { lastState = recovered; render(lastState); }
     }
-    showMessage(res.data.error || "Erreur lors du coup.");
-    return;
+    showMessage(res.data.error || "Erreur lors du coup."); return;
   }
 
   const data = res.data;
-  lastMove = findLastMove(lastState.board, data.board);
+  lastMove = findLastMove(lastState.board, data.board) || lastMove;
   lastState = data;
   render(lastState);
 
   if (lastState.game_over) {
-    setMessageOnly(
-      `Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(
-        nameFor(lastState.current_player)
-      )}</span> !`
-    );
+    setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
     return;
   }
-
-  if (lastState.type_partie === "IA" && lastState.current_player === lastState.ai_player) {
-    aiTimer = setTimeout(aiMove, AI_DELAY_MS);
-  }
+  scheduleAiIfNeeded();
 }
 
 async function aiMove() {
   aiTimer = null;
-  if (!lastState || lastState.game_over || paused) return;
+  if (!lastState || lastState.game_over || paused || paintMode) return;
+  if (!isAiTurn(lastState)) return;
 
   setThinking(true);
   const t0 = performance.now();
 
+  if (lastState.mode === "LOCAL") {
+    const player = lastState.current_player;
+    const depth = Number(lastState.ai_depth || 4);
+    let res;
+    try { res = await postLocalAiMove(lastState.board, player, depth); } catch { setThinking(false); showMessage("Erreur locale de l'IA."); return; }
+    if (!res.ok) { setThinking(false); showMessage(res.error || "Erreur de l'IA."); return; }
+
+    const col = res.col;
+    let placed = null;
+    for (let r = ROWS - 1; r >= 0; r--) { if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = player; break; } }
+    if (placed === null) { showMessage("Coup IA impossible."); return; }
+
+    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
+    lastState.signature += String(col + 1);
+
+    const dt = Math.round(performance.now() - t0);
+    lastMove = { r: placed, c: col }; clearHint();
+
+    const line = jsFindWinningLine(placed, col, lastState.board);
+    if (line) {
+      lastState.game_over = true; lastState.status = "TERMINEE";
+      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
+      render(lastState);
+      setThinking(false);        // spinner s'arrête APRÈS le rendu
+      showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
+      setMessageOnly(`Victoire de <span class="name-${player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(player))}</span> !`);
+      return;
+    }
+
+    lastState.current_player = player === "R" ? "J" : "R";
+    render(lastState);         // plateau mis à jour EN PREMIER
+    setThinking(false);        // spinner s'arrête APRÈS le rendu
+    showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
+    scheduleAiIfNeeded(); return;
+  }
+
   let res;
-  try {
-    res = await postAiMove();
-  } catch {
-    setThinking(false);
-    showMessage("Erreur réseau.");
-    return;
-  }
-
+  try { res = await postAiMove(); } catch { setThinking(false); showMessage("Erreur réseau."); return; }
   const data = res.data;
-  setThinking(false);
-
-  if (!res.ok) {
-    showMessage(data.error || "Erreur de l’IA.");
-    return;
-  }
+  if (!res.ok) { setThinking(false); showMessage(data.error || "Erreur de l'IA."); return; }
 
   const dt = Math.round(performance.now() - t0);
   lastMove = findLastMove(lastState.board, data.board);
   lastState = data;
-  render(lastState);
-  showHistoryLine(`L’IA a joué (${dt} ms).`, "log-item--system");
+  render(lastState);         // plateau mis à jour EN PREMIER
+  setThinking(false);        // spinner s'arrête APRÈS le rendu → cohérent
+  showHistoryLine(`L'IA a joué (${dt} ms).`, "log-item--system");
 
   if (lastState.game_over) {
-    setMessageOnly(
-      `Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(
-        nameFor(lastState.current_player)
-      )}</span> !`
-    );
+    setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
+    return;
+  }
+  scheduleAiIfNeeded();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MODE PEINTURE
+// ─────────────────────────────────────────────────────────────────────────────
+
+function enterPaintMode() {
+  paintMode = true;
+  cancelAiTimer();
+  stopPolling();
+  // Ne pas hériter du starting_player de l'ancienne partie
+  // On laisse à "R" par défaut, mais ce sera recalculé à la validation
+  paintStartingPlayer = "R";  // sera écrasé par l'inférence au moment du Valider
+  paintBoard = lastState
+    ? deepCloneBoard(lastState.board)
+    : Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+  paintColor = "R";
+  predictionResult = null;
+  updatePaintUI();
+  render(lastState || makeDummyState());
+  showHistoryLine("Mode peinture activé. Clique sur les cellules pour placer/effacer des pions.", "log-item--system");
+  updateHeaderStatus(lastState);
+}
+
+function exitPaintMode(apply = true) {
+  if (!paintMode) return;
+  paintMode = false;
+  // Mettre à jour l'UI immédiatement — le bouton Valider disparaît tout de suite
+  updatePaintUI();
+
+  if (apply && paintBoard) {
+    const nb_r = paintBoard.flat().filter(x => x === "R").length;
+    const nb_j = paintBoard.flat().filter(x => x === "J").length;
+    const diff = Math.abs(nb_r - nb_j);
+
+    if (diff > 1) {
+      // Position invalide : on reste en mode peinture
+      paintMode = true;
+      showMessage(`Position invalide : ${nb_r} rouges, ${nb_j} jaunes (différence ${diff}). Corrige avant de valider.`);
+      updatePaintUI();
+      return;
+    }
+
+    // ── Déduire qui a commencé ET à qui c'est de jouer depuis les pions ─────
+    // Règle : celui qui a le PLUS de pions a commencé (ou égalité → Rouge commence)
+    // Si nb_r > nb_j  → Rouge a commencé, c'est à Jaune de jouer
+    // Si nb_j > nb_r  → Jaune a commencé, c'est à Rouge de jouer
+    // Si nb_r == nb_j → celui qui a commencé joue (on déduit depuis le select)
+    let inferredStarting, cp;
+    if (nb_r > nb_j) {
+      inferredStarting = "R";  // Rouge a plus de pions → Rouge a commencé
+      cp = "J";                // c'est à Jaune de jouer
+    } else if (nb_j > nb_r) {
+      inferredStarting = "J";  // Jaune a plus de pions → Jaune a commencé
+      cp = "R";                // c'est à Rouge de jouer
+    } else {
+      // Égalité → on utilise le select "qui commence"
+      inferredStarting = ($("colorSelect")?.value || "R").toUpperCase();
+      cp = inferredStarting;   // celui qui commence joue en premier
+    }
+
+    // Reconstruire un état LOCAL propre à partir de zéro
+    const depth_for_paint = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    lastState = {
+      id_partie:       null,
+      mode:            "LOCAL",
+      type_partie:     "HUMAIN",
+      status:          "EN_COURS",
+      ai_enabled:      false,
+      ai_depth:        depth_for_paint,
+      ai_player:       null,
+      ai_players:      { R: false, J: false },
+      board:           deepCloneBoard(paintBoard),
+      current_player:  cp,
+      starting_player: inferredStarting,
+      signature:       "init",
+      game_over:       false,
+      winning_line:    null,
+      player_count:    1,
+      client_r:        null,
+      client_j:        null,
+      player_r_name:   localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge",
+      player_j_name:   localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune",
+    };
+    lastMove = null;
+    lastBoardSnapshot = null;
+    clearHint();
+    undoStack.length = 0;
+    redoStack.length = 0;
+    predictionResult = null;
+
+    // Vérifier si le plateau peint contient déjà une victoire
+    const winnerNow = jsWinnerOnBoard(paintBoard);
+    if (winnerNow) {
+      // Trouver la ligne gagnante
+      const winLine = jsFindFirstWinLine(paintBoard, winnerNow);
+      lastState.game_over = true;
+      lastState.status = "TERMINEE";
+      lastState.current_player = winnerNow;
+      lastState.winning_line = winLine;
+      render(lastState);
+      setMessageOnly(`Position peinte : victoire de <span class="name-${winnerNow === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(winnerNow))}</span> déjà présente. Lance une nouvelle partie ou repeinds.`);
+      showHistoryLine(`Mode peinture validé — victoire de ${winnerNow === "R" ? "Rouge" : "Jaune"} détectée.`, "log-item--system");
+    } else {
+      lastState.game_over = false;
+      lastState.status = "EN_COURS";
+      lastState.winning_line = null;
+      render(lastState);
+      showHistoryLine(`Mode peinture validé. À ${cp === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer.`, "log-item--system");
+      scheduleAiIfNeeded();
+    }
+  } else {
+    // Annulation : on restore l'affichage sans modifier lastState
+    if (lastState) render(lastState);
+  }
+
+  updateHeaderStatus(lastState);
+}
+
+/** Détecte s'il y a un gagnant sur un plateau donné (sans modifier l'état). */
+function jsWinnerOnBoard(board) {
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const p = board[r][c];
+      if (!p || p === 0) continue;
+      for (const [dr, dc] of dirs) {
+        let cnt = 1;
+        let rr = r + dr, cc = c + dc;
+        while (rr >= 0 && rr < ROWS && cc >= 0 && cc < COLS && board[rr][cc] === p) {
+          cnt++; if (cnt >= 4) return p;
+          rr += dr; cc += dc;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/** Trouve les 4 cases de la ligne gagnante pour le joueur donné. */
+function jsFindFirstWinLine(board, player) {
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] !== player) continue;
+      for (const [dr, dc] of dirs) {
+        const cells = [];
+        for (let i = 0; i < 4; i++) {
+          const rr = r + dr*i, cc = c + dc*i;
+          if (rr < 0 || rr >= ROWS || cc < 0 || cc >= COLS || board[rr][cc] !== player) break;
+          cells.push([rr, cc]);
+        }
+        if (cells.length === 4) return cells;
+      }
+    }
+  }
+  return null;
+}
+
+function makeDummyState() {
+  return {
+    id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS",
+    ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false },
+    board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
+    current_player: "R", starting_player: "R", signature: "init",
+    game_over: false, winning_line: null, player_count: 1,
+    client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME
+  };
+}
+
+function updatePaintUI() {
+  const paintPanel = $("paintPanel");
+  const btnEnterPaint = $("btnEnterPaint");
+  const btnExitPaint = $("btnExitPaint");
+
+  if (paintPanel) paintPanel.hidden = !paintMode;
+  if (btnEnterPaint) btnEnterPaint.hidden = paintMode;
+  if (btnExitPaint) btnExitPaint.hidden = !paintMode;
+
+  // Mettre à jour le bouton de couleur sélectionné
+  const btnPaintR = $("btnPaintRed");
+  const btnPaintJ = $("btnPaintYellow");
+  const btnPaintErase = $("btnPaintErase");
+
+  if (btnPaintR) btnPaintR.classList.toggle("btn-active", paintMode && paintColor === "R");
+  if (btnPaintJ) btnPaintJ.classList.toggle("btn-active", paintMode && paintColor === "J");
+  if (btnPaintErase) btnPaintErase.classList.toggle("btn-active", paintMode && paintColor === "0");
+}
+
+function paintCell(r, c) {
+  if (!paintMode || !paintBoard) return;
+  const current = paintBoard[r][c];
+
+  if (paintColor === "0") {
+    paintBoard[r][c] = 0;
+  } else {
+    // Toggle: si même couleur, effacer; sinon, peindre
+    paintBoard[r][c] = current === paintColor ? 0 : paintColor;
+  }
+
+  updatePaintCounters();
+  renderPaintBoard();
+}
+
+function updatePaintCounters() {
+  if (!paintBoard) return;
+  const nb_r = paintBoard.flat().filter(x => x === "R").length;
+  const nb_j = paintBoard.flat().filter(x => x === "J").length;
+  const diff = Math.abs(nb_r - nb_j);
+
+  const counterEl = $("paintCounters");
+  if (counterEl) {
+    counterEl.innerHTML = `<span class="paint-counter paint-counter--red">🔴 ${nb_r}</span> <span class="paint-counter paint-counter--yellow">🟡 ${nb_j}</span>`;
+    if (diff > 1) counterEl.innerHTML += ` <span class="paint-counter paint-counter--error">⚠ Différence trop grande (${diff})</span>`;
+  }
+
+  // Déduire à qui de jouer depuis les pions (même logique que exitPaintMode)
+  const inferEl = $("paintInferPlayer");
+  if (inferEl) {
+    if (diff > 1) {
+      inferEl.textContent = "Position invalide";
+      inferEl.style.color = "var(--red)";
+    } else {
+      let cp, sp;
+      if (nb_r > nb_j)       { sp = "R"; cp = "J"; }
+      else if (nb_j > nb_r)  { sp = "J"; cp = "R"; }
+      else                   { sp = ($("colorSelect")?.value || "R").toUpperCase(); cp = sp; }
+      inferEl.textContent = `À ${cp === "R" ? "Rouge 🔴" : "Jaune 🟡"} de jouer (${sp === "R" ? "Rouge" : "Jaune"} a commencé)`;
+      inferEl.style.color = cp === "R" ? "var(--red)" : "var(--yellow)";
+    }
   }
 }
 
-// --- Rendu ---
+function renderPaintBoard() {
+  // Re-render le plateau avec paintBoard
+  const boardDiv = $("board");
+  if (!boardDiv || !paintBoard) return;
+  boardDiv.innerHTML = "";
+
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = document.createElement("div");
+      cell.className = "cell cell--paint";
+      cell.style.cursor = "crosshair";
+
+      cell.addEventListener("click", () => paintCell(r, c));
+      cell.addEventListener("touchstart", e => { e.preventDefault(); paintCell(r, c); }, { passive: false });
+
+      const piece = document.createElement("div");
+      piece.className = "piece";
+      const v = paintBoard[r][c];
+      if (v === "R" || v === "J") {
+        piece.classList.add(v === "R" ? "piece--red" : "piece--yellow");
+        piece.classList.add("piece--visible");
+      }
+      cell.appendChild(piece);
+      boardDiv.appendChild(cell);
+    }
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PRÉDICTION
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function runPrediction() {
+  const btnPredict = $("btnPredict");
+  if (btnPredict) { btnPredict.disabled = true; btnPredict.textContent = "Analyse…"; }
+
+  let board, currentPlayer;
+
+  if (paintMode && paintBoard) {
+    const nb_r = paintBoard.flat().filter(x => x === "R").length;
+    const nb_j = paintBoard.flat().filter(x => x === "J").length;
+    if (Math.abs(nb_r - nb_j) > 1) {
+      showMessage("Position peinte invalide pour l'analyse.");
+      if (btnPredict) { btnPredict.disabled = false; btnPredict.textContent = "🔮 Analyser"; }
+      return;
+    }
+    board = deepCloneBoard(paintBoard);
+    let cp2;
+    if (nb_r > nb_j)       cp2 = "J";
+    else if (nb_j > nb_r)  cp2 = "R";
+    else                   cp2 = ($("colorSelect")?.value || "R").toUpperCase();
+    currentPlayer = cp2;
+  } else if (lastState && !lastState.game_over) {
+    board = deepCloneBoard(lastState.board);
+    currentPlayer = lastState.current_player;
+  } else {
+    if (btnPredict) { btnPredict.disabled = false; btnPredict.textContent = "🔮 Analyser"; }
+    showMessage("Aucune partie en cours à analyser.");
+    return;
+  }
+
+  const depth = lastState?.ai_depth || parseInt($("diffSelect")?.value, 10) || 4;
+  const res = await postPredict(board, currentPlayer, depth);
+
+  if (btnPredict) { btnPredict.disabled = false; btnPredict.textContent = "🔮 Analyser"; }
+
+  if (!res.ok) { showMessage(res.data?.error || "Erreur lors de l'analyse."); return; }
+
+  predictionResult = res.data;
+  renderPrediction();
+  showHistoryLine(`Analyse : ${res.data.message}`, "log-item--system");
+}
+
+function renderPrediction() {
+  const el = $("predictionBox");
+  if (!el) return;
+
+  if (!predictionResult) { el.hidden = true; return; }
+
+  el.hidden = false;
+  const { winner, moves, certain, message } = predictionResult;
+
+  let cls = "";
+  if (winner === "R") cls = "prediction--red";
+  else if (winner === "J") cls = "prediction--yellow";
+  else cls = "prediction--neutral";
+
+  el.className = `prediction-box ${cls}`;
+
+  let icon = "🎯";
+  if (winner === "R") icon = "🔴";
+  else if (winner === "J") icon = "🟡";
+  else if (winner === "draw") icon = "🤝";
+
+  el.innerHTML = `<span class="prediction-icon">${icon}</span> <strong>${escapeHtml(message)}</strong>${certain ? "" : " <em>(estimation)</em>"}`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDU
+// ─────────────────────────────────────────────────────────────────────────────
+
 function setModePill(state) {
   const pill = $("turnPill");
   if (!pill) return;
   pill.innerHTML = "";
-
   let modeTxt = "";
   const dot = document.createElement("span");
   dot.className = "pill__dot";
 
-  if (state.mode === "LOCAL") {
-    modeTxt = "Joueur contre joueur (local)";
-  } else if (state.type_partie === "IA") {
-    modeTxt = "Joueur contre IA";
-    dot.style.background = "#4ade80";
-  } else {
-    modeTxt = "Joueur contre joueur (en ligne)";
-    dot.style.background = "#38bdf8";
-  }
+  if (paintMode) { modeTxt = "Mode peinture"; dot.style.background = "#f59e0b"; }
+  else if (state.mode === "LOCAL") {
+    const aiPlayers = state.ai_players || { R: false, J: false };
+    if (aiPlayers.R || aiPlayers.J) { modeTxt = "Local (avec IA)"; dot.style.background = "#a78bfa"; }
+    else modeTxt = "Joueur contre joueur (local)";
+  } else if (state.type_partie === "IA") { modeTxt = "Joueur contre IA"; dot.style.background = "#4ade80"; }
+  else if (state.mode === "WEB" && state.type_partie === "HUMAIN" && (state.ai_players?.R || state.ai_players?.J)) { modeTxt = "En ligne (+ IA remplaçante)"; dot.style.background = "#a78bfa"; }
+  else { modeTxt = "Joueur contre joueur (en ligne)"; dot.style.background = "#38bdf8"; }
 
   const label = document.createElement("span");
   label.textContent = modeTxt;
@@ -941,30 +1105,40 @@ function setModePill(state) {
 function renderRole(state) {
   const roleDiv = $("yourRole");
   if (!roleDiv) return;
+  const aiPlayers = state.ai_players || { R: false, J: false };
+
+  if (paintMode) { roleDiv.textContent = "Mode peinture : place les pions librement."; return; }
 
   if (state.mode === "WEB" && state.type_partie === "HUMAIN") {
-    if (state.client_r === CLIENT_ID) roleDiv.textContent = "Tu joues les rouges.";
-    else if (state.client_j === CLIENT_ID) roleDiv.textContent = "Tu joues les jaunes.";
-    else if (state.player_count >= 2) roleDiv.textContent = "Spectateur";
-    else roleDiv.textContent = "En attente d’un adversaire…";
-  } else if (state.mode === "LOCAL") {
-    roleDiv.textContent = "Partie locale — les deux joueurs sur cet appareil.";
-  } else if (state.type_partie === "IA") {
-    roleDiv.textContent = "Tu affrontes l’IA sur ce navigateur.";
-  } else {
-    roleDiv.textContent = "—";
+    const myColor = myOnlineColor(state);
+    if (!myColor) { roleDiv.textContent = state.player_count >= 2 ? "Spectateur" : "En attente d'un adversaire…"; return; }
+    const colorText = myColor === "R" ? "rouges" : "jaunes";
+    roleDiv.textContent = aiPlayers[myColor] ? `Tu es ${colorText} — l'IA joue actuellement à ta place.` : `Tu joues les ${colorText}.`;
+    return;
   }
+
+  if (state.mode === "LOCAL") {
+    const redTxt = aiPlayers.R ? "rouge = IA" : "rouge = humain";
+    const yellowTxt = aiPlayers.J ? "jaune = IA" : "jaune = humain";
+    roleDiv.textContent = `Partie locale — ${redTxt}, ${yellowTxt}.`; return;
+  }
+
+  if (state.type_partie === "IA") {
+    const aiColor = state.ai_player;
+    const human = aiColor === "R" ? "jaune" : "rouge";
+    roleDiv.textContent = `Tu affrontes l'IA. Tu joues ${human}.`; return;
+  }
+
+  roleDiv.textContent = "—";
 }
 
 function renderStatusText(state) {
   const statusTxt = $("statusTxt");
   if (!statusTxt) return;
-
   let st = state.status || (state.game_over ? "TERMINEE" : "EN_COURS");
-  if (paused) st = "EN PAUSE";
-  else if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) {
-    st = "EN ATTENTE D’UN ADVERSAIRE";
-  }
+  if (paintMode) st = "MODE PEINTURE";
+  else if (paused) st = "EN PAUSE";
+  else if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) st = "EN ATTENTE D'UN ADVERSAIRE";
   statusTxt.textContent = st;
 }
 
@@ -972,39 +1146,47 @@ function updateTurnInfo(state) {
   const el = $("turnInfo");
   if (!el || !state) return;
 
-  if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) {
-    el.innerHTML = "Partie créée — en attente d’un second joueur.";
+  if (paintMode) {
+    el.innerHTML = `Mode peinture — pinceau : <b>${paintColor === "R" ? "Rouge 🔴" : paintColor === "J" ? "Jaune 🟡" : "Gomme"}</b>`;
     return;
+  }
+
+  if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) {
+    el.innerHTML = "Partie créée — en attente d'un second joueur."; return;
   }
 
   const turn = state.current_player;
   const turnName = nameFor(turn);
+  const turnClass = turn === "R" ? "name-red" : "name-yellow";
 
   if (!lastMove) {
-    el.innerHTML = `Début de partie — à <b>${escapeHtml(turnName)}</b> de jouer.`;
-    return;
+    el.innerHTML = `Début de partie — à <b class="${turnClass}">${escapeHtml(turnName)}</b> de jouer.`; return;
   }
 
   const lastPlayer = turn === "R" ? "J" : "R";
   const lastName = nameFor(lastPlayer);
+  const lastClass = lastPlayer === "R" ? "name-red" : "name-yellow";
   const colHuman = lastMove.c + 1;
+
+  // Bannière claire et mobile-friendly
   el.innerHTML =
-    `Dernier coup : <b>${escapeHtml(lastName)}</b> en colonne <b>${colHuman}</b> — ` +
-    `à <b>${escapeHtml(turnName)}</b> de jouer.`;
+    `Dernier coup : <b class="${lastClass}">${escapeHtml(lastName)}</b> → colonne <b>${colHuman}</b>` +
+    ` — à <b class="${turnClass}">${escapeHtml(turnName)}</b> de jouer.`;
 }
 
 function renderMessage(state) {
   const msg = $("message");
   if (!msg) return;
 
+  if (paintMode) { msg.hidden = true; return; }
+
   if (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2) {
     msg.hidden = false;
-    let txt = "En attente d’un adversaire… ";
+    let txt = "En attente d'un adversaire… ";
     if (state.client_r === CLIENT_ID) txt += "Tu joues les rouges. ";
     if (state.client_j === CLIENT_ID) txt += "Tu joues les jaunes. ";
     txt += "Partage le lien.";
-    msg.innerHTML = txt;
-    return;
+    msg.innerHTML = txt; return;
   }
 
   msg.hidden = false;
@@ -1018,23 +1200,17 @@ function renderMessage(state) {
 }
 
 function interactionLocked(state) {
-  return (
-    paused ||
-    busy ||
-    !state ||
-    state.game_over ||
-    (state.type_partie === "IA" && state.current_player === state.ai_player) ||
-    (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2)
-  );
+  return paintMode || paused || busy || !state || state.game_over || isAiTurn(state) ||
+    (state.mode === "WEB" && state.type_partie === "HUMAIN" && state.player_count < 2);
 }
 
 function renderColHeader(state) {
   const header = $("colHeader");
   if (!header) return;
   header.innerHTML = "";
+  if (paintMode) return; // Pas de boutons colonnes en mode peinture
 
   const locked = interactionLocked(state);
-
   for (let c = 0; c < COLS; c++) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -1046,19 +1222,9 @@ function renderColHeader(state) {
     btn.disabled = disabled;
     if (hintColumn === c) btn.classList.add("col-btn--hint");
 
-    btn.addEventListener("mouseenter", () => {
-      if (interactionLocked(lastState)) return;
-      hoverCol = c;
-      applyPreview();
-      highlightColButton(c);
-    });
-    btn.addEventListener("mouseleave", () => {
-      hoverCol = null;
-      applyPreview();
-      highlightColButton(null);
-    });
+    btn.addEventListener("mouseenter", () => { if (interactionLocked(lastState)) return; hoverCol = c; applyPreview(); highlightColButton(c); });
+    btn.addEventListener("mouseleave", () => { hoverCol = null; applyPreview(); highlightColButton(null); });
     btn.addEventListener("click", () => play(c));
-
     header.appendChild(btn);
   }
 }
@@ -1066,18 +1232,15 @@ function renderColHeader(state) {
 function highlightColButton(col) {
   const header = $("colHeader");
   if (!header) return;
-  const buttons = header.querySelectorAll(".col-btn");
-  buttons.forEach((b, i) => {
-    b.classList.toggle("col-btn--hover", col !== null && i === col);
-  });
+  header.querySelectorAll(".col-btn").forEach((b, i) => b.classList.toggle("col-btn--hover", col !== null && i === col));
 }
 
 function renderBoard(state) {
+  if (paintMode) { renderPaintBoard(); return; }
+
   const boardDiv = $("board");
   if (!boardDiv) return;
-
   boardDiv.innerHTML = "";
-
   const prev = lastBoardSnapshot;
 
   for (let r = 0; r < ROWS; r++) {
@@ -1086,22 +1249,12 @@ function renderBoard(state) {
       cell.className = "cell";
       if (interactionLocked(state)) cell.classList.add("cell--disabled");
 
-      cell.addEventListener("mouseenter", () => {
-        if (interactionLocked(lastState)) return;
-        hoverCol = c;
-        applyPreview();
-        highlightColButton(c);
-      });
-      cell.addEventListener("mouseleave", () => {
-        hoverCol = null;
-        applyPreview();
-        highlightColButton(null);
-      });
+      cell.addEventListener("mouseenter", () => { if (interactionLocked(lastState)) return; hoverCol = c; applyPreview(); highlightColButton(c); });
+      cell.addEventListener("mouseleave", () => { hoverCol = null; applyPreview(); highlightColButton(null); });
       cell.addEventListener("click", () => play(c));
 
       const piece = document.createElement("div");
       piece.className = "piece";
-
       const v = state.board?.[r]?.[c];
       const prevV = prev?.[r]?.[c];
 
@@ -1122,24 +1275,13 @@ function renderBoard(state) {
 
 function applyPreview() {
   const boardDiv = $("board");
-  if (!boardDiv || !lastState) return;
-
+  if (!boardDiv || !lastState || paintMode) return;
   const cells = boardDiv.querySelectorAll(".cell");
-  cells.forEach((cell) => {
-    cell.classList.remove("cell--preview", "cell--preview-red", "cell--preview-yellow");
-  });
-
+  cells.forEach(cell => cell.classList.remove("cell--preview", "cell--preview-red", "cell--preview-yellow"));
   if (hoverCol == null || lastState.game_over || interactionLocked(lastState)) return;
-
   let targetRow = null;
-  for (let r = ROWS - 1; r >= 0; r--) {
-    if (lastState.board?.[r]?.[hoverCol] === 0) {
-      targetRow = r;
-      break;
-    }
-  }
+  for (let r = ROWS - 1; r >= 0; r--) { if (lastState.board?.[r]?.[hoverCol] === 0) { targetRow = r; break; } }
   if (targetRow == null) return;
-
   const idx = targetRow * COLS + hoverCol;
   const cell = cells[idx];
   if (!cell) return;
@@ -1149,9 +1291,9 @@ function applyPreview() {
 
 function applyLastMove() {
   const boardDiv = $("board");
-  if (!boardDiv) return;
+  if (!boardDiv || paintMode) return;
   const cells = boardDiv.querySelectorAll(".cell");
-  cells.forEach((c) => c.classList.remove("cell--last"));
+  cells.forEach(c => c.classList.remove("cell--last"));
   if (!lastMove) return;
   const idx = lastMove.r * COLS + lastMove.c;
   cells[idx]?.classList.add("cell--last");
@@ -1159,15 +1301,12 @@ function applyLastMove() {
 
 function applyWinningLine(state) {
   const boardDiv = $("board");
-  if (!boardDiv) return;
+  if (!boardDiv || paintMode) return;
   const cells = boardDiv.querySelectorAll(".cell");
-  cells.forEach((c) => c.classList.remove("cell--win"));
+  cells.forEach(c => c.classList.remove("cell--win"));
   const line = state.winning_line;
   if (!line || !Array.isArray(line)) return;
-  for (const [r, c] of line) {
-    const idx = r * COLS + c;
-    cells[idx]?.classList.add("cell--win");
-  }
+  for (const [r, c] of line) cells[r * COLS + c]?.classList.add("cell--win");
 }
 
 function renderHistory(state) {
@@ -1182,13 +1321,11 @@ function renderHistory(state) {
   if (!moves.length) {
     const empty = document.createElement("div");
     empty.className = "log-item log-item--system";
-    empty.textContent = "Aucun coup pour l’instant.";
-    historyDiv.appendChild(empty);
-    return;
+    empty.textContent = "Aucun coup pour l'instant.";
+    historyDiv.appendChild(empty); return;
   }
 
   const starting = (state.starting_player || "R").toUpperCase();
-
   for (let i = 0; i < moves.length; i++) {
     const col = Number(moves[i]);
     const moveLetter = i % 2 === 0 ? starting : starting === "R" ? "J" : "R";
@@ -1198,12 +1335,7 @@ function renderHistory(state) {
     const item = document.createElement("div");
     item.className = "log-item " + (isRed ? "log-item--red" : "log-item--yellow");
     if (i === moves.length - 1) item.classList.add("log-item--last");
-
-    item.innerHTML = `
-      <span class="log-item__name">${escapeHtml(name)}</span>
-      <span> colonne ${col}</span>
-      <div class="log-meta">Coup ${i + 1}</div>
-    `;
+    item.innerHTML = `<span class="log-item__name">${escapeHtml(name)}</span><span> colonne ${col}</span><div class="log-meta">Coup ${i + 1}</div>`;
     historyDiv.appendChild(item);
   }
   historyDiv.scrollTop = historyDiv.scrollHeight;
@@ -1211,153 +1343,216 @@ function renderHistory(state) {
 
 function updateModeUI() {
   const mode = ($("modeSelect")?.value || "IA").toUpperCase();
-  const diffSelect = $("diffSelect");
   const difficultyField = $("difficultyField");
   const colorSelect = $("colorSelect");
+  const humanColorSelect = $("humanColorSelect");
   const startHint = $("startHint");
   const nameR = $("playerNameR");
   const nameJ = $("playerNameJ");
 
-  if (difficultyField) difficultyField.style.display = mode === "IA" ? "" : "none";
-  if (diffSelect) diffSelect.disabled = mode !== "IA";
-
+  // Afficher le champ difficulté aussi en LOCAL (pour l'IA locale)
+  if (difficultyField) difficultyField.style.display = (mode === "IA" || mode === "LOCAL") ? "" : "none";
+  if ($("diffSelect")) $("diffSelect").disabled = false; // toujours accessible
   if (colorSelect) colorSelect.disabled = mode === "ONLINE";
+  if (humanColorSelect) humanColorSelect.disabled = mode !== "IA";
   if (startHint) startHint.classList.toggle("is-visible", mode === "ONLINE");
 
+  const selectedHumanColor = ($("humanColorSelect")?.value || humanColor || "R").toUpperCase();
+  humanColor = selectedHumanColor;
+
   if (mode === "IA") {
-    if (playerColor === "R") {
+    if (selectedHumanColor === "R") {
       PLAYER_J_NAME = "IA";
-      if (nameJ) {
-        nameJ.value = "IA";
-        nameJ.disabled = true;
-      }
-      if (nameR) {
-        nameR.disabled = false;
-        nameR.value = localStorage.getItem("playerNameR") || PLAYER_R_NAME;
-        PLAYER_R_NAME = nameR.value || "Joueur rouge";
-      }
+      if ($("playerNameJ")) { $("playerNameJ").value = "IA"; $("playerNameJ").disabled = true; }
+      if (nameR) { nameR.disabled = false; nameR.value = localStorage.getItem("playerNameR") || PLAYER_R_NAME; PLAYER_R_NAME = nameR.value || "Joueur rouge"; }
     } else {
       PLAYER_R_NAME = "IA";
-      if (nameR) {
-        nameR.value = "IA";
-        nameR.disabled = true;
-      }
-      if (nameJ) {
-        nameJ.disabled = false;
-        nameJ.value = localStorage.getItem("playerNameJ") || PLAYER_J_NAME;
-        PLAYER_J_NAME = nameJ.value || "Joueur jaune";
-      }
+      if ($("playerNameR")) { $("playerNameR").value = "IA"; $("playerNameR").disabled = true; }
+      if (nameJ) { nameJ.disabled = false; nameJ.value = localStorage.getItem("playerNameJ") || PLAYER_J_NAME; PLAYER_J_NAME = nameJ.value || "Joueur jaune"; }
     }
   } else {
-    if (nameR) {
-      nameR.disabled = false;
-      nameR.value = localStorage.getItem("playerNameR") || PLAYER_R_NAME;
-      PLAYER_R_NAME = nameR.value || "Joueur rouge";
-    }
-    if (nameJ) {
-      nameJ.disabled = false;
-      nameJ.value = localStorage.getItem("playerNameJ") || PLAYER_J_NAME;
-      PLAYER_J_NAME = nameJ.value || "Joueur jaune";
-    }
+    if (nameR) { nameR.disabled = false; nameR.value = localStorage.getItem("playerNameR") || PLAYER_R_NAME; PLAYER_R_NAME = nameR.value || "Joueur rouge"; }
+    if (nameJ) { nameJ.disabled = false; nameJ.value = localStorage.getItem("playerNameJ") || PLAYER_J_NAME; PLAYER_J_NAME = nameJ.value || "Joueur jaune"; }
   }
 
   updateShareLinkVisibility();
   if (lastState) render(lastState);
 }
 
+function updateAiColorButtons(state) {
+  const btnAiRed = $("btnAiRed"), btnHumanRed = $("btnHumanRed");
+  const btnAiYellow = $("btnAiYellow"), btnHumanYellow = $("btnHumanYellow");
+  if (!btnAiRed || !btnHumanRed || !btnAiYellow || !btnHumanYellow) return;
+
+  // Tout cacher par défaut
+  for (const btn of [btnAiRed, btnHumanRed, btnAiYellow, btnHumanYellow]) {
+    btn.hidden = true; btn.disabled = true;
+  }
+
+  // Pas de partie, partie terminée, mode peinture, ou mode en ligne 2 humains → rien
+  if (!state || state.game_over || paintMode) return;
+  if (state.mode === "WEB" && state.type_partie === "HUMAIN") return;
+
+  const aiPlayers = state.ai_players || { R: false, J: false };
+
+  // Afficher les 4 boutons — disponibles en LOCAL et WEB+IA
+  btnAiRed.hidden = false;    btnHumanRed.hidden = false;
+  btnAiYellow.hidden = false; btnHumanYellow.hidden = false;
+
+  btnAiRed.disabled    = busy || paused || !!aiPlayers.R;
+  btnHumanRed.disabled = busy || paused || !aiPlayers.R;
+  btnAiYellow.disabled    = busy || paused || !!aiPlayers.J;
+  btnHumanYellow.disabled = busy || paused || !aiPlayers.J;
+}
+
 function render(state) {
   if (!state) return;
-
   setModePill(state);
   renderRole(state);
   renderStatusText(state);
   renderMessage(state);
   renderColHeader(state);
-  renderHistory(state);
+  if (!paintMode) renderHistory(state);
   renderBoard(state);
-
   const linkInput = $("shareLink");
-  if (linkInput) {
-    linkInput.value = state.id_partie && GAME_ID ? window.location.href : "";
+  if (linkInput) linkInput.value = state.id_partie && GAME_ID ? window.location.href : "";
+  if (!paintMode) {
+    applyPreview();
+    applyLastMove();
+    applyWinningLine(state);
   }
-
-  applyPreview();
-  applyLastMove();
-  applyWinningLine(state);
   updateTurnInfo(state);
   updateHeaderStatus(state);
   updateUndoRedoButtons();
   updateUndoHelpText();
+  updateAiColorButtons(state);
+  renderPrediction();
+  updatePaintUI();
+  if (paintMode) updatePaintCounters();
 }
 
-// --- Initialisation ---
-window.addEventListener("error", (ev) => {
+// ─────────────────────────────────────────────────────────────────────────────
+// INITIALISATION
+// ─────────────────────────────────────────────────────────────────────────────
+
+window.addEventListener("error", ev => {
   console.error("Erreur JS", ev.error || ev.message);
   setMessageOnly("Erreur : " + (ev.error?.message || ev.message));
 });
 
 window.addEventListener("load", async () => {
+  // Mesure la vraie hauteur du header pour --header-h
+  function updateHeaderHeight() {
+    const h = document.querySelector(".site-header")?.offsetHeight || 68;
+    document.documentElement.style.setProperty("--header-h", h + "px");
+  }
+  updateHeaderHeight();
+  new ResizeObserver(updateHeaderHeight).observe(document.querySelector(".site-header") || document.body);
+
   if ($("playerNameR")) $("playerNameR").value = PLAYER_R_NAME;
   if ($("playerNameJ")) $("playerNameJ").value = PLAYER_J_NAME;
-  if ($("colorSelect")) $("colorSelect").value = playerColor;
+  if ($("humanColorSelect")) $("humanColorSelect").value = humanColor;
+  if ($("colorSelect")) $("colorSelect").value = uiPrefs.startingPlayer || "R";
+  if ($("diffSelect")) $("diffSelect").value = uiPrefs.difficulty;
 
   $("btnNew")?.addEventListener("click", newGame);
-
-  $("btnUndo")?.addEventListener("click", () => {
-    void undo().catch((err) => console.error(err));
-  });
-  $("btnRedo")?.addEventListener("click", () => {
-    void redo().catch((err) => console.error(err));
-  });
+  $("btnUndo")?.addEventListener("click", () => void undo().catch(err => console.error(err)));
+  $("btnRedo")?.addEventListener("click", () => void redo().catch(err => console.error(err)));
 
   $("confirmModalYes")?.addEventListener("click", async () => {
     const fn = pendingConfirmCallback;
     hideConfirmModal();
     if (typeof fn === "function") await fn();
   });
-
-  $("confirmModalNo")?.addEventListener("click", () => {
-    hideConfirmModal();
-  });
+  $("confirmModalNo")?.addEventListener("click", hideConfirmModal);
 
   $("btnPause")?.addEventListener("click", () => {
     if (!lastState) return;
     setPaused(!paused);
     $("btnPause").textContent = paused ? "Reprendre" : "Pause";
   });
+  $("btnResume")?.addEventListener("click", () => { setPaused(false); const bp = $("btnPause"); if (bp) bp.textContent = "Pause"; });
 
-  $("btnResume")?.addEventListener("click", () => {
-    setPaused(false);
-    const bp = $("btnPause");
-    if (bp) bp.textContent = "Pause";
+
+  // ── Mode peinture ─────────────────────────────────────────────────────────
+  $("btnEnterPaint")?.addEventListener("click", () => {
+    if (paintMode) return;
+    enterPaintMode();
   });
 
+  $("btnExitPaint")?.addEventListener("click", () => exitPaintMode(true));
+  $("btnExitPaintDiscard")?.addEventListener("click", () => exitPaintMode(false));
+
+  $("btnPaintRed")?.addEventListener("click", () => { paintColor = "R"; updatePaintUI(); if (lastState) updateTurnInfo(lastState); });
+  $("btnPaintYellow")?.addEventListener("click", () => { paintColor = "J"; updatePaintUI(); if (lastState) updateTurnInfo(lastState); });
+  $("btnPaintErase")?.addEventListener("click", () => { paintColor = "0"; updatePaintUI(); if (lastState) updateTurnInfo(lastState); });
+
+  $("btnPaintClear")?.addEventListener("click", () => {
+    paintBoard = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    updatePaintCounters();
+    renderPaintBoard();
+  });
+
+  $("btnPaintAiHint")?.addEventListener("click", async () => {
+    if (!paintBoard) return;
+    const nb_r = paintBoard.flat().filter(x => x === "R").length;
+    const nb_j = paintBoard.flat().filter(x => x === "J").length;
+    if (Math.abs(nb_r - nb_j) > 1) { showMessage("Position invalide (différence de pions > 1)."); return; }
+    // Déduire à qui c'est de jouer depuis les pions
+    let cp;
+    if (nb_r > nb_j)       cp = "J";
+    else if (nb_j > nb_r)  cp = "R";
+    else                   cp = ($("colorSelect")?.value || "R").toUpperCase();
+
+    const depth = normalize_depth_js($("diffSelect")?.value, 4);
+    const res = await postPaintHint(deepCloneBoard(paintBoard), cp, depth);
+    if (!res.ok) { showMessage(res.data.error || "Erreur IA."); return; }
+    const col = res.data.suggested_col;
+    showHistoryLine(`IA suggère la colonne ${col + 1} pour ${cp === "R" ? "Rouge" : "Jaune"}.`, "log-item--system");
+
+    // Surligner la colonne suggérée
+    const boardDiv = $("board");
+    if (boardDiv) {
+      boardDiv.querySelectorAll(".cell").forEach((cell, idx) => {
+        const cellCol = idx % COLS;
+        cell.classList.toggle("cell--hint-paint", cellCol === col);
+      });
+      setTimeout(() => boardDiv.querySelectorAll(".cell--hint-paint").forEach(c => c.classList.remove("cell--hint-paint")), 4000);
+    }
+  });
+
+  function normalize_depth_js(v, def) {
+    const d = parseInt(v, 10);
+    if (isNaN(d)) return def;
+    return Math.max(2, Math.min(9, d));
+  }
+
+  // ── Prédiction ────────────────────────────────────────────────────────────
+  $("btnPredict")?.addEventListener("click", () => void runPrediction());
+
+  // ── Suggestion ───────────────────────────────────────────────────────────
   $("btnHint")?.addEventListener("click", async () => {
     if (!lastState || paused) return;
+    if (lastState.game_over) { showMessage("La partie est terminée."); return; }
 
     if (lastState.mode === "LOCAL") {
-      showMessage("Indisponible en mode local : lance une partie contre l’IA pour obtenir une suggestion.");
-      return;
-    }
-    if (!GAME_ID) {
-      showMessage("Crée d’abord une partie.");
-      return;
-    }
-    if (lastState.game_over) {
-      showMessage("La partie est terminée.");
-      return;
+      const player = lastState.current_player;
+      const depth = Number(lastState.ai_depth || 4);
+      const res = await postLocalAiMove(lastState.board, player, depth);
+      if (!res.ok) { showMessage(res.error || "Aucune suggestion."); return; }
+      const col = res.col;
+      if (typeof col !== "number") { showMessage("Réponse inattendue."); return; }
+      hintColumn = col;
+      render(lastState);
+      showHistoryLine(`Suggestion : colonne ${col + 1}.`, "log-item--system");
+      scheduleHintClear(8000); return;
     }
 
+    if (!GAME_ID) { showMessage("Crée d'abord une partie."); return; }
     const res = await postHint();
-    if (!res.ok) {
-      showMessage(res.data.error || "Aucune suggestion disponible.");
-      return;
-    }
+    if (!res.ok) { showMessage(res.data.error || "Aucune suggestion."); return; }
     const col = res.data.suggested_col;
-    if (typeof col !== "number") {
-      showMessage("Réponse du serveur inattendue.");
-      return;
-    }
+    if (typeof col !== "number") { showMessage("Réponse inattendue."); return; }
     hintColumn = col;
     render(lastState);
     showHistoryLine(`Suggestion : colonne ${col + 1}.`, "log-item--system");
@@ -1367,13 +1562,83 @@ window.addEventListener("load", async () => {
   $("btnCopyLink")?.addEventListener("click", () => {
     const link = $("shareLink")?.value || "";
     if (!link) return;
-    if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(link).then(() => setMessageOnly("Lien copié.")).catch(() => {});
-    } else {
-      $("shareLink")?.select();
-      document.execCommand("copy");
-      setMessageOnly("Lien copié.");
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(link).then(() => setMessageOnly("Lien copié.")).catch(() => {});
+    else { $("shareLink")?.select(); document.execCommand("copy"); setMessageOnly("Lien copié."); }
+  });
+
+  // ── Boutons IA/Humain ─────────────────────────────────────────────────────
+  $("btnAiRed")?.addEventListener("click", async () => {
+    if (!lastState) return;
+    if (lastState.mode === "LOCAL") {
+      const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: true };
+      lastState.ai_enabled = true;
+      lastState.ai_depth = depth;
+      lastState.player_r_name = "IA";
+      render(lastState);
+      showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system");
+      scheduleAiIfNeeded();
+      return;
     }
+    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
+    const res = await postSetAiColor("R", true);
+    if (!res.ok) { showMessage(res.data.error || "Impossible d'activer l'IA pour rouge."); return; }
+    lastState = res.data; render(lastState);
+    showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system"); scheduleAiIfNeeded();
+  });
+
+  $("btnHumanRed")?.addEventListener("click", async () => {
+    if (!lastState) return;
+    if (lastState.mode === "LOCAL") {
+      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: false };
+      lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
+      lastState.player_r_name = localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge";
+      cancelAiTimer();
+      render(lastState);
+      showHistoryLine("Rouge redevient humain.", "log-item--system");
+      return;
+    }
+    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
+    const res = await postSetAiColor("R", false);
+    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
+    lastState = res.data; render(lastState); showHistoryLine("Rouge redevient humain.", "log-item--system");
+  });
+
+  $("btnAiYellow")?.addEventListener("click", async () => {
+    if (!lastState) return;
+    if (lastState.mode === "LOCAL") {
+      const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: true };
+      lastState.ai_enabled = true;
+      lastState.ai_depth = depth;
+      lastState.player_j_name = "IA";
+      render(lastState);
+      showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system");
+      scheduleAiIfNeeded();
+      return;
+    }
+    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
+    const res = await postSetAiColor("J", true);
+    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
+    lastState = res.data; render(lastState);
+    showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system"); scheduleAiIfNeeded();
+  });
+
+  $("btnHumanYellow")?.addEventListener("click", async () => {
+    if (!lastState) return;
+    if (lastState.mode === "LOCAL") {
+      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: false };
+      lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
+      lastState.player_j_name = localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune";
+      cancelAiTimer();
+      render(lastState);
+      showHistoryLine("Jaune redevient humain.", "log-item--system");
+      return;
+    }
+    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
+    const res = await postSetAiColor("J", false);
+    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
+    lastState = res.data; render(lastState); showHistoryLine("Jaune redevient humain.", "log-item--system");
   });
 
   $("modeSelect")?.addEventListener("change", (e) => {
@@ -1381,118 +1646,65 @@ window.addEventListener("load", async () => {
     const newVal = e.target.value.toUpperCase();
     const oldVal = committedMode;
     if (newVal === oldVal) return;
-
     if (hasActiveGame()) {
       e.target.value = oldVal;
-      showConfirmModal("Changer le mode de jeu va terminer la partie en cours. Continuer ?", async () => {
+      showConfirmModal("Changer le mode va terminer la partie en cours. Continuer ?", async () => {
         suppressSelectChange = true;
-        try {
-          $("modeSelect").value = newVal;
-          syncUiPrefsFromForm();
-          updateModeUI();
-          updateShareLinkVisibility();
-          await newGame();
-        } finally {
-          suppressSelectChange = false;
-        }
+        try { $("modeSelect").value = newVal; syncUiPrefsFromForm(); updateModeUI(); updateShareLinkVisibility(); await newGame(); } finally { suppressSelectChange = false; }
       });
-    } else {
-      syncUiPrefsFromForm();
-      updateModeUI();
-      updateShareLinkVisibility();
-    }
+    } else { syncUiPrefsFromForm(); updateModeUI(); updateShareLinkVisibility(); }
   });
 
   $("diffSelect")?.addEventListener("change", (e) => {
     if (suppressSelectChange) return;
-    const newVal = e.target.value.toLowerCase();
-    const oldVal = committedDifficulty;
+    const newVal = e.target.value, oldVal = committedDifficulty;
     if (newVal === oldVal) return;
-
     if (hasActiveGame()) {
       e.target.value = oldVal;
-      showConfirmModal("Changer la difficulté va terminer la partie en cours. Continuer ?", async () => {
+      showConfirmModal("Changer la profondeur va terminer la partie en cours. Continuer ?", async () => {
         suppressSelectChange = true;
-        try {
-          $("diffSelect").value = newVal;
-          syncUiPrefsFromForm();
-          await newGame();
-        } finally {
-          suppressSelectChange = false;
-        }
+        try { $("diffSelect").value = newVal; syncUiPrefsFromForm(); await newGame(); } finally { suppressSelectChange = false; }
       });
-    } else {
-      syncUiPrefsFromForm();
-    }
+    } else { syncUiPrefsFromForm(); }
   });
 
   $("playerNameR")?.addEventListener("input", (e) => {
     PLAYER_R_NAME = e.target.value || "Joueur rouge";
     localStorage.setItem("playerNameR", PLAYER_R_NAME);
-    if (lastState) render(lastState);
+    const aiPlayers = lastState?.ai_players || { R: false, J: false };
+    if (lastState && !aiPlayers.R) { lastState.player_r_name = PLAYER_R_NAME; render(lastState); }
   });
 
   $("playerNameJ")?.addEventListener("input", (e) => {
     PLAYER_J_NAME = e.target.value || "Joueur jaune";
     localStorage.setItem("playerNameJ", PLAYER_J_NAME);
-    if (lastState) render(lastState);
+    const aiPlayers = lastState?.ai_players || { R: false, J: false };
+    if (lastState && !aiPlayers.J) { lastState.player_j_name = PLAYER_J_NAME; render(lastState); }
   });
 
-  $("colorSelect")?.addEventListener("change", (e) => {
-    playerColor = e.target.value || "R";
-    localStorage.setItem("playerColor", playerColor);
-    updateModeUI();
-  });
+  $("humanColorSelect")?.addEventListener("change", (e) => { humanColor = (e.target.value || "R").toUpperCase(); localStorage.setItem("humanColor", humanColor); syncUiPrefsFromForm(); updateModeUI(); });
+  $("colorSelect")?.addEventListener("change", () => { syncUiPrefsFromForm(); updateModeUI(); });
 
-  updateModeUI();
-  syncUiPrefsFromForm();
-  updateShareLinkVisibility();
+  updateModeUI(); syncUiPrefsFromForm(); updateShareLinkVisibility();
 
   const params = new URLSearchParams(window.location.search);
-
   if (params.has("game_id")) {
     GAME_ID = Number(params.get("game_id"));
     lastState = await getState(GAME_ID);
-
-    if (!lastState) {
-      GAME_ID = null;
-      history.replaceState({}, "", location.pathname);
-      lastState = await getState();
-    } else {
+    if (!lastState) { GAME_ID = null; history.replaceState({}, "", location.pathname); lastState = await getState(); }
+    else {
       if ($("shareLink")) $("shareLink").value = window.location.href;
       if (lastState.mode === "WEB") startPolling();
-      if (lastState.game_over) {
-        setMessageOnly("Cette partie est terminée. Lance une nouvelle partie.");
-      }
+      if (lastState.game_over) setMessageOnly("Cette partie est terminée. Lance une nouvelle partie.");
       syncSelectsFromLoadedState(lastState);
     }
-  } else {
-    lastState = await getState();
-  }
+  } else { lastState = await getState(); }
 
   if (!lastState) {
-    lastState = {
-      id_partie: null,
-      mode: "LOCAL",
-      type_partie: "HUMAIN",
-      status: "Aucune partie",
-      ai_enabled: false,
-      ai_depth: 0,
-      board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
-      current_player: "R",
-      starting_player: "R",
-      signature: "init",
-      game_over: false,
-      ai_player: null,
-      winning_line: null,
-      player_count: 0,
-      client_r: null,
-      client_j: null,
-      player_r_name: PLAYER_R_NAME,
-      player_j_name: PLAYER_J_NAME
-    };
+    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "Aucune partie", ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: "R", starting_player: "R", signature: "init", game_over: false, winning_line: null, player_count: 0, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   }
 
   $("btnPause").textContent = "Pause";
   render(lastState);
+  scheduleAiIfNeeded();
 });

@@ -191,38 +191,102 @@ def collect_player_ids_from_ranking(driver, max_players: int, scroll_steps: int)
 # ============================================================
 # 1) TABLE IDS depuis gamestats (profil parties)
 # ============================================================
+def _extract_table_ids_from_dom(driver):
+    ids = []
+
+    try:
+        anchors = driver.find_elements(By.CSS_SELECTOR, '#gamelist_inner a[href*="/table?table="]')
+        for a in anchors:
+            href = a.get_attribute("href") or ""
+            m = re.search(r"/table\?table=(\d+)", href)
+            if m:
+                ids.append(str(int(m.group(1))))
+    except Exception:
+        pass
+
+    if not ids:
+        html = driver.page_source or ""
+        raw = re.findall(r"(?:/table\?table=|table\?table=|[?&]table=)(\d+)", html)
+        for t in raw:
+            try:
+                n = int(t)
+                if n > 0:
+                    ids.append(str(n))
+            except ValueError:
+                pass
+
+    seen = set()
+    return [x for x in ids if not (x in seen or seen.add(x))]
+
+
 def get_connect4_table_ids(driver, player_id: str, game_id: int, finished: int, limit: int):
     """
     Ouvre /gamestats?player=...&game_id=1186&finished=1
-    et extrait des table ids depuis les liens "table=...".
+    et charge toute la liste via le bouton #see_more_tables.
     """
     url = f"{BASE}/gamestats?player={player_id}&game_id={game_id}&finished={finished}"
     driver.get(url)
-    time.sleep(2)
 
-    for _ in range(10):
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(0.7)
+    wait = WebDriverWait(driver, 25)
+    wait.until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+    wait.until(EC.presence_of_element_located((By.ID, "gamelist")))
+    time.sleep(1.2)
 
-    html = driver.page_source or ""
+    table_ids = _extract_table_ids_from_dom(driver)
+    stable_rounds = 0
 
-    # Extract ONLY from real links (avoid CSS colors like #000000 / #00000000)
-    raw = re.findall(r"(?:/table\?table=|table\?table=|[?&]table=)(\d+)", html)
+    for _ in range(50):
+        if len(table_ids) >= limit:
+            break
 
-    table_ids = []
-    for t in raw:
         try:
-            n = int(t)  # removes leading zeros
-            if n > 0:
-                table_ids.append(str(n))
-        except ValueError:
-            pass
+            btn = driver.find_element(By.ID, "see_more_tables")
+            if not btn.is_displayed() or not btn.is_enabled():
+                break
+        except Exception:
+            break
 
-    # dedupe + keep order
-    seen = set()
-    table_ids = [x for x in table_ids if not (x in seen or seen.add(x))]
+        before = len(table_ids)
+
+        try:
+            driver.execute_script("arguments[0].scrollIntoView({block:'center'});", btn)
+            time.sleep(0.4)
+            driver.execute_script("arguments[0].click();", btn)
+        except Exception:
+            try:
+                btn.click()
+            except Exception:
+                break
+
+        grown = False
+        end = time.time() + 12
+        while time.time() < end:
+            time.sleep(0.4)
+            new_ids = _extract_table_ids_from_dom(driver)
+            if len(new_ids) > before:
+                table_ids = new_ids
+                grown = True
+                break
+            try:
+                loading = driver.find_element(By.ID, "tablestats_loading")
+                loading_style = (loading.get_attribute("style") or "").lower()
+                if "display: none" in loading_style:
+                    table_ids = new_ids
+            except Exception:
+                table_ids = new_ids
+
+        if not grown:
+            table_ids = _extract_table_ids_from_dom(driver)
+            if len(table_ids) <= before:
+                stable_rounds += 1
+                if stable_rounds >= 2:
+                    break
+            else:
+                stable_rounds = 0
+        else:
+            stable_rounds = 0
+
     table_ids = table_ids[:limit]
-
     print(f"   📌 {len(table_ids)} tables trouvées (player={player_id})")
     return table_ids
 
@@ -269,24 +333,11 @@ def detect_board_size_anchored(page_text: str):
 # ============================================================
 # 3) Extraction coups via /gamereview?table=... (size + moves)
 # ============================================================
-def extract_size_and_moves_from_gamereview(driver, table_id: str):
-    """
-    Ouvre /gamereview?table=... et extrait:
-    - size (rows, cols) via detect_board_size_anchored(body.text)
-    - moves depuis le texte: "... place un pion dans la colonne X"
-    """
-    url = f"{BASE}/gamereview?table={table_id}"
-    driver.get(url)
-
-    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
-    time.sleep(1.2)
-
+def _parse_moves_from_current_review_page(driver):
     body_el = driver.find_element(By.TAG_NAME, "body")
     page_text = body_el.text or ""
-
     size = detect_board_size_anchored(page_text)
 
-    # Mapping pseudo -> player_id (liens profils visibles)
     name_to_pid = {}
     try:
         links = driver.find_elements(By.CSS_SELECTOR, 'a[href*="/player?id="]')
@@ -302,22 +353,31 @@ def extract_size_and_moves_from_gamereview(driver, table_id: str):
     except Exception:
         pass
 
-    # --- Read gamelogreview blocks in order (more reliable than body.text for rules like inversion)
     log_texts = []
-    try:
-        logs = driver.find_elements(By.CSS_SELECTOR, "#gamelogs .gamelogreview")
-        log_texts = [(x.text or "").strip() for x in logs if (x.text or "").strip()]
-    except Exception:
-        log_texts = []
+    deadline = time.time() + 8
+    while time.time() < deadline and not log_texts:
+        try:
+            logs = driver.find_elements(By.CSS_SELECTOR, "#gamelogs .gamelogreview")
+            log_texts = [(x.text or "").strip() for x in logs if (x.text or "").strip()]
+        except Exception:
+            log_texts = []
+        if log_texts:
+            break
+        time.sleep(0.5)
 
-    # Fallback to body text lines if needed
+    if not log_texts:
+        try:
+            html = driver.page_source or ""
+            log_texts = [re.sub(r"<[^>]+>", "", m).strip() for m in re.findall(r'<div[^>]+class="[^"]*gamelogreview[^"]*"[^>]*>(.*?)</div>', html, flags=re.I|re.S)]
+            log_texts = [re.sub(r"\s+", " ", x) for x in log_texts if x]
+        except Exception:
+            log_texts = []
+
     if not log_texts:
         log_texts = [ln.strip() for ln in page_text.splitlines() if ln.strip()]
 
-    # Patterns
     place_fr = re.compile(r"^(.+?)\s+place un pion dans la colonne\s+(\d+)\s*$", re.IGNORECASE)
     place_en = re.compile(r"^(.+?)\s+(?:plays?|places?)\s+(?:a\s+)?(?:token|disc|piece)\s+in\s+(?:the\s+)?column\s+(\d+)\s*$", re.IGNORECASE)
-
     now_color_fr = re.compile(r"^(.+?)\s+joue maintenant en\s+(.+?)\s*!?\s*$", re.IGNORECASE)
     now_color_en = re.compile(r"^(.+?)\s+now plays\s+(yellow|red)\s*!?\s*$", re.IGNORECASE)
 
@@ -329,11 +389,10 @@ def extract_size_and_moves_from_gamereview(driver, table_id: str):
             return "R"
         return None
 
-    # Track colors as stated by logs (after inversion)
     name_to_color = {}
-    placements = []  # list of (player_name, col)
-
+    placements = []
     for t in log_texts:
+        t = re.sub(r"\s+", " ", t).strip()
         m = now_color_fr.match(t) or now_color_en.match(t)
         if m:
             pname = m.group(1).strip()
@@ -348,8 +407,6 @@ def extract_size_and_moves_from_gamereview(driver, table_id: str):
             col = int(m.group(2))
             placements.append((pname, col))
 
-    # Build moves with correct colors.
-    # Opening rule on BGA can be: first player places 3 discs (R, J, R) then possible inversion.
     opening_seq = ["R", "J", "R"]
     moves = []
     last_color = None
@@ -365,19 +422,15 @@ def extract_size_and_moves_from_gamereview(driver, table_id: str):
             color = opening_seq[idx - 1]
         else:
             color = name_to_color.get(pname)
+            if color not in ("R", "J") and len(known_players) == 2:
+                other = known_players[0] if pname == known_players[1] else known_players[1]
+                other_c = name_to_color.get(other)
+                if other_c in ("R", "J"):
+                    color = "J" if other_c == "R" else "R"
             if color not in ("R", "J"):
-                # If one player's color is known, infer the other
-                if len(known_players) == 2:
-                    other = known_players[0] if pname == known_players[1] else known_players[1]
-                    other_c = name_to_color.get(other)
-                    if other_c in ("R", "J"):
-                        color = "J" if other_c == "R" else "R"
-                # last resort: alternate
-                if color not in ("R", "J"):
-                    color = "J" if last_color == "R" else "R"
+                color = "J" if last_color == "R" else "R"
 
         last_color = color
-
         moves.append({
             "move_id": idx,
             "col": col,
@@ -385,6 +438,58 @@ def extract_size_and_moves_from_gamereview(driver, table_id: str):
             "player_id": str(pid),
             "color": color,
         })
+
+    return size, moves
+
+
+def resolve_player_replay_url_from_gamereview(driver, player_id: str):
+    try:
+        a = driver.find_element(By.CSS_SELECTOR, f'a#choosePlayerLink_{player_id}, a[href*="/archive/replay/"][href*="player={player_id}"]')
+        href = a.get_attribute("href")
+        if href:
+            return href
+    except Exception:
+        pass
+
+    html = driver.page_source or ""
+    m = re.search(r'(/archive/replay/[^"\']*?[?&]table=\d+[^"\']*?[?&]player=' + re.escape(str(player_id)) + r'[^"\']*)', html)
+    if m:
+        rel = m.group(1)
+        return rel if rel.startswith("http") else urljoin(BASE, rel)
+    return None
+
+
+def extract_size_and_moves_from_gamereview(driver, table_id: str, player_id: str | None = None):
+    """
+    Ouvre /gamereview?table=... puis parse les logs visibles.
+    Si aucun coup n'est trouvé, fallback vers /archive/replay/... pour le player courant.
+    """
+    url = f"{BASE}/gamereview?table={table_id}"
+    driver.get(url)
+
+    WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+    time.sleep(1.2)
+
+    size, moves = _parse_moves_from_current_review_page(driver)
+    if moves:
+        return size, moves
+
+    replay_url = None
+    if player_id is not None:
+        replay_url = resolve_player_replay_url_from_gamereview(driver, str(player_id))
+    if not replay_url:
+        replay_url = resolve_real_replay_url_from_table(driver, table_id)
+
+    if replay_url:
+        try:
+            driver.get(replay_url)
+            WebDriverWait(driver, 25).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+            time.sleep(1.2)
+            _size2, replay_moves = _parse_moves_from_current_review_page(driver)
+            if replay_moves:
+                return size, replay_moves
+        except Exception:
+            pass
 
     return size, moves
 
@@ -538,11 +643,8 @@ def main():
                             continue
 
                 # 3) Now open gamereview to extract moves
-                _size_from_gamereview, moves = extract_size_and_moves_from_gamereview(driver, tid)
-                # NOTE: we intentionally do NOT fallback to archive replay here.
-                # Archive extraction yields only player_id (no color), and with the BGA "inversion" rule
-                # colors can swap -> would corrupt the reconstructed board.
-
+                _size_from_gamereview, moves = extract_size_and_moves_from_gamereview(driver, tid, player_id=player_id)
+                
                 if not moves:
                     print("      ❌ Aucun coup trouvé (skip)")
                     time.sleep(PAUSE_BETWEEN_TABLES)

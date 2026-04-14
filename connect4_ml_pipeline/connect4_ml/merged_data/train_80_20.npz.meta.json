@@ -1,0 +1,16 @@
+{
+  "dataset_a": "ml_dataset\\train.npz",
+  "dataset_b": "selfplay_data\\selfplay_v1.npz",
+  "dataset_a_available": 3119547,
+  "dataset_b_available": 455067,
+  "weight_a_input": 60.0,
+  "weight_b_input": 40.0,
+  "weight_a_normalized": 0.6,
+  "weight_b_normalized": 0.4,
+  "take_a": 60000,
+  "take_b": 40000,
+  "total_samples": 100000,
+  "seed": 42,
+  "allow_replacement": false,
+  "shuffle": true
+}

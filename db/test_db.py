@@ -6,7 +6,7 @@ try:
         port=5432,
         dbname="Connect4DB",
         user="postgres",
-        password="123"
+        password="Celina123"
     )
     
 

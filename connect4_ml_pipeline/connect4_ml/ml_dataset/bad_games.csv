@@ -1,0 +1,2 @@
+split,id_partie,mode,status,joueur_depart,joueur_gagnant,rows,cols,signature,error
+train,51604,bga,terminee,R,Y,9,9,541464745,Game contains moves after a winning move at ply=8

@@ -1,0 +1,114 @@
+[
+  {
+    "move_id": 1,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "R"
+  },
+  {
+    "move_id": 2,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 3,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "R"
+  },
+  {
+    "move_id": 4,
+    "col": 5,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 5,
+    "col": 6,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 6,
+    "col": 7,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 7,
+    "col": 6,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 8,
+    "col": 6,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 9,
+    "col": 4,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 10,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 11,
+    "col": 4,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 12,
+    "col": 4,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 13,
+    "col": 6,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 14,
+    "col": 3,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  },
+  {
+    "move_id": 15,
+    "col": 6,
+    "player_name": "LALAWIN",
+    "player_id": "95249532",
+    "color": "R"
+  },
+  {
+    "move_id": 16,
+    "col": 2,
+    "player_name": "kentino",
+    "player_id": "94154229",
+    "color": "J"
+  }
+]

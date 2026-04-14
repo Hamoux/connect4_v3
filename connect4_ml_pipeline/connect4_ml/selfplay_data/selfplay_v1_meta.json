@@ -1,0 +1,21 @@
+{
+  "model": "C:\\Users\\hamou\\Desktop\\New Connect 4\\connect4_v3\\connect4_ml_pipeline\\connect4_mL\\runs\\cpu_test\\best_modelv3.pt",
+  "games": 8000,
+  "rows": 9,
+  "cols": 9,
+  "connect_n": 4,
+  "samples": 455067,
+  "wins_r": 3934,
+  "wins_y": 4050,
+  "draws": 16,
+  "avg_game_len": 56.883375,
+  "seed": 42,
+  "top_k": 3,
+  "temperature": 0.3,
+  "explore_plies": 4,
+  "label_map": {
+    "loss": 0,
+    "draw": 1,
+    "win": 2
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "rows": 9,
+  "cols": 9,
+  "modes": [
+    "minimax",
+    "bga"
+  ],
+  "statuses": [
+    "terminee",
+    "nulle"
+  ],
+  "min_moves": 6,
+  "games_total": 32200,
+  "games_train": 25760,
+  "games_val": 3220,
+  "games_test": 3220,
+  "games_kept_train": 25723,
+  "games_kept_val": 3219,
+  "games_kept_test": 3219,
+  "games_skipped_train": 37,
+  "games_skipped_val": 1,
+  "games_skipped_test": 1,
+  "samples_train": 708027,
+  "samples_val": 89399,
+  "samples_test": 86653,
+  "label_map": {
+    "loss": 0,
+    "draw": 1,
+    "win": 2
+  },
+  "bad_games_csv": ".\\ml_dataset\\bad_games.csv"
+}
