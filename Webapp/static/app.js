@@ -159,7 +159,14 @@ function myOnlineColor(state) {
 function isAiTurn(state) {
   if (!state || state.game_over) return false;
   const aiPlayers = state.ai_players || { R: false, J: false };
-  return !!aiPlayers[state.current_player];
+  // SAFETY: If both are somehow AI, disable both - prevent infinite loops
+  if (aiPlayers.R && aiPlayers.J) {
+    aiPlayers.R = false;
+    aiPlayers.J = false;
+    state.ai_players = aiPlayers;
+  }
+  const result = !!aiPlayers[state.current_player];
+  return result;
 }
 
 // --- Synchronisation serveur pour undo/redo JvIA ---
@@ -567,17 +574,20 @@ async function newGame() {
   GAME_ID = null;
   history.replaceState({}, "", location.pathname);
 
-  if (mode === "LOCAL") {
-    const start = starting_player === "R" || starting_player === "J" ? starting_player : "R";
-    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS", ai_enabled: false, ai_depth: Number(difficulty), ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: start, starting_player: start, signature: "init", game_over: false, winning_line: null, player_count: 1, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
-    stopPolling(); resetPauseUiOnly(); syncUiPrefsFromForm(); render(lastState); return;
-  }
-
   const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   const { ok, data: state } = await postNewGame(payload);
   if (!ok) { setMessageOnly(state.error || "Erreur lors de la création de la partie."); return; }
 
   lastState = state;
+  // SAFETY: Ensure ai_players is always valid
+  if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
+    lastState.ai_players = { R: false, J: false };
+  }
+  // SAFETY: Prevent both players from being AI
+  if (lastState.ai_players.R && lastState.ai_players.J) {
+    lastState.ai_players.J = false;
+  }
+  
   if (state.id_partie) {
     GAME_ID = state.id_partie;
     history.replaceState({}, "", `?game_id=${GAME_ID}`);
@@ -598,40 +608,6 @@ async function play(col) {
 
   if (isAiTurn(lastState)) return;
 
-  if (lastState.mode === "LOCAL") {
-    if (lastState.game_over) return;
-    if (isColumnFull(col)) return;
-
-    undoStack.push(snapshotForUndo(lastState));
-    redoStack.length = 0;
-
-    let placed = null;
-    for (let r = ROWS - 1; r >= 0; r--) {
-      if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = lastState.current_player; break; }
-    }
-    if (placed === null) return;
-
-    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
-    lastState.signature += String(col + 1);
-    lastMove = { r: placed, c: col };
-    clearHint();
-
-    const line = jsFindWinningLine(placed, col, lastState.board);
-    if (line) {
-      lastState.game_over = true; lastState.status = "TERMINEE";
-      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
-      render(lastState);
-      setMessageOnly(`Victoire de <span class="name-${lastState.current_player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(lastState.current_player))}</span> !`);
-      return;
-    }
-
-    lastState.current_player = lastState.current_player === "R" ? "J" : "R";
-    render(lastState);
-    scheduleAiIfNeeded();
-    return;
-  }
-
-  if (!lastState.id_partie) { showMessage("Clique d'abord sur « Nouvelle partie »."); return; }
   if (lastState.game_over) return;
   if (isColumnFull(col)) return;
 
@@ -673,6 +649,19 @@ async function play(col) {
   }
 
   const data = res.data;
+  // Update GAME_ID if it wasn't set (LOCAL games)
+  if (!GAME_ID && data.id_partie) {
+    GAME_ID = data.id_partie;
+  }
+  // SAFETY: Ensure state is always valid
+  if (!data.ai_players || typeof data.ai_players !== "object") {
+    data.ai_players = { R: false, J: false };
+  }
+  // SAFETY: Prevent both players from being AI
+  if (data.ai_players.R && data.ai_players.J) {
+    data.ai_players.J = false;
+  }
+  
   lastMove = findLastMove(lastState.board, data.board) || lastMove;
   lastState = data;
   render(lastState);
@@ -692,46 +681,19 @@ async function aiMove() {
   setThinking(true);
   const t0 = performance.now();
 
-  if (lastState.mode === "LOCAL") {
-    const player = lastState.current_player;
-    const depth = Number(lastState.ai_depth || 4);
-    let res;
-    try { res = await postLocalAiMove(lastState.board, player, depth); } catch { setThinking(false); showMessage("Erreur locale de l'IA."); return; }
-    if (!res.ok) { setThinking(false); showMessage(res.error || "Erreur de l'IA."); return; }
-
-    const col = res.col;
-    let placed = null;
-    for (let r = ROWS - 1; r >= 0; r--) { if (lastState.board[r][col] === 0) { placed = r; lastState.board[r][col] = player; break; } }
-    if (placed === null) { showMessage("Coup IA impossible."); return; }
-
-    if (String(lastState.signature).startsWith("init_")) lastState.signature = "";
-    lastState.signature += String(col + 1);
-
-    const dt = Math.round(performance.now() - t0);
-    lastMove = { r: placed, c: col }; clearHint();
-
-    const line = jsFindWinningLine(placed, col, lastState.board);
-    if (line) {
-      lastState.game_over = true; lastState.status = "TERMINEE";
-      lastState.winning_line = line.map(([rr, cc]) => [rr, cc]);
-      render(lastState);
-      setThinking(false);        // spinner s'arrête APRÈS le rendu
-      showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
-      setMessageOnly(`Victoire de <span class="name-${player === "R" ? "red" : "yellow"}">${escapeHtml(nameFor(player))}</span> !`);
-      return;
-    }
-
-    lastState.current_player = player === "R" ? "J" : "R";
-    render(lastState);         // plateau mis à jour EN PREMIER
-    setThinking(false);        // spinner s'arrête APRÈS le rendu
-    showHistoryLine(`L'IA (${player === "R" ? "rouge" : "jaune"}) a joué (${dt} ms).`, "log-item--system");
-    scheduleAiIfNeeded(); return;
-  }
-
   let res;
   try { res = await postAiMove(); } catch { setThinking(false); showMessage("Erreur réseau."); return; }
   const data = res.data;
   if (!res.ok) { setThinking(false); showMessage(data.error || "Erreur de l'IA."); return; }
+
+  // SAFETY: Ensure state is always valid before using it
+  if (!data.ai_players || typeof data.ai_players !== "object") {
+    data.ai_players = { R: false, J: false };
+  }
+  // SAFETY: Prevent both players from being AI
+  if (data.ai_players.R && data.ai_players.J) {
+    data.ai_players.J = false;
+  }
 
   const dt = Math.round(performance.now() - t0);
   lastMove = findLastMove(lastState.board, data.board);
@@ -1389,13 +1351,18 @@ function updateAiColorButtons(state) {
     btn.hidden = true; btn.disabled = true;
   }
 
-  // Pas de partie, partie terminée, mode peinture, ou mode en ligne 2 humains → rien
+  // Pas de partie, partie terminée, mode peinture → rien
   if (!state || state.game_over || paintMode) return;
-  if (state.mode === "WEB" && state.type_partie === "HUMAIN") return;
+  
+  // HIDE for ALL WEB games (IA or HUMAIN) - buttons only for LOCAL
+  if (state.mode === "WEB") return;
+  
+  // LOCAL mode only: show buttons
+  if (state.mode !== "LOCAL") return;
 
   const aiPlayers = state.ai_players || { R: false, J: false };
 
-  // Afficher les 4 boutons — disponibles en LOCAL et WEB+IA
+  // Afficher les 4 boutons — seulement en LOCAL
   btnAiRed.hidden = false;    btnHumanRed.hidden = false;
   btnAiYellow.hidden = false; btnHumanYellow.hidden = false;
 
@@ -1407,6 +1374,16 @@ function updateAiColorButtons(state) {
 
 function render(state) {
   if (!state) return;
+  
+  // CRITICAL SAFETY CHECK: Ensure ai_players is never corrupted
+  if (!state.ai_players || typeof state.ai_players !== "object") {
+    state.ai_players = { R: false, J: false };
+  }
+  if (state.ai_players.R && state.ai_players.J) {
+    console.warn("SAFETY: Detected both players as AI - disabling yellow AI to prevent infinite loop");
+    state.ai_players.J = false;
+  }
+  
   setModePill(state);
   renderRole(state);
   renderStatusText(state);
@@ -1566,79 +1543,49 @@ window.addEventListener("load", async () => {
     else { $("shareLink")?.select(); document.execCommand("copy"); setMessageOnly("Lien copié."); }
   });
 
-  // ── Boutons IA/Humain ─────────────────────────────────────────────────────
+  // ── Boutons IA/Humain (LOCAL ONLY) ────────────────────────────────────────
   $("btnAiRed")?.addEventListener("click", async () => {
-    if (!lastState) return;
-    if (lastState.mode === "LOCAL") {
-      const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
-      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: true };
-      lastState.ai_enabled = true;
-      lastState.ai_depth = depth;
-      lastState.player_r_name = "IA";
-      render(lastState);
-      showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system");
-      scheduleAiIfNeeded();
-      return;
-    }
-    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
-    const res = await postSetAiColor("R", true);
-    if (!res.ok) { showMessage(res.data.error || "Impossible d'activer l'IA pour rouge."); return; }
-    lastState = res.data; render(lastState);
-    showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system"); scheduleAiIfNeeded();
+    if (!lastState || lastState.mode !== "LOCAL") return;
+    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: true };
+    lastState.ai_enabled = true;
+    lastState.ai_depth = depth;
+    lastState.player_r_name = "IA";
+    render(lastState);
+    showHistoryLine("Rouge est désormais contrôlé par l'IA.", "log-item--system");
+    scheduleAiIfNeeded();
   });
 
   $("btnHumanRed")?.addEventListener("click", async () => {
-    if (!lastState) return;
-    if (lastState.mode === "LOCAL") {
-      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: false };
-      lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
-      lastState.player_r_name = localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge";
-      cancelAiTimer();
-      render(lastState);
-      showHistoryLine("Rouge redevient humain.", "log-item--system");
-      return;
-    }
-    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
-    const res = await postSetAiColor("R", false);
-    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
-    lastState = res.data; render(lastState); showHistoryLine("Rouge redevient humain.", "log-item--system");
+    if (!lastState || lastState.mode !== "LOCAL") return;
+    lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), R: false };
+    lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
+    lastState.player_r_name = localStorage.getItem("playerNameR") || PLAYER_R_NAME || "Joueur rouge";
+    cancelAiTimer();
+    render(lastState);
+    showHistoryLine("Rouge redevient humain.", "log-item--system");
   });
 
   $("btnAiYellow")?.addEventListener("click", async () => {
-    if (!lastState) return;
-    if (lastState.mode === "LOCAL") {
-      const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
-      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: true };
-      lastState.ai_enabled = true;
-      lastState.ai_depth = depth;
-      lastState.player_j_name = "IA";
-      render(lastState);
-      showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system");
-      scheduleAiIfNeeded();
-      return;
-    }
-    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
-    const res = await postSetAiColor("J", true);
-    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
-    lastState = res.data; render(lastState);
-    showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system"); scheduleAiIfNeeded();
+    if (!lastState || lastState.mode !== "LOCAL") return;
+    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: true };
+    lastState.ai_enabled = true;
+    lastState.ai_depth = depth;
+    lastState.player_j_name = "IA";
+    render(lastState);
+    showHistoryLine("Jaune est désormais contrôlé par l'IA.", "log-item--system");
+    scheduleAiIfNeeded();
   });
 
   $("btnHumanYellow")?.addEventListener("click", async () => {
-    if (!lastState) return;
-    if (lastState.mode === "LOCAL") {
-      lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: false };
-      lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
-      lastState.player_j_name = localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune";
-      cancelAiTimer();
-      render(lastState);
-      showHistoryLine("Jaune redevient humain.", "log-item--system");
-      return;
-    }
-    if (!GAME_ID) { showMessage("Aucune partie active."); return; }
-    const res = await postSetAiColor("J", false);
-    if (!res.ok) { showMessage(res.data.error || "Impossible."); return; }
-    lastState = res.data; render(lastState); showHistoryLine("Jaune redevient humain.", "log-item--system");
+    if (!lastState || lastState.mode !== "LOCAL") return;
+    lastState.ai_players = { ...(lastState.ai_players || { R: false, J: false }), J: false };
+    lastState.ai_enabled = !!(lastState.ai_players.R || lastState.ai_players.J);
+    lastState.player_j_name = localStorage.getItem("playerNameJ") || PLAYER_J_NAME || "Joueur jaune";
+    cancelAiTimer();
+    render(lastState);
+    showHistoryLine("Jaune redevient humain.", "log-item--system");
   });
 
   $("modeSelect")?.addEventListener("change", (e) => {
@@ -1693,6 +1640,14 @@ window.addEventListener("load", async () => {
     lastState = await getState(GAME_ID);
     if (!lastState) { GAME_ID = null; history.replaceState({}, "", location.pathname); lastState = await getState(); }
     else {
+      // SAFETY: Ensure state is valid
+      if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
+        lastState.ai_players = { R: false, J: false };
+      }
+      // SAFETY: Prevent both players from being AI
+      if (lastState.ai_players.R && lastState.ai_players.J) {
+        lastState.ai_players.J = false;
+      }
       if ($("shareLink")) $("shareLink").value = window.location.href;
       if (lastState.mode === "WEB") startPolling();
       if (lastState.game_over) setMessageOnly("Cette partie est terminée. Lance une nouvelle partie.");
@@ -1702,6 +1657,13 @@ window.addEventListener("load", async () => {
 
   if (!lastState) {
     lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "Aucune partie", ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: "R", starting_player: "R", signature: "init", game_over: false, winning_line: null, player_count: 0, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
+  }
+  // Final safety check
+  if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
+    lastState.ai_players = { R: false, J: false };
+  }
+  if (lastState.ai_players.R && lastState.ai_players.J) {
+    lastState.ai_players.J = false;
   }
 
   $("btnPause").textContent = "Pause";

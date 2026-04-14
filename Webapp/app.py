@@ -191,7 +191,13 @@ def ensure_tables():
         nb_colonnes INTEGER,
         confiance INTEGER,
         joueur_gagnant TEXT,
-        ligne_gagnante TEXT
+        ligne_gagnante TEXT,
+        ai_player TEXT,
+        ai_depth INTEGER,
+        ai_red BOOLEAN DEFAULT FALSE,
+        ai_yellow BOOLEAN DEFAULT FALSE,
+        player_r_name TEXT,
+        player_j_name TEXT
     );
     """
 
@@ -211,6 +217,12 @@ def ensure_tables():
         with conn.cursor() as cur:
             cur.execute(ddl_partie)
             cur.execute(ddl_situation)
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS ai_player TEXT")
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS ai_depth INTEGER")
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS ai_red BOOLEAN DEFAULT FALSE")
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS ai_yellow BOOLEAN DEFAULT FALSE")
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS player_r_name TEXT")
+            cur.execute("ALTER TABLE partie ADD COLUMN IF NOT EXISTS player_j_name TEXT")
         conn.commit()
 
 
@@ -265,6 +277,40 @@ def text_to_board(plateau_text):
     return board
 
 
+def update_partie_metadata_db(id_partie, s):
+    if id_partie is None:
+        return
+
+    ai_players = dict(s.get("ai_players") or {"R": False, "J": False})
+    exec_sql(
+        """
+        UPDATE partie
+        SET ai_player=%s,
+            ai_depth=%s,
+            ai_red=%s,
+            ai_yellow=%s,
+            player_r_name=%s,
+            player_j_name=%s,
+            mode=%s,
+            type_partie=%s,
+            joueur_depart=%s
+        WHERE id_partie=%s
+        """,
+        (
+            s.get("ai_player"),
+            int(s.get("ai_depth") or DEFAULT_DEPTH),
+            bool(ai_players.get("R", False)),
+            bool(ai_players.get("J", False)),
+            s.get("player_r_name") or "Joueur Rouge",
+            s.get("player_j_name") or "Joueur Jaune",
+            s.get("mode") or "WEB",
+            s.get("type_partie") or "HUMAIN",
+            s.get("starting_player") or "R",
+            id_partie,
+        ),
+    )
+
+
 def load_game_from_db(game_id):
     partie = q_one(
         "SELECT * FROM partie WHERE id_partie=%s",
@@ -283,16 +329,25 @@ def load_game_from_db(game_id):
     g["winning_line"] = None
     g["game_over"] = (g["status"] == "TERMINEE")
 
-    if g["type_partie"] == "IA":
+    g["ai_depth"] = normalize_depth(partie.get("ai_depth"), DEFAULT_DEPTH)
+    g["player_r_name"] = partie.get("player_r_name") or "Joueur Rouge"
+    g["player_j_name"] = partie.get("player_j_name") or "Joueur Jaune"
+
+    ai_red = bool(partie.get("ai_red", False))
+    ai_yellow = bool(partie.get("ai_yellow", False))
+    g["ai_players"] = {"R": ai_red, "J": ai_yellow}
+    g["ai_enabled"] = bool(ai_red or ai_yellow)
+
+    raw_ai_player = (partie.get("ai_player") or "").upper()
+    g["ai_player"] = raw_ai_player if raw_ai_player in ("R", "J") else None
+
+    if g["type_partie"] == "IA" and not g["ai_enabled"]:
+        if g["ai_player"] in ("R", "J"):
+            g["ai_players"] = {"R": g["ai_player"] == "R", "J": g["ai_player"] == "J"}
+        else:
+            g["ai_player"] = "J"
+            g["ai_players"] = {"R": False, "J": True}
         g["ai_enabled"] = True
-        g["ai_depth"] = DEFAULT_DEPTH
-        g["ai_player"] = "J"
-        g["ai_players"] = {"R": False, "J": True}
-    else:
-        g["ai_enabled"] = False
-        g["ai_depth"] = DEFAULT_DEPTH
-        g["ai_player"] = None
-        g["ai_players"] = {"R": False, "J": False}
 
     last_sit = q_one(
         """
@@ -336,16 +391,26 @@ def load_game_from_db(game_id):
     return g
 
 
-def create_partie_db(mode, type_partie, joueur_depart):
+def create_partie_db(mode, type_partie, joueur_depart, ai_player=None, ai_depth=DEFAULT_DEPTH,
+                    ai_players=None, player_r_name="Joueur Rouge", player_j_name="Joueur Jaune"):
     sig = f"init_{uuid.uuid4().hex[:12]}_{int(time.time() * 1000)}"
+    ai_players = dict(ai_players or {"R": False, "J": False})
 
     row = q_one(
         """
-        INSERT INTO partie (mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
+        INSERT INTO partie (
+            mode, type_partie, status, joueur_depart, signature, rows, cols, nb_colonnes, confiance,
+            ai_player, ai_depth, ai_red, ai_yellow, player_r_name, player_j_name
+        )
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         RETURNING id_partie
         """,
-        (mode, type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB),
+        (
+            mode, type_partie, "EN_COURS", joueur_depart, sig, ROWS, COLS, COLS, CONFIANCE_WEB,
+            ai_player, normalize_depth(ai_depth, DEFAULT_DEPTH),
+            bool(ai_players.get("R", False)), bool(ai_players.get("J", False)),
+            player_r_name or "Joueur Rouge", player_j_name or "Joueur Jaune",
+        ),
     )
     return int(row["id_partie"]), sig
 
@@ -616,7 +681,11 @@ def api_new():
         g["ai_player"] = None
         g["ai_depth"] = depth
 
-        pid, sig = create_partie_db("LOCAL", g["type_partie"], g["starting_player"])
+        pid, sig = create_partie_db(
+            "LOCAL", g["type_partie"], g["starting_player"],
+            ai_player=g["ai_player"], ai_depth=g["ai_depth"], ai_players=g["ai_players"],
+            player_r_name=g["player_r_name"], player_j_name=g["player_j_name"]
+        )
         g["id_partie"] = pid
         g["signature"] = sig
         games[pid] = g
@@ -647,7 +716,11 @@ def api_new():
         g["ai_player"] = None
         g["ai_players"] = {"R": False, "J": False}
 
-    pid, sig = create_partie_db("WEB", g["type_partie"], g["starting_player"])
+    pid, sig = create_partie_db(
+        "WEB", g["type_partie"], g["starting_player"],
+        ai_player=g["ai_player"], ai_depth=g["ai_depth"], ai_players=g["ai_players"],
+        player_r_name=g["player_r_name"], player_j_name=g["player_j_name"]
+    )
     g["id_partie"] = pid
     g["signature"] = sig
     g["status"] = "EN_COURS"
@@ -712,6 +785,9 @@ def api_set_ai_color():
         enabled_colors = [c for c in ("R", "J") if ai_players[c]]
         s["ai_player"] = enabled_colors[0] if len(enabled_colors) == 1 else None
 
+    enabled_colors = [c for c in ("R", "J") if ai_players[c]]
+    s["ai_player"] = enabled_colors[0] if len(enabled_colors) == 1 else None
+
     if enabled:
         if color == "R":
             s["player_r_name"] = "IA"
@@ -723,6 +799,7 @@ def api_set_ai_color():
         else:
             s["player_j_name"] = player_j_name or "Joueur Jaune"
 
+    update_partie_metadata_db(s.get("id_partie"), s)
     return jsonify(export_state(s))
 
 
@@ -744,8 +821,33 @@ def api_play():
 
     s = game
 
+    # SAFETY: Ensure ai_players is valid
+    if not isinstance(s.get("ai_players"), dict):
+        s["ai_players"] = {"R": False, "J": False}
+    # SAFETY: Prevent both players from being AI
+    ai_players = s.get("ai_players") or {"R": False, "J": False}
+    if ai_players.get("R") and ai_players.get("J"):
+        ai_players["J"] = False
+        s["ai_players"] = ai_players
+        s["ai_enabled"] = True
+    s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
+
     if s["id_partie"] is None:
-        return jsonify({"error": "Aucune partie. Clique sur Nouvelle partie."}), 400
+        if s["mode"] == "LOCAL":
+            # Create partie for LOCAL games
+            ai_players_to_save = s.get("ai_players") or {"R": False, "J": False}
+            pid, sig = create_partie_db(
+                "LOCAL", s.get("type_partie") or "HUMAIN", s.get("starting_player") or "R",
+                ai_player=s.get("ai_player"), ai_depth=s.get("ai_depth") or DEFAULT_DEPTH,
+                ai_players=ai_players_to_save,
+                player_r_name=s.get("player_r_name") or "Joueur Rouge",
+                player_j_name=s.get("player_j_name") or "Joueur Jaune"
+            )
+            s["id_partie"] = pid
+            s["signature"] = sig
+            games[pid] = s
+        else:
+            return jsonify({"error": "Aucune partie. Clique sur Nouvelle partie."}), 400
 
     if s["game_over"]:
         return jsonify(export_state(s))
@@ -767,6 +869,11 @@ def api_play():
 
     if current_color_is_ai(s):
         return jsonify({"error": "C'est au tour de l'IA."}), 400
+
+    # Prevent both players from being AI (safety check)
+    ai_players = s.get("ai_players") or {"R": False, "J": False}
+    if ai_players.get("R") and ai_players.get("J"):
+        return jsonify({"error": "Erreur: les deux joueurs ne peuvent pas être IA."}), 400
 
     try:
         _, line, joueur = apply_move(col, s)
@@ -791,6 +898,34 @@ def api_ai_move():
         return jsonify({"error": "Partie introuvable"}), 404
 
     s = game
+
+    # SAFETY: Ensure ai_players is valid
+    if not isinstance(s.get("ai_players"), dict):
+        s["ai_players"] = {"R": False, "J": False}
+    # SAFETY: Prevent both players from being AI
+    ai_players = s.get("ai_players") or {"R": False, "J": False}
+    if ai_players.get("R") and ai_players.get("J"):
+        ai_players["J"] = False
+        s["ai_players"] = ai_players
+        s["ai_enabled"] = True
+    s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
+
+    if s["id_partie"] is None:
+        if s["mode"] == "LOCAL":
+            # Create partie for LOCAL games
+            ai_players_to_save = s.get("ai_players") or {"R": False, "J": False}
+            pid, sig = create_partie_db(
+                "LOCAL", s.get("type_partie") or "HUMAIN", s.get("starting_player") or "R",
+                ai_player=s.get("ai_player"), ai_depth=s.get("ai_depth") or DEFAULT_DEPTH,
+                ai_players=ai_players_to_save,
+                player_r_name=s.get("player_r_name") or "Joueur Rouge",
+                player_j_name=s.get("player_j_name") or "Joueur Jaune"
+            )
+            s["id_partie"] = pid
+            s["signature"] = sig
+            games[pid] = s
+        else:
+            return jsonify({"error": "Aucune partie"}), 400
 
     if s["game_over"]:
         return jsonify(export_state(s))
