@@ -138,7 +138,7 @@ class MinimaxAI:
 
         return score
 
-    def minimax(self, board, depth, alpha, beta, maximizing, ai_player, eval_func=None):
+    def minimax(self, board, depth, alpha, beta, maximizing, ai_player):
         winner = self.winner_on_board(board)
         opp = "J" if ai_player == "R" else "R"
 
@@ -149,8 +149,6 @@ class MinimaxAI:
 
         valid = self.valid_cols(board)
         if depth == 0 or not valid:
-            if eval_func:
-                return eval_func(board, ai_player)
             return self.heuristic(board, ai_player)
 
         key = self.board_key(board, maximizing, ai_player)
@@ -167,7 +165,7 @@ class MinimaxAI:
                 if r is None:
                     continue
                 board[r][col] = ai_player
-                value = max(value, self.minimax(board, depth-1, alpha, beta, False, ai_player, eval_func))
+                value = max(value, self.minimax(board, depth-1, alpha, beta, False, ai_player))
                 board[r][col] = 0
                 alpha = max(alpha, value)
                 if alpha >= beta:
@@ -179,7 +177,7 @@ class MinimaxAI:
                 if r is None:
                     continue
                 board[r][col] = opp
-                value = min(value, self.minimax(board, depth-1, alpha, beta, True, ai_player, eval_func))
+                value = min(value, self.minimax(board, depth-1, alpha, beta, True, ai_player))
                 board[r][col] = 0
                 beta = min(beta, value)
                 if alpha >= beta:
@@ -195,10 +193,9 @@ class MinimaxAI:
         """
         return self._opening_book.get(moves_played)
 
-    def predict_winner(self, board, current_player, depth=6, eval_func=None):
+    def predict_winner(self, board, current_player, depth=6):
         """
         Prédit le gagnant via minimax. Retourne winner, moves, certain.
-        eval_func: fonction(board, player) -> score, si None utilise heuristic
         """
         winner_now = self.winner_on_board(board)
         if winner_now:
@@ -229,8 +226,7 @@ class MinimaxAI:
             alpha=-10**9,
             beta=10**9,
             maximizing=True,
-            ai_player=current_player,
-            eval_func=eval_func
+            ai_player=current_player
         )
 
         if score >= 10**7:
@@ -245,34 +241,25 @@ class MinimaxAI:
 
         # Avantage heuristique : estimer le nombre de coups restants
         # basé sur le nombre de cases vides et l'intensité de l'avantage
-        if score > 200:
+        if score > 60:
             cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
             # Plus l'avantage est fort, moins de coups estimés
-            if score > 400:
+            if score > 200:
                 moves_est = max(3, cases_vides // 6)
-            elif score > 300:
+            elif score > 120:
                 moves_est = max(4, cases_vides // 5)
             else:
                 moves_est = max(5, cases_vides // 4)
             return {'winner': current_player, 'moves': moves_est, 'certain': False}
-        elif score < -200:
+        elif score < -60:
             cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
-            if score < -400:
+            if score < -200:
                 moves_est = max(3, cases_vides // 6)
-            elif score < -300:
+            elif score < -120:
                 moves_est = max(4, cases_vides // 5)
             else:
                 moves_est = max(5, cases_vides // 4)
             return {'winner': opp, 'moves': moves_est, 'certain': False}
-
-        # Draw detection: score near 0 and search covered most/all remaining moves
-        cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
-        if cases_vides <= eval_depth:
-            # Search exhausted all remaining moves — certain draw
-            return {'winner': 'draw', 'moves': cases_vides, 'certain': True}
-        if cases_vides <= eval_depth * 2:
-            # Nearly exhaustive search, score ~0 — probable draw
-            return {'winner': 'draw', 'moves': cases_vides, 'certain': False}
 
         return {'winner': None, 'moves': None, 'certain': False}
 
