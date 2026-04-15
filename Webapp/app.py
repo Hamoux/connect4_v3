@@ -760,6 +760,72 @@ def signature_to_moves(sig):
 # Routes existantes
 # ─────────────────────────────────────────────────────────────────────────────
 
+
+def persist_restored_local_state(game):
+    """
+    Persist a restored LOCAL snapshot so future moves continue from the restored position,
+    not from the old DB state.
+    """
+    game_id = normalize_game_id(game.get("id_partie"))
+    if game_id is None:
+        return
+
+    sig = str(game.get("signature") or "init")
+    move_count = len(signature_to_moves(sig))
+    board = [row[:] for row in (game.get("board") or [[0 for _ in range(COLS)] for _ in range(ROWS)])]
+
+    # Reset situations to make the restored snapshot authoritative.
+    exec_sql("DELETE FROM situation WHERE id_partie=%s", (game_id,))
+    game["last_situation_id"] = None
+
+    has_any_piece = any(cell in ("R", "J") for row in board for cell in row)
+    if has_any_piece:
+        current = str(game.get("current_player") or "R")
+        starting = str(game.get("starting_player") or "R")
+        if game.get("game_over"):
+            winner = game.get("current_player") if game.get("current_player") in ("R", "J") else None
+            joueur_last = winner or ("J" if current == "R" else "R")
+        elif move_count > 0:
+            joueur_last = "J" if current == "R" else "R"
+        else:
+            joueur_last = starting
+        sid = insert_situation_db(
+            game_id,
+            move_count,
+            board_to_text(board),
+            joueur_last,
+            None
+        )
+        game["last_situation_id"] = sid
+
+    ligne_gagnante = str(game.get("winning_line")) if game.get("winning_line") else None
+    joueur_gagnant = None
+    if game.get("game_over"):
+        cp = str(game.get("current_player") or "")
+        joueur_gagnant = cp if cp in ("R", "J") else None
+
+    exec_sql(
+        """
+        UPDATE partie
+        SET status=%s,
+            joueur_depart=%s,
+            signature=%s,
+            joueur_gagnant=%s,
+            ligne_gagnante=%s
+        WHERE id_partie=%s
+        """,
+        (
+            game.get("status") or ("TERMINEE" if game.get("game_over") else "EN_COURS"),
+            game.get("starting_player") or "R",
+            sig,
+            joueur_gagnant,
+            ligne_gagnante,
+            game_id,
+        ),
+    )
+    update_partie_metadata_db(game_id, game)
+
+
 @app.get("/")
 def home():
     return render_template("index.html")
@@ -786,6 +852,7 @@ def api_state():
 
 
 @app.post("/api/new")
+
 def api_new():
     data = request.json or {}
     client_id = data.get("client_id")
@@ -867,6 +934,32 @@ def api_new():
         ai_engine.clear_cache()
         return jsonify(export_state(g))
 
+    if mode == "IA_VS_IA":
+        g = make_empty_state()
+        g["mode"] = "LOCAL"
+        g["type_partie"] = "IA_VS_IA"
+        g["status"] = "EN_COURS"
+        g["current_player"] = starting_player
+        g["starting_player"] = starting_player
+        g["player_r_name"] = "IA Rouge"
+        g["player_j_name"] = "IA Jaune"
+        g["ai_depth"] = depth
+        g["ai_enabled"] = True
+        g["ai_player"] = None
+        g["ai_players"] = {"R": True, "J": True}
+
+        pid, sig = create_partie_db(
+            "LOCAL", "IA_VS_IA", g["starting_player"],
+            ai_player=None, ai_depth=g["ai_depth"], ai_players=g["ai_players"],
+            player_r_name=g["player_r_name"], player_j_name=g["player_j_name"]
+        )
+        g["id_partie"] = pid
+        g["signature"] = sig
+        g["status"] = "EN_COURS"
+        games[pid] = g
+        ai_engine.clear_cache()
+        return jsonify(export_state(g))
+
     g = make_fresh_state()
     g["mode"] = "WEB"
     g["type_partie"] = "HUMAIN"
@@ -898,51 +991,9 @@ def api_new():
 
     return jsonify(export_state(g))
 
-    g = make_fresh_state()
-    g["mode"] = "WEB"
-    g["type_partie"] = "IA" if mode == "IA" else "HUMAIN"
-    g["ai_depth"] = depth
-    g["starting_player"] = starting_player
-    g["current_player"] = starting_player
-    g["player_r_name"] = player_r_name or "Joueur Rouge"
-    g["player_j_name"] = player_j_name or "Joueur Jaune"
-
-    if g["type_partie"] == "IA":
-        ai_player = "J" if human_player == "R" else "R"
-        g["ai_enabled"] = True
-        g["ai_player"] = ai_player
-        g["ai_players"] = {"R": ai_player == "R", "J": ai_player == "J"}
-
-        if ai_player == "R":
-            g["player_r_name"] = "IA"
-        else:
-            g["player_j_name"] = "IA"
-    else:
-        g["ai_enabled"] = False
-        g["ai_player"] = None
-        g["ai_players"] = {"R": False, "J": False}
-
-    pid, sig = create_partie_db(
-        "WEB", g["type_partie"], g["starting_player"],
-        ai_player=g["ai_player"], ai_depth=g["ai_depth"], ai_players=g["ai_players"],
-        player_r_name=g["player_r_name"], player_j_name=g["player_j_name"]
-    )
-    g["id_partie"] = pid
-    g["signature"] = sig
-    g["status"] = "EN_COURS"
-
-    games[pid] = g
-    ai_engine.clear_cache()  # Vider le cache uniquement à la nouvelle partie
-
-    try:
-        register_client(g, client_id)
-    except ValueError:
-        pass
-
-    return jsonify(export_state(g))
-
 
 @app.post("/api/set_ai_color")
+
 def api_set_ai_color():
     data = request.json or {}
     game_id = normalize_game_id(data.get("game_id"))
@@ -1030,12 +1081,12 @@ def api_play():
     # SAFETY: Ensure ai_players is valid
     if not isinstance(s.get("ai_players"), dict):
         s["ai_players"] = {"R": False, "J": False}
-    # SAFETY: Prevent both players from being AI
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
-        ai_players["J"] = False
-        s["ai_players"] = ai_players
-        s["ai_enabled"] = True
+    if not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
+        if ai_players.get("R") and ai_players.get("J"):
+            ai_players["J"] = False
+            s["ai_players"] = ai_players
+            s["ai_enabled"] = True
     s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
 
     if s["id_partie"] is None:
@@ -1076,9 +1127,8 @@ def api_play():
     if current_color_is_ai(s):
         return jsonify({"error": "C'est au tour de l'IA."}), 400
 
-    # Prevent both players from being AI (safety check)
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
+    if ai_players.get("R") and ai_players.get("J") and not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
         return jsonify({"error": "Erreur: les deux joueurs ne peuvent pas être IA."}), 400
 
     try:
@@ -1108,12 +1158,12 @@ def api_ai_move():
     # SAFETY: Ensure ai_players is valid
     if not isinstance(s.get("ai_players"), dict):
         s["ai_players"] = {"R": False, "J": False}
-    # SAFETY: Prevent both players from being AI
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J"):
-        ai_players["J"] = False
-        s["ai_players"] = ai_players
-        s["ai_enabled"] = True
+    if not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
+        if ai_players.get("R") and ai_players.get("J"):
+            ai_players["J"] = False
+            s["ai_players"] = ai_players
+            s["ai_enabled"] = True
     s["ai_players"] = {"R": bool(ai_players.get("R", False)), "J": bool(ai_players.get("J", False))}
 
     if s["id_partie"] is None:
@@ -1310,6 +1360,44 @@ def api_load_game():
     })
 
 
+
+@app.post("/api/restore_state")
+def api_restore_state():
+    data = request.json or {}
+    game_id = normalize_game_id(data.get("game_id"))
+    snap = data.get("snapshot") or {}
+
+    game = get_game_state(game_id)
+    if game is None:
+        return jsonify({"error": "Partie introuvable"}), 404
+
+    if str(game.get("mode") or "").upper() != "LOCAL":
+        return jsonify({"error": "Restauration réservée aux parties locales."}), 400
+
+    try:
+        board = snap.get("board")
+        if not isinstance(board, list) or len(board) != ROWS:
+            return jsonify({"error": "Snapshot invalide"}), 400
+        game["board"] = [list(row) for row in board]
+        game["current_player"] = str(snap.get("current_player") or game.get("current_player") or "R").upper()
+        game["starting_player"] = str(snap.get("starting_player") or game.get("starting_player") or "R").upper()
+        game["signature"] = str(snap.get("signature") or "init")
+        game["game_over"] = bool(snap.get("game_over", False))
+        game["status"] = snap.get("status") or ("TERMINEE" if game["game_over"] else "EN_COURS")
+        game["winning_line"] = snap.get("winning_line")
+        game["ai_enabled"] = bool(snap.get("ai_enabled", game.get("ai_enabled", False)))
+        game["ai_players"] = dict(snap.get("ai_players") or game.get("ai_players") or {"R": False, "J": False})
+        game["ai_depth"] = normalize_depth(snap.get("ai_depth"), game.get("ai_depth", DEFAULT_DEPTH))
+        game["ai_player"] = snap.get("ai_player")
+        game["player_r_name"] = snap.get("player_r_name") or game.get("player_r_name") or "Joueur Rouge"
+        game["player_j_name"] = snap.get("player_j_name") or game.get("player_j_name") or "Joueur Jaune"
+        persist_restored_local_state(game)
+        games[game_id] = game
+        return jsonify(export_state(game))
+    except Exception as e:
+        return jsonify({"error": f"Erreur restauration: {str(e)}"}), 500
+
+
 @app.get("/api/model_status")
 def api_model_status():
     checkpoint, model_py = get_default_model_paths()
@@ -1384,22 +1472,23 @@ def api_predict():
 
     if winner == "draw":
         message = "Match nul inévitable."
-    if winner == "draw":
-        message = "Match nul inévitable."
+    elif winner and certain and moves is not None and moves <= 1:
+        color_name = "Rouge" if winner == "R" else "Jaune"
+        message = f"Victoire forcée immédiate pour {color_name}."
     elif winner and certain and moves is not None:
         color_name = "Rouge" if winner == "R" else "Jaune"
-        message = f"{color_name} gagne en {moves} coup{'s' if moves > 1 else ''} (victoire forcée)."
+        message = f"Victoire forcée pour {color_name} (en ~{moves} coups)."
     elif winner and certain:
         color_name = "Rouge" if winner == "R" else "Jaune"
-        message = f"{color_name} a une victoire forcée."
-    elif winner and moves is not None:
+        message = f"Victoire forcée pour {color_name}."
+    elif winner and not certain and moves is not None:
         color_name = "Rouge" if winner == "R" else "Jaune"
-        message = f"{color_name} gagne en ~{moves} coups (estimation)."
+        message = f"Avantage probable pour {color_name} (~{moves} coups)."
     elif winner:
         color_name = "Rouge" if winner == "R" else "Jaune"
-        message = f"{color_name} a l'avantage."
+        message = f"Léger avantage pour {color_name}."
     else:
-        message = "Position équilibrée."
+        message = "Position incertaine — pas d'avantage clair."
 
     return jsonify({
         "winner": winner,
