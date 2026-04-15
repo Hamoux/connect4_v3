@@ -1,48 +1,26 @@
 class MinimaxAI:
+    TERMINAL_WIN_SCORE = 10_000_000
+    HEURISTIC_THREAT_PENALTY = 2_500
+    HEURISTIC_THREAT_BONUS = 600
+
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
         self.tt = {}
 
-        # Bibliothèque d'ouverture : colonnes indexées 0-based, centre préféré
-        # Pour une grille 9x9, le centre est la colonne 4
-        self._opening_book = self._build_opening_book()
-
-    def _build_opening_book(self):
-        """
-        Bibliothèque d'ouverture simple : pour les premiers coups,
-        jouer au centre ou près du centre est optimal.
-        Clé: tuple des coups joués (0-based), Valeur: colonne recommandée (0-based)
-        """
-        center = self.cols // 2
-        book = {}
-
-        # Premier coup : toujours jouer au centre
-        book[()] = center
-
-        # Deuxième coup (réponse) : si adversaire joue centre, jouer adjacent centre
-        book[(center,)] = center - 1
-        for c in range(self.cols):
-            if c != center:
-                book[(c,)] = center
-
-        # Troisième coup : si on a joué centre, continuer centre ou adjacent
-        book[(center, center - 1)] = center + 1
-        book[(center, center + 1)] = center - 1
-
-        return book
-
     def reset_params(self, rows, cols):
         self.rows = rows
         self.cols = cols
         self.tt.clear()
-        self._opening_book = self._build_opening_book()
 
     def clear_cache(self):
         self.tt.clear()
 
-    def board_key(self, board, maximizing, ai_player):
-        return (ai_player, maximizing, tuple(map(tuple, board)))
+    def board_key(self, board, maximizing, ai_player, depth):
+        return (ai_player, maximizing, depth, tuple(map(tuple, board)))
+
+    def opponent(self, player):
+        return "J" if player == "R" else "R"
 
     def valid_cols(self, board):
         return [c for c in range(self.cols) if board[0][c] == 0]
@@ -71,203 +49,187 @@ class MinimaxAI:
                         cc += dc
         return None
 
-    def ordered_valid_cols(self, board, ai_player, maximizing):
-        valid = self.valid_cols(board)
-        if not valid:
-            return []
-
-        opp = "J" if ai_player == "R" else "R"
-        player_to_play = ai_player if maximizing else opp
+    def ordered_valid_cols(self, board, ai_player=None, maximizing=True):
         center = self.cols // 2
+        valid = self.valid_cols(board)
+        # Deterministic ordering for search and tie cases: prefer center, then leftmost.
+        return sorted(valid, key=lambda c: (abs(c - center), c))
 
-        def move_score(col):
-            score = -abs(col - center) * 10
+    def _windows(self, board):
+        for r in range(self.rows):
+            for c in range(self.cols - 3):
+                yield [board[r][c + i] for i in range(4)]
+        for c in range(self.cols):
+            for r in range(self.rows - 3):
+                yield [board[r + i][c] for i in range(4)]
+        for r in range(self.rows - 3):
+            for c in range(self.cols - 3):
+                yield [board[r + i][c + i] for i in range(4)]
+        for r in range(3, self.rows):
+            for c in range(self.cols - 3):
+                yield [board[r - i][c + i] for i in range(4)]
+
+    def count_immediate_wins(self, board, player):
+        count = 0
+        for col in self.valid_cols(board):
             r = self.next_open_row(board, col)
             if r is None:
-                return -10**9
-
-            board[r][col] = player_to_play
-            w = self.winner_on_board(board)
+                continue
+            board[r][col] = player
+            if self.winner_on_board(board) == player:
+                count += 1
             board[r][col] = 0
-            if w == player_to_play:
-                score += 10**6
-            return score
-
-        valid.sort(key=move_score, reverse=True)
-        return valid
+        return count
 
     def heuristic(self, board, ai_player):
-        opp = "J" if ai_player == "R" else "R"
+        opp = self.opponent(ai_player)
 
-        def score_window(w):
-            ai = w.count(ai_player)
-            op = w.count(opp)
-            empty = w.count(0)
-            if ai > 0 and op > 0:
+        def score_window(window):
+            ai = window.count(ai_player)
+            op = window.count(opp)
+            empty = window.count(0)
+
+            if ai and op:
                 return 0
-            if ai == 4:
-                return 100000
-            if op == 4:
-                return -100000
             if ai == 3 and empty == 1:
-                return 80
+                return 90
             if ai == 2 and empty == 2:
-                return 10
+                return 14
+            if ai == 1 and empty == 3:
+                return 2
             if op == 3 and empty == 1:
-                return -90
+                return -120
             if op == 2 and empty == 2:
-                return -12
+                return -18
+            if op == 1 and empty == 3:
+                return -2
             return 0
 
         score = 0
         center = self.cols // 2
-        score += 6 * [board[r][center] for r in range(self.rows)].count(ai_player)
+        score += 8 * [board[r][center] for r in range(self.rows)].count(ai_player)
+        score -= 8 * [board[r][center] for r in range(self.rows)].count(opp)
 
-        for r in range(self.rows):
-            for c in range(self.cols - 3):
-                score += score_window([board[r][c+i] for i in range(4)])
-        for c in range(self.cols):
-            for r in range(self.rows - 3):
-                score += score_window([board[r+i][c] for i in range(4)])
-        for r in range(self.rows - 3):
-            for c in range(self.cols - 3):
-                score += score_window([board[r+i][c+i] for i in range(4)])
-        for r in range(3, self.rows):
-            for c in range(self.cols - 3):
-                score += score_window([board[r-i][c+i] for i in range(4)])
+        for window in self._windows(board):
+            score += score_window(window)
 
-        return score
+        ai_threats = self.count_immediate_wins(board, ai_player)
+        opp_threats = self.count_immediate_wins(board, opp)
+        score += ai_threats * self.HEURISTIC_THREAT_BONUS
+        score -= opp_threats * self.HEURISTIC_THREAT_PENALTY
 
-    def minimax(self, board, depth, alpha, beta, maximizing, ai_player):
+        return int(score)
+
+    def minimax(self, board, depth, alpha, beta, maximizing, ai_player, eval_func=None):
         winner = self.winner_on_board(board)
-        opp = "J" if ai_player == "R" else "R"
+        opp = self.opponent(ai_player)
 
         if winner == ai_player:
-            return 10**7 + depth
+            return self.TERMINAL_WIN_SCORE + depth
         if winner == opp:
-            return -10**7 - depth
+            return -self.TERMINAL_WIN_SCORE - depth
 
         valid = self.valid_cols(board)
         if depth == 0 or not valid:
-            return self.heuristic(board, ai_player)
+            if not valid:
+                return 0
+            return (eval_func or self.heuristic)(board, ai_player)
 
-        key = self.board_key(board, maximizing, ai_player)
+        key = self.board_key(board, maximizing, ai_player, depth)
         cached = self.tt.get(key)
         if cached is not None:
-            cd, cs = cached
-            if cd >= depth:
-                return cs
+            return cached
 
         if maximizing:
-            value = -10**9
+            value = -10**18
             for col in self.ordered_valid_cols(board, ai_player, True):
                 r = self.next_open_row(board, col)
                 if r is None:
                     continue
                 board[r][col] = ai_player
-                value = max(value, self.minimax(board, depth-1, alpha, beta, False, ai_player))
+                child = self.minimax(board, depth - 1, alpha, beta, False, ai_player, eval_func)
                 board[r][col] = 0
+                if child > value:
+                    value = child
                 alpha = max(alpha, value)
                 if alpha >= beta:
                     break
         else:
-            value = 10**9
+            value = 10**18
             for col in self.ordered_valid_cols(board, ai_player, False):
                 r = self.next_open_row(board, col)
                 if r is None:
                     continue
                 board[r][col] = opp
-                value = min(value, self.minimax(board, depth-1, alpha, beta, True, ai_player))
+                child = self.minimax(board, depth - 1, alpha, beta, True, ai_player, eval_func)
                 board[r][col] = 0
+                if child < value:
+                    value = child
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
 
-        self.tt[key] = (depth, value)
+        self.tt[key] = value
         return value
 
-    def get_opening_move(self, moves_played):
-        """
-        Retourne un coup depuis la bibliothèque d'ouverture si disponible.
-        moves_played: tuple des colonnes jouées depuis le début (0-based)
-        """
-        return self._opening_book.get(moves_played)
-
-    def predict_winner(self, board, current_player, depth=6):
-        """
-        Prédit le gagnant via minimax. Retourne winner, moves, certain.
-        """
-        winner_now = self.winner_on_board(board)
-        if winner_now:
-            return {'winner': winner_now, 'moves': 0, 'certain': True}
-
-        valid = self.valid_cols(board)
-        if not valid:
-            return {'winner': 'draw', 'moves': 0, 'certain': True}
-
-        opp = "J" if current_player == "R" else "R"
-
-        # Victoire immédiate en 1 coup
-        for col in valid:
+    def evaluate_move_scores(self, board, ai_player, depth, eval_func=None):
+        depth = max(0, int(depth))
+        self.clear_cache()
+        scores = {}
+        for col in self.ordered_valid_cols(board, ai_player, True):
             r = self.next_open_row(board, col)
             if r is None:
                 continue
-            board[r][col] = current_player
-            if self.winner_on_board(board) == current_player:
-                board[r][col] = 0
-                return {'winner': current_player, 'moves': 1, 'certain': True}
+            board[r][col] = ai_player
+            score = self.minimax(board, max(0, depth - 1), -10**18, 10**18, False, ai_player, eval_func)
             board[r][col] = 0
+            scores[col] = int(score)
+        return scores
 
-        # Minimax
-        eval_depth = min(depth, 8)
-        score = self.minimax(
-            board=[row[:] for row in board],
-            depth=eval_depth,
-            alpha=-10**9,
-            beta=10**9,
-            maximizing=True,
-            ai_player=current_player
-        )
+    def choose_best_move(self, board, ai_player, depth, eval_func=None):
+        scores = self.evaluate_move_scores(board, ai_player, depth, eval_func)
+        if not scores:
+            return None, {}
+        # Deterministic tie-break: leftmost column among best-scoring moves.
+        best_score = max(scores.values())
+        best_col = min(col for col, score in scores.items() if score == best_score)
+        return best_col, scores
 
-        if score >= 10**7:
-            depth_remaining = score - 10**7
+    def predict_winner(self, board, current_player, depth=6, eval_func=None):
+        winner_now = self.winner_on_board(board)
+        if winner_now:
+            return {"winner": winner_now, "moves": 0, "certain": True}
+
+        valid = self.valid_cols(board)
+        if not valid:
+            return {"winner": "draw", "moves": 0, "certain": True}
+
+        opp = self.opponent(current_player)
+        eval_depth = min(int(depth), 8)
+        score = self.minimax([row[:] for row in board], eval_depth, -10**18, 10**18, True, current_player, eval_func)
+
+        if score >= self.TERMINAL_WIN_SCORE:
+            depth_remaining = score - self.TERMINAL_WIN_SCORE
             moves = max(1, eval_depth - depth_remaining)
-            return {'winner': current_player, 'moves': moves, 'certain': True}
+            return {"winner": current_player, "moves": moves, "certain": True}
 
-        if score <= -(10**7):
-            depth_remaining = (-score) - 10**7
+        if score <= -self.TERMINAL_WIN_SCORE:
+            depth_remaining = (-score) - self.TERMINAL_WIN_SCORE
             moves = max(1, eval_depth - depth_remaining)
-            return {'winner': opp, 'moves': moves, 'certain': True}
+            return {"winner": opp, "moves": moves, "certain": True}
 
-        # Avantage heuristique : estimer le nombre de coups restants
-        # basé sur le nombre de cases vides et l'intensité de l'avantage
-        if score > 60:
-            cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
-            # Plus l'avantage est fort, moins de coups estimés
-            if score > 200:
-                moves_est = max(3, cases_vides // 6)
-            elif score > 120:
-                moves_est = max(4, cases_vides // 5)
-            else:
-                moves_est = max(5, cases_vides // 4)
-            return {'winner': current_player, 'moves': moves_est, 'certain': False}
-        elif score < -60:
-            cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
-            if score < -200:
-                moves_est = max(3, cases_vides // 6)
-            elif score < -120:
-                moves_est = max(4, cases_vides // 5)
-            else:
-                moves_est = max(5, cases_vides // 4)
-            return {'winner': opp, 'moves': moves_est, 'certain': False}
-
-        return {'winner': None, 'moves': None, 'certain': False}
+        cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
+        if score > 250:
+            return {"winner": current_player, "moves": max(3, cases_vides // 5), "certain": False}
+        if score < -250:
+            return {"winner": opp, "moves": max(3, cases_vides // 5), "certain": False}
+        if cases_vides <= eval_depth:
+            return {"winner": "draw", "moves": cases_vides, "certain": True}
+        if abs(score) <= 20 and cases_vides <= eval_depth * 2:
+            return {"winner": "draw", "moves": cases_vides, "certain": False}
+        return {"winner": None, "moves": None, "certain": False}
 
     def _find_forced_win(self, board, player, current_mover, max_depth, depth):
-        """
-        Conservé pour compatibilité. Cherche si 'player' peut forcer la victoire.
-        Retourne le nombre de coups restants, ou None si pas trouvé.
-        """
         if depth > max_depth:
             return None
 
@@ -279,7 +241,7 @@ class MinimaxAI:
         if not valid:
             return None
 
-        opp = "J" if player == "R" else "R"
+        opp = self.opponent(player)
 
         if current_mover == player:
             for col in self.ordered_valid_cols(board, player, True):
@@ -292,17 +254,17 @@ class MinimaxAI:
                 if result is not None:
                     return result
             return None
-        else:
-            worst = None
-            for col in self.ordered_valid_cols(board, player, False):
-                r = self.next_open_row(board, col)
-                if r is None:
-                    continue
-                board[r][col] = current_mover
-                result = self._find_forced_win(board, player, player, max_depth, depth + 1)
-                board[r][col] = 0
-                if result is None:
-                    return None
-                if worst is None or result > worst:
-                    worst = result
-            return worst
+
+        worst = None
+        for col in self.ordered_valid_cols(board, player, False):
+            r = self.next_open_row(board, col)
+            if r is None:
+                continue
+            board[r][col] = current_mover
+            result = self._find_forced_win(board, player, player, max_depth, depth + 1)
+            board[r][col] = 0
+            if result is None:
+                return None
+            if worst is None or result > worst:
+                worst = result
+        return worst
