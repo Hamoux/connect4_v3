@@ -1767,7 +1767,10 @@ window.addEventListener("load", async () => {
         scheduleAiIfNeeded();
       }
     } catch (err) {
-      if (statusEl) { statusEl.textContent = "Erreur de lecture du fichier."; statusEl.style.color = "var(--red, #f87171)"; }
+      console.error("Import signature error:", err);
+      const msg = err?.message || "Erreur inconnue";
+      if (statusEl) { statusEl.textContent = "Erreur : " + msg; statusEl.style.color = "var(--red, #f87171)"; }
+      showMessage("Erreur lors de l'import : " + msg);
     }
 
     // Reset le file input pour pouvoir re-charger le même fichier

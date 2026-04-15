@@ -504,16 +504,16 @@ def best_ai_col(board, ai_player, depth, moves_history=None, eval_func=None):
     if not valid:
         return None
 
+    # ── Victoire ou blocage immédiat (prioritaire sur l'ouverture) ───────────
+    obvious = immediate_win_or_block(board, ai_player)
+    if obvious is not None:
+        return obvious
+
     # ── Bibliothèque d'ouverture ──────────────────────────────────────────────
     if moves_history is not None:
         opening_col = ai_engine.get_opening_move(tuple(moves_history))
         if opening_col is not None and opening_col in valid:
             return opening_col
-
-    # ── Victoire ou blocage immédiat ─────────────────────────────────────────
-    obvious = immediate_win_or_block(board, ai_player)
-    if obvious is not None:
-        return obvious
 
     best_score = -10**18
     best_col = valid[0]
@@ -1371,6 +1371,15 @@ def api_hint():
 
     if col is None:
         return jsonify({"error": "Aucun coup possible"}), 400
+
+    # Si les scores minimax montrent un meilleur coup que la suggestion,
+    # utiliser le meilleur score pour que la suggestion soit coherente.
+    if scores:
+        best_score_col = max(scores, key=lambda k: scores[k])
+        best_score_val = scores[best_score_col]
+        suggested_score = scores.get(str(col), None)
+        if suggested_score is not None and best_score_val > suggested_score:
+            col = int(best_score_col)
 
     return jsonify({"suggested_col": col, "scores": scores})
 
