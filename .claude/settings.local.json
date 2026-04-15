@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(gh pr create --base main --title 'Fix local undo/redo, AI handoff, analysis wording, IA_VS_IA' --body ':*)",
-      "Bash(where gh:*)",
-      "Bash(winget install:*)"
-    ]
-  }
-}
