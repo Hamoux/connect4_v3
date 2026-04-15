@@ -1121,7 +1121,7 @@ def api_play():
     if not isinstance(s.get("ai_players"), dict):
         s["ai_players"] = {"R": False, "J": False}
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
+    if s.get("mode") != "LOCAL":
         if ai_players.get("R") and ai_players.get("J"):
             ai_players["J"] = False
             s["ai_players"] = ai_players
@@ -1167,7 +1167,7 @@ def api_play():
         return jsonify({"error": "C'est au tour de l'IA."}), 400
 
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if ai_players.get("R") and ai_players.get("J") and not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
+    if ai_players.get("R") and ai_players.get("J") and s.get("mode") != "LOCAL":
         return jsonify({"error": "Erreur: les deux joueurs ne peuvent pas être IA."}), 400
 
     try:
@@ -1198,7 +1198,7 @@ def api_ai_move():
     if not isinstance(s.get("ai_players"), dict):
         s["ai_players"] = {"R": False, "J": False}
     ai_players = s.get("ai_players") or {"R": False, "J": False}
-    if not (s.get("type_partie") == "IA_VS_IA" and s.get("mode") == "LOCAL"):
+    if s.get("mode") != "LOCAL":
         if ai_players.get("R") and ai_players.get("J"):
             ai_players["J"] = False
             s["ai_players"] = ai_players
@@ -1661,6 +1661,115 @@ def api_paint():
         "nb_red": nb_r,
         "nb_yellow": nb_j,
         "winner_detected": winner_now
+    })
+
+
+@app.post("/api/import_signature")
+def api_import_signature():
+    """
+    Importe une position à partir d'une signature (suite de chiffres 1-9).
+    Body: { signature, starting_player? }
+    Rejoue les coups un par un pour reconstruire le plateau.
+    """
+    data = request.json or {}
+    sig = str(data.get("signature") or "").strip()
+    starting_player = str(data.get("starting_player") or "R").upper()
+    if starting_player not in ("R", "J"):
+        starting_player = "R"
+
+    if not sig:
+        return jsonify({"error": "Signature vide."}), 400
+
+    moves = []
+    for ch in sig:
+        if ch.isdigit():
+            d = int(ch)
+            if 1 <= d <= COLS:
+                moves.append(d - 1)
+
+    if not moves:
+        return jsonify({"error": "Signature invalide : aucun coup valide trouvé."}), 400
+
+    # Rejouer les coups pour construire le plateau
+    board = [[0 for _ in range(COLS)] for _ in range(ROWS)]
+    player = starting_player
+    last_winner = None
+    winning_line = None
+
+    for i, col in enumerate(moves):
+        placed_row = None
+        for r in range(ROWS - 1, -1, -1):
+            if board[r][col] == 0:
+                board[r][col] = player
+                placed_row = r
+                break
+        if placed_row is None:
+            return jsonify({
+                "error": f"Colonne {col + 1} pleine au coup {i + 1}. Signature invalide."
+            }), 400
+
+        w = ai_engine.winner_on_board(board)
+        if w:
+            last_winner = player
+            # Trouver la ligne gagnante
+            for dr, dc in [(0, 1), (1, 0), (1, 1), (1, -1)]:
+                line = [(placed_row, col)]
+                for sign in [1, -1]:
+                    nr, nc = placed_row + dr * sign, col + dc * sign
+                    while 0 <= nr < ROWS and 0 <= nc < COLS and board[nr][nc] == player:
+                        line.append((nr, nc))
+                        nr += dr * sign
+                        nc += dc * sign
+                if len(line) >= 4:
+                    winning_line = [[r, c] for r, c in sorted(line)]
+                    break
+            break
+
+        player = "J" if player == "R" else "R"
+
+    game_over = last_winner is not None
+    # Vérifier le match nul
+    if not game_over:
+        all_full = all(board[0][c] != 0 for c in range(COLS))
+        if all_full:
+            game_over = True
+
+    # Créer une nouvelle partie locale
+    pid, db_sig = create_partie_db(
+        "LOCAL", "HUMAIN", starting_player,
+        ai_player=None, ai_depth=DEFAULT_DEPTH,
+        ai_players={"R": False, "J": False},
+        player_r_name="Joueur Rouge",
+        player_j_name="Joueur Jaune"
+    )
+    game = make_empty_state()
+    game["id_partie"] = pid
+    game["mode"] = "LOCAL"
+    game["type_partie"] = "HUMAIN"
+    game["starting_player"] = starting_player
+    game["board"] = board
+    game["current_player"] = player
+    game["game_over"] = game_over
+    game["status"] = "TERMINEE" if game_over else "EN_COURS"
+    game["winning_line"] = winning_line
+    game["signature"] = sig
+
+    # Persister la situation finale
+    exec_sql("DELETE FROM situation WHERE id_partie=%s", (pid,))
+    plateau = board_to_text(board)
+    joueur_last = "J" if player == "R" else "R"
+    sid = insert_situation_db(pid, len(moves), plateau, joueur_last, None)
+    game["last_situation_id"] = sid
+    update_partie_signature_db(pid, sig)
+    exec_sql("UPDATE partie SET status=%s, joueur_depart=%s WHERE id_partie=%s",
+             (game["status"], starting_player, pid))
+
+    games[pid] = game
+
+    return jsonify({
+        **export_state(game),
+        "moves_count": len(moves),
+        "signature_imported": sig
     })
 
 
