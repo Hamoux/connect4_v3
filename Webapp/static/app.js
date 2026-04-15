@@ -32,6 +32,7 @@ let paused = false;
 let blockAutoAiUntilHumanAction = false;
 let aiRequestSerial = 0;
 let suggestBusy = false;
+let autoAnalysisEnabled = false;
 
 let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "Joueur jaune";
@@ -1030,7 +1031,8 @@ function renderPaintBoard() {
 // PRÉDICTION
 // ─────────────────────────────────────────────────────────────────────────────
 
-async function runPrediction() {
+async function runPrediction(manual = false) {
+  if (!manual && !autoAnalysisEnabled) return;
   const btnPredict = $("btnPredict");
   if (btnPredict) { btnPredict.disabled = true; btnPredict.textContent = "Analyse…"; }
 
@@ -1655,7 +1657,12 @@ window.addEventListener("load", async () => {
   }
 
   // ── Prédiction ────────────────────────────────────────────────────────────
-  $("btnPredict")?.addEventListener("click", () => void runPrediction());
+  $("btnPredict")?.addEventListener("click", () => void runPrediction(true));
+
+  $("autoAnalysisToggle")?.addEventListener("change", (e) => {
+    autoAnalysisEnabled = !!e.target.checked;
+    if (!autoAnalysisEnabled) { predictionResult = null; renderPrediction(); }
+  });
 
   // ── Suggestion ───────────────────────────────────────────────────────────
   $("btnHint")?.addEventListener("click", async () => {

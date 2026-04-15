@@ -59,6 +59,7 @@
         <select id="modeSelect" class="field__input">
           <option value="LOCAL">Local — 2 joueurs sur écran</option>
           <option value="IA">Joueur contre IA</option>
+          <option value="IA_VS_IA">IA contre IA</option>
           <option value="ONLINE">En ligne — lien partagé</option>
         </select>
       </div>
@@ -75,6 +76,13 @@
           <option value="8">8 — Maître</option>
           <option value="9">9 — Maximum</option>
         </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" style="cursor:pointer;display:flex;align-items:center;gap:6px">
+          <input type="checkbox" id="autoAnalysisToggle" />
+          Analyse auto (ralentit le jeu)
+        </label>
       </div>
 
       <div class="field">

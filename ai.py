@@ -261,6 +261,15 @@ class MinimaxAI:
                 moves_est = max(5, cases_vides // 4)
             return {'winner': opp, 'moves': moves_est, 'certain': False}
 
+        # Draw detection: score near 0 and search covered most/all remaining moves
+        cases_vides = sum(1 for r in range(self.rows) for c in range(self.cols) if board[r][c] == 0)
+        if cases_vides <= eval_depth:
+            # Search exhausted all remaining moves — certain draw
+            return {'winner': 'draw', 'moves': cases_vides, 'certain': True}
+        if cases_vides <= eval_depth * 2:
+            # Nearly exhaustive search, score ~0 — probable draw
+            return {'winner': 'draw', 'moves': cases_vides, 'certain': False}
+
         return {'winner': None, 'moves': None, 'certain': False}
 
     def _find_forced_win(self, board, player, current_mover, max_depth, depth):
