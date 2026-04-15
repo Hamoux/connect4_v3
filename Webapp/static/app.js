@@ -168,7 +168,7 @@ function myOnlineColor(state) {
 function isAiTurn(state) {
   if (!state || state.game_over) return false;
   const aiPlayers = state.ai_players || { R: false, J: false };
-  if (aiPlayers.R && aiPlayers.J && !(state.mode === "LOCAL" && state.type_partie === "IA_VS_IA")) {
+  if (aiPlayers.R && aiPlayers.J && state.mode !== "LOCAL") {
     aiPlayers.R = false;
     aiPlayers.J = false;
     state.ai_players = aiPlayers;
@@ -459,6 +459,12 @@ async function fetchModelStatus() {
 
 async function postPaintCommit(board, startingPlayer) {
   const res = await fetch("/api/paint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID || lastState?.id_partie || null, board, starting_player: startingPlayer }) });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
+async function postImportSignature(signature, startingPlayer) {
+  const res = await fetch("/api/import_signature", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ signature, starting_player: startingPlayer }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -1466,8 +1472,8 @@ function render(state) {
   if (!state.ai_players || typeof state.ai_players !== "object") {
     state.ai_players = { R: false, J: false };
   }
-  if (state.ai_players.R && state.ai_players.J && !(state.mode === "LOCAL" && state.type_partie === "IA_VS_IA")) {
-    console.warn("SAFETY: Detected both players as AI outside IA_VS_IA - disabling yellow AI to prevent infinite loop");
+  if (state.ai_players.R && state.ai_players.J && state.mode !== "LOCAL") {
+    console.warn("SAFETY: Detected both players as AI in WEB mode outside IA_VS_IA - disabling yellow AI to prevent infinite loop");
     state.ai_players.J = false;
   }
   
@@ -1716,6 +1722,58 @@ window.addEventListener("load", async () => {
     else { $("shareLink")?.select(); document.execCommand("copy"); setMessageOnly("Lien copié."); }
   });
 
+  // ── Import signature depuis fichier .txt ──────────────────────────────────
+  $("importSigFile")?.addEventListener("change", async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const statusEl = $("importSigStatus");
+    if (statusEl) { statusEl.hidden = false; statusEl.textContent = `Lecture de ${file.name}…`; }
+
+    try {
+      const text = await file.text();
+      const sig = text.replace(/\s+/g, "").trim();
+      if (!sig || !/\d/.test(sig)) {
+        if (statusEl) { statusEl.textContent = "Fichier invalide : aucun chiffre trouvé."; statusEl.style.color = "var(--red, #f87171)"; }
+        return;
+      }
+
+      const startingPlayer = ($("colorSelect")?.value || "R").toUpperCase();
+      const res = await postImportSignature(sig, startingPlayer);
+      if (!res.ok) {
+        if (statusEl) { statusEl.textContent = res.data?.error || "Erreur lors de l'import."; statusEl.style.color = "var(--red, #f87171)"; }
+        return;
+      }
+
+      lastState = res.data;
+      GAME_ID = lastState.id_partie || GAME_ID;
+      lastMove = null;
+      lastBoardSnapshot = null;
+      clearHint();
+      undoStack.length = 0;
+      redoStack.length = 0;
+      predictionResult = null;
+      paintMode = false;
+      history.replaceState({}, "", location.pathname);
+      stopPolling();
+      render(lastState);
+
+      const nbMoves = res.data.moves_count || sig.replace(/[^\d]/g, "").length;
+      if (statusEl) { statusEl.textContent = `${file.name} importé (${nbMoves} coups).`; statusEl.style.color = "var(--green, #4ade80)"; }
+      showHistoryLine(`Position importée depuis ${file.name} — signature : ${sig} (${nbMoves} coups).`, "log-item--system");
+
+      if (lastState.game_over) {
+        setMessageOnly("Position importée : partie terminée.");
+      } else {
+        scheduleAiIfNeeded();
+      }
+    } catch (err) {
+      if (statusEl) { statusEl.textContent = "Erreur de lecture du fichier."; statusEl.style.color = "var(--red, #f87171)"; }
+    }
+
+    // Reset le file input pour pouvoir re-charger le même fichier
+    e.target.value = "";
+  });
+
   // ── Boutons IA/Humain ─────────────────────────────────────────────────────
   $("btnAiRed")?.addEventListener("click", async () => {
     if (!lastState) return;
@@ -1939,8 +1997,8 @@ window.addEventListener("load", async () => {
       if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
         lastState.ai_players = { R: false, J: false };
       }
-      // SAFETY: Prevent both players from being AI (except IA_VS_IA)
-      if (lastState.ai_players.R && lastState.ai_players.J && !(lastState.mode === "LOCAL" && lastState.type_partie === "IA_VS_IA")) {
+      // SAFETY: Prevent both players from being AI in WEB mode
+      if (lastState.ai_players.R && lastState.ai_players.J && lastState.mode !== "LOCAL") {
         lastState.ai_players.J = false;
       }
       if (lastState.mode === "WEB") {
@@ -1966,7 +2024,7 @@ window.addEventListener("load", async () => {
   if (!lastState.ai_players || typeof lastState.ai_players !== "object") {
     lastState.ai_players = { R: false, J: false };
   }
-  if (lastState.ai_players.R && lastState.ai_players.J && !(lastState.mode === "LOCAL" && lastState.type_partie === "IA_VS_IA")) {
+  if (lastState.ai_players.R && lastState.ai_players.J && lastState.mode !== "LOCAL") {
     lastState.ai_players.J = false;
   }
 
