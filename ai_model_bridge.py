@@ -258,3 +258,29 @@ class MLModelAI:
             f"ml_score={ml_score} | mm_best={best_mm_move+1}:{best_mm_score} | depth={self.minimax_depth}"
         )
         return ml_move
+
+    def evaluate_position(self, board: List[List[object]], current_player: str) -> float:
+        """
+        Évalue la position en utilisant le modèle ML. Retourne la valeur entre -1 et 1.
+        """
+        if self.model is None:
+            raise RuntimeError("Hybrid ML model is not loaded")
+
+        board_np = self._board_to_np(board)
+        if self.rows is not None and board_np.shape[0] != self.rows:
+            raise RuntimeError(f"Checkpoint expects rows={self.rows}, got {board_np.shape[0]}")
+        if self.cols is not None and board_np.shape[1] != self.cols:
+            raise RuntimeError(f"Checkpoint expects cols={self.cols}, got {board_np.shape[1]}")
+
+        player_num = 1 if current_player == "R" else 2
+        x = torch.from_numpy(self._board_to_channels(board_np, player_num)).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            _, value = self.model(x)
+
+        value = value[0].detach().cpu()
+        if value.numel() == 1:
+            return float(value.item())
+        if value.numel() == 3:
+            probs = torch.softmax(value, dim=0)
+            return float(probs[2].item() - probs[0].item())
+        return float(value.float().mean().item())

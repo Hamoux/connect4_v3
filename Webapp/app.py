@@ -499,7 +499,7 @@ def immediate_win_or_block(board, player):
     return None
 
 
-def best_ai_col(board, ai_player, depth, moves_history=None):
+def best_ai_col(board, ai_player, depth, moves_history=None, eval_func=None):
     valid = ai_engine.valid_cols(board)
     if not valid:
         return None
@@ -530,7 +530,8 @@ def best_ai_col(board, ai_player, depth, moves_history=None):
             alpha=-10**18,
             beta=10**18,
             maximizing=False,
-            ai_player=ai_player
+            ai_player=ai_player,
+            eval_func=eval_func
         )
         board[r][col] = 0
 
@@ -570,8 +571,10 @@ def try_load_hybrid_ai(depth=DEFAULT_DEPTH):
         return None
 
 
-def choose_ai_move(board, player, depth, enforce_max_depth=False, moves_history=None):
+def choose_ai_move(board, player, depth, ai_mode="hybrid", enforce_max_depth=False, moves_history=None):
     depth_value = MAX_DEPTH if enforce_max_depth else normalize_depth(depth, DEFAULT_DEPTH)
+    if str(ai_mode or "").lower() == "minimax":
+        return best_ai_col(board, player, depth_value, moves_history=moves_history)
     model_ai = try_load_hybrid_ai(depth_value)
     if model_ai is not None:
         return model_ai.choose_move([row[:] for row in board], player)
@@ -859,8 +862,12 @@ def api_new():
 
     mode = str(data.get("mode") or "IA").upper()
     depth = normalize_depth(data.get("difficulty"), DEFAULT_DEPTH)
+    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
     starting_player = str(data.get("starting_player") or "R").upper()
     human_player = str(data.get("human_player") or "R").upper()
+
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
 
     if starting_player not in ("R", "J"):
         starting_player = "R"
@@ -888,6 +895,7 @@ def api_new():
         g["ai_enabled"] = False
         g["ai_player"] = None
         g["ai_depth"] = depth
+        g["ai_mode"] = ai_mode
 
         pid, sig = create_partie_db(
             "LOCAL", "HUMAIN", g["starting_player"],
@@ -916,6 +924,7 @@ def api_new():
         g["ai_enabled"] = True
         g["ai_player"] = ai_player
         g["ai_players"] = {"R": ai_player == "R", "J": ai_player == "J"}
+        g["ai_mode"] = ai_mode
 
         if ai_player == "R":
             g["player_r_name"] = "IA"
@@ -947,6 +956,7 @@ def api_new():
         g["ai_enabled"] = True
         g["ai_player"] = None
         g["ai_players"] = {"R": True, "J": True}
+        g["ai_mode"] = ai_mode
 
         pid, sig = create_partie_db(
             "LOCAL", "IA_VS_IA", g["starting_player"],
@@ -1056,6 +1066,35 @@ def api_set_ai_color():
         else:
             s["player_j_name"] = player_j_name or "Joueur Jaune"
 
+    update_partie_metadata_db(s.get("id_partie"), s)
+    return jsonify(export_state(s))
+
+
+@app.post("/api/set_ai_prefs")
+def api_set_ai_prefs():
+    data = request.json or {}
+    game_id = normalize_game_id(data.get("game_id"))
+    client_id = data.get("client_id")
+    ai_depth = normalize_depth(data.get("ai_depth"), DEFAULT_DEPTH)
+    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
+
+    game = get_game_state(game_id)
+    if game is None:
+        return jsonify({"error": "Partie introuvable"}), 404
+
+    try:
+        register_client(game, client_id)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    s = game
+    if s["game_over"]:
+        return jsonify({"error": "Partie terminée"}), 400
+
+    s["ai_depth"] = ai_depth
+    s["ai_mode"] = ai_mode
     update_partie_metadata_db(s.get("id_partie"), s)
     return jsonify(export_state(s))
 
@@ -1191,6 +1230,8 @@ def api_ai_move():
 
     depth = int(s.get("ai_depth", DEFAULT_DEPTH))
     ai_player = s.get("current_player")
+    print(f"DEBUG: Using ai_depth: {depth} for ai_player: {ai_player}")
+    ai_mode = str(s.get("ai_mode") or "hybrid").lower()
 
     # Extraire l'historique des coups pour la bibliothèque d'ouverture
     moves_history = signature_to_moves(s.get("signature", ""))
@@ -1200,7 +1241,9 @@ def api_ai_move():
         ai_col = choose_ai_move(
             [row[:] for row in s["board"]],
             ai_player,
-            depth
+            depth,
+            ai_mode=ai_mode,
+            moves_history=moves_history
         )
     except Exception as e:
         return jsonify({"error": f"Erreur Minimax: {str(e)}"}), 500
@@ -1243,11 +1286,13 @@ def api_local_ai_move():
 
         moves_history = signature_to_moves(s.get("signature", ""))
 
+        ai_mode = str(s.get("ai_mode") or "hybrid").lower()
         try:
             ai_col = choose_ai_move(
                 [row[:] for row in s["board"]],
                 player,
                 depth,
+                ai_mode=ai_mode,
                 moves_history=moves_history
             )
         except Exception as e:
@@ -1275,12 +1320,16 @@ def api_local_ai_move():
     if not isinstance(board, list) or len(board) != ROWS:
         return jsonify({"error": "Plateau invalide"}), 400
 
+    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
     try:
         board_copy = [row[:] for row in board]
         col = choose_ai_move(
             board_copy,
             player,
-            depth
+            depth,
+            ai_mode=ai_mode
         )
     except Exception as e:
         return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
@@ -1305,13 +1354,17 @@ def api_hint():
     if s.get("game_over"):
         return jsonify({"error": "Partie terminée"}), 400
 
-    depth = int(s.get("ai_depth", DEFAULT_DEPTH))
+    depth = normalize_depth(data.get("ai_depth") or s.get("ai_depth"), DEFAULT_DEPTH)
     player = s.get("current_player", "R")
     board_copy = [row[:] for row in s["board"]]
     moves_history = signature_to_moves(s.get("signature", ""))
+    ai_mode = str(data.get("ai_mode") or s.get("ai_mode") or "hybrid").lower()
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
 
+    print(f"DEBUG hint: Using ai_depth: {depth}, ai_mode: {ai_mode}")
     try:
-        col = choose_ai_move(board_copy, player, depth, moves_history=moves_history)
+        col = choose_ai_move(board_copy, player, depth, ai_mode=ai_mode, moves_history=moves_history)
         scores = compute_move_scores([row[:] for row in s["board"]], player, depth, moves_history=moves_history)
     except Exception as e:
         return jsonify({"error": f"Erreur IA hint: {str(e)}"}), 500
@@ -1419,11 +1472,14 @@ def api_model_status():
 def api_predict():
     """
     Prédit qui va gagner et dans combien de coups.
-    Body: { game_id?, board?, current_player?, depth? }
+    Body: { game_id?, board?, current_player?, depth?, ai_mode? }
     """
     data = request.json or {}
     game_id = normalize_game_id(data.get("game_id"))
     depth = normalize_depth(data.get("depth"), DEFAULT_DEPTH)
+    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
 
     # Mode partie existante ou plateau libre
     if game_id is not None:
@@ -1462,7 +1518,10 @@ def api_predict():
             board.append([0] * COLS)
 
     try:
-        result = ai_engine.predict_winner(board, current_player, depth=depth)
+        eval_func = None
+        if ai_mode == "hybrid" and hybrid_ai is not None:
+            eval_func = lambda b, p: hybrid_ai.evaluate_position(b, p) * 1000
+        result = ai_engine.predict_winner(board, current_player, depth=depth, eval_func=eval_func)
     except Exception as e:
         return jsonify({"error": f"Erreur prédiction: {str(e)}"}), 500
 
@@ -1717,9 +1776,12 @@ def api_paint_hint():
         return jsonify({"error": "Plateau invalide"}), 400
 
     board = [row[:] for row in board_raw]
+    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
+    if ai_mode not in ("hybrid", "minimax"):
+        ai_mode = "hybrid"
 
     try:
-        col = choose_ai_move(board, current_player, depth)
+        col = choose_ai_move(board, current_player, depth, ai_mode=ai_mode)
     except Exception as e:
         return jsonify({"error": f"Erreur IA: {str(e)}"}), 500
 

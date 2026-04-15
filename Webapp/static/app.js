@@ -24,6 +24,7 @@ if (!CLIENT_ID) {
 let lastState = null;
 let GAME_ID = null;
 let busy = false;
+let aiThinking = false;
 let hoverCol = null;
 let lastMove = null;
 let aiTimer = null;
@@ -38,9 +39,10 @@ let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "Joueur jaune";
 let humanColor = localStorage.getItem("humanColor") || "R";
 
-const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R" };
+const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R", aiMode: "hybrid" };
 let committedMode = "IA";
 let committedDifficulty = "4";
+let committedAiMode = "hybrid";
 let suppressSelectChange = false;
 let pendingConfirmCallback = null;
 
@@ -113,10 +115,12 @@ function cloneFullState(state) {
 function syncUiPrefsFromForm() {
   uiPrefs.mode = ($("modeSelect")?.value || "IA").toUpperCase();
   uiPrefs.difficulty = $("diffSelect")?.value || "4";
+  uiPrefs.aiMode = ($("aiModeSelect")?.value || "hybrid").toLowerCase();
   uiPrefs.startingPlayer = ($("colorSelect")?.value || "R").toUpperCase();
   uiPrefs.humanColor = ($("humanColorSelect")?.value || "R").toUpperCase();
   committedMode = uiPrefs.mode;
   committedDifficulty = uiPrefs.difficulty;
+  committedAiMode = uiPrefs.aiMode;
 }
 
 function hasActiveGame() {
@@ -284,6 +288,7 @@ function syncSelectsFromLoadedState(state) {
     else if (state.mode === "LOCAL") { if ($("modeSelect")) $("modeSelect").value = "LOCAL"; }
     else { if ($("modeSelect")) $("modeSelect").value = "ONLINE"; }
     if (state.ai_depth != null && $("diffSelect")) $("diffSelect").value = String(state.ai_depth);
+    if (state.ai_mode != null && $("aiModeSelect")) $("aiModeSelect").value = String(state.ai_mode).toLowerCase();
     if (state.starting_player && $("colorSelect")) $("colorSelect").value = state.starting_player;
     if (state.type_partie === "IA" && $("humanColorSelect")) {
       const aiColor = state.ai_player === "R" ? "R" : "J";
@@ -360,7 +365,8 @@ async function postAiMove() {
 }
 
 async function postHint() {
-  const res = await fetch("/api/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID }) });
+  const depth = Number($("diffSelect")?.value) || Number(lastState?.ai_depth) || 4;
+  const res = await fetch("/api/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID, ai_depth: depth, ai_mode: uiPrefs.aiMode }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -374,6 +380,15 @@ async function postSetAiColor(color, enabled) {
   return { ok: res.ok, data };
 }
 
+async function postSetAiPrefs(depth, ai_mode) {
+  const res = await fetch("/api/set_ai_prefs", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID, ai_depth: depth, ai_mode })
+  });
+  const data = await res.json();
+  return { ok: res.ok, data };
+}
+
 async function postLocalAiMove(board, player, depth) {
   const sig = lastState?.signature || "";
   // N'utiliser la bibliothèque d'ouverture QUE si la partie a commencé normalement
@@ -382,14 +397,14 @@ async function postLocalAiMove(board, player, depth) {
   // → l'IA évalue la position réelle avec minimax pur, sans biais d'ouverture
   const hasRealMoves = sig !== "init" && /\d/.test(sig);
   const moves_history = hasRealMoves ? parseSignatureToCols(sig) : null;
-  const res = await fetch("/api/local_ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, player, depth, moves_history }) });
+  const res = await fetch("/api/local_ai_move", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, player, depth, moves_history, ai_mode: uiPrefs.aiMode }) });
   const data = await res.json();
   if (!res.ok) return { ok: false, error: data.error || "Erreur IA locale" };
   return { ok: true, col: data.col };
 }
 
 async function postPredict(board, currentPlayer, depth) {
-  const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 6 }) });
+  const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 6, ai_mode: uiPrefs.aiMode }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -407,7 +422,7 @@ async function postPaintAnalyze(board, startingPlayer) {
 }
 
 async function postPaintHint(board, currentPlayer, depth) {
-  const res = await fetch("/api/paint_hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth }) });
+  const res = await fetch("/api/paint_hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth, ai_mode: uiPrefs.aiMode }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -519,10 +534,10 @@ function updateHeaderStatus(state) {
 // --- Polling / IA ---
 function cancelAiTimer() { if (aiTimer) { clearTimeout(aiTimer); aiTimer = null; } }
 function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
-function setThinking(on) { const el = $("aiThinking"); if (!el) return; el.hidden = !on; }
+function setThinking(on) { const el = $("aiThinking"); if (!el) return; el.hidden = !on; aiThinking = !!on; }
 
 function scheduleAiIfNeeded() {
-  if (!lastState || lastState.game_over || paused || busy || paintMode) return;
+  if (!lastState || lastState.game_over || paused || busy || aiThinking || paintMode) return;
   if (blockAutoAiUntilHumanAction) return;
   if (isAiTurn(lastState)) { cancelAiTimer(); aiTimer = setTimeout(aiMove, AI_DELAY_MS); }
 }
@@ -657,7 +672,7 @@ async function newGame() {
   GAME_ID = null;
   history.replaceState({}, "", location.pathname);
 
-  const payload = { mode, difficulty, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
+  const payload = { mode, difficulty, ai_mode: uiPrefs.aiMode, starting_player, human_player, client_id: CLIENT_ID, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   const { ok, data: state } = await postNewGame(payload);
   if (!ok) { setMessageOnly(state.error || "Erreur lors de la création de la partie."); return; }
 
@@ -1061,7 +1076,7 @@ async function runPrediction(manual = false) {
     return;
   }
 
-  const depth = lastState?.ai_depth || parseInt($("diffSelect")?.value, 10) || 4;
+  const depth = parseInt($("diffSelect")?.value, 10) || Number(lastState?.ai_depth) || 4;
   const res = await postPredict(board, currentPlayer, depth);
 
   if (btnPredict) { btnPredict.disabled = false; btnPredict.textContent = "🔮 Analyser"; }
@@ -1371,6 +1386,7 @@ function renderHistory(state) {
 function updateModeUI() {
   const mode = ($("modeSelect")?.value || "IA").toUpperCase();
   const difficultyField = $("difficultyField");
+  const aiModeField = $("aiModeField");
   const colorSelect = $("colorSelect");
   const humanColorSelect = $("humanColorSelect");
   const startHint = $("startHint");
@@ -1378,7 +1394,9 @@ function updateModeUI() {
   const nameJ = $("playerNameJ");
 
   if (difficultyField) difficultyField.style.display = (mode === "IA" || mode === "LOCAL" || mode === "IA_VS_IA") ? "" : "none";
+  if (aiModeField) aiModeField.style.display = (mode === "IA" || mode === "LOCAL" || mode === "IA_VS_IA") ? "" : "none";
   if ($("diffSelect")) $("diffSelect").disabled = false;
+  if ($("aiModeSelect")) $("aiModeSelect").disabled = (mode !== "IA" && mode !== "LOCAL" && mode !== "IA_VS_IA");
   if (colorSelect) colorSelect.disabled = mode === "ONLINE";
   if (humanColorSelect) humanColorSelect.disabled = mode !== "IA";
   if (startHint) startHint.classList.toggle("is-visible", mode === "ONLINE");
@@ -1791,17 +1809,105 @@ window.addEventListener("load", async () => {
     } else { syncUiPrefsFromForm(); updateModeUI(); updateShareLinkVisibility(); }
   });
 
-  $("diffSelect")?.addEventListener("change", (e) => {
+  $("diffSelect")?.addEventListener("change", async (e) => {
     if (suppressSelectChange) return;
+    if (busy || aiThinking) {
+      const oldVal = committedDifficulty;
+      if (e.target) e.target.value = oldVal;
+      showMessage("Attends que l'IA ait fini de réfléchir avant de changer la profondeur.");
+      return;
+    }
     const newVal = e.target.value, oldVal = committedDifficulty;
     if (newVal === oldVal) return;
-    if (hasActiveGame()) {
-      e.target.value = oldVal;
-      showConfirmModal("Changer la profondeur va terminer la partie en cours. Continuer ?", async () => {
-        suppressSelectChange = true;
-        try { $("diffSelect").value = newVal; syncUiPrefsFromForm(); await newGame(); } finally { suppressSelectChange = false; }
-      });
-    } else { syncUiPrefsFromForm(); }
+    syncUiPrefsFromForm();
+    committedDifficulty = uiPrefs.difficulty;
+
+    if (hasActiveGame() && GAME_ID) {
+      const res = await postSetAiPrefs(uiPrefs.difficulty, uiPrefs.aiMode);
+      if (!res.ok) { showMessage(res.data?.error || "Impossible d'enregistrer la profondeur IA."); return; }
+      lastState = res.data;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Profondeur IA appliquée.", "log-item--system");
+      return;
+    }
+
+    if (hasActiveGame() && lastState) {
+      lastState.ai_depth = uiPrefs.difficulty;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Profondeur IA appliquée.", "log-item--system");
+    }
+
+    if (paintMode) void runPrediction(true);
+  });
+
+  $("aiModeSelect")?.addEventListener("change", async (e) => {
+    if (suppressSelectChange) return;
+    if (busy || aiThinking) {
+      const oldVal = committedAiMode;
+      if (e.target) e.target.value = oldVal;
+      showMessage("Attends que l'IA ait fini de réfléchir avant de changer le type d'IA.");
+      return;
+    }
+    const newVal = (e.target.value || "hybrid").toLowerCase();
+    const oldVal = committedAiMode;
+    if (newVal === oldVal) return;
+    syncUiPrefsFromForm();
+    committedAiMode = uiPrefs.aiMode;
+
+    if (hasActiveGame() && GAME_ID) {
+      const res = await postSetAiPrefs(uiPrefs.difficulty, uiPrefs.aiMode);
+      if (!res.ok) { showMessage(res.data?.error || "Impossible d'enregistrer le type d'IA."); return; }
+      lastState = res.data;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Type d'IA appliqué.", "log-item--system");
+      return;
+    }
+
+    if (hasActiveGame() && lastState) {
+      lastState.ai_mode = uiPrefs.aiMode;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Type d'IA appliqué.", "log-item--system");
+    }
+  });
+
+  $("btnApplySettings")?.addEventListener("click", async () => {
+    if (busy || aiThinking) {
+      showMessage("Attends que l'IA ait fini de réfléchir avant d'appliquer les réglages.");
+      return;
+    }
+    syncUiPrefsFromForm();
+    committedDifficulty = uiPrefs.difficulty;
+    committedAiMode = uiPrefs.aiMode;
+    if (hasActiveGame() && GAME_ID) {
+      const res = await postSetAiPrefs(uiPrefs.difficulty, uiPrefs.aiMode);
+      if (!res.ok) { showMessage(res.data?.error || "Impossible d'appliquer les réglages IA."); return; }
+      lastState = res.data;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Réglages IA appliqués.", "log-item--system");
+      return;
+    }
+
+    if (hasActiveGame() && lastState) {
+      lastState.ai_depth = uiPrefs.difficulty;
+      lastState.ai_mode = uiPrefs.aiMode;
+      render(lastState);
+      scheduleAiIfNeeded();
+      if (!lastState.game_over) void runPrediction();
+      showHistoryLine("Réglages IA appliqués.", "log-item--system");
+      return;
+    }
+
+    await newGame();
   });
 
   $("playerNameR")?.addEventListener("input", (e) => {

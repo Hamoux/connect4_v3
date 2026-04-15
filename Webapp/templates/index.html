@@ -78,6 +78,20 @@
         </select>
       </div>
 
+      <div class="field" id="aiModeField">
+        <label class="field__label" for="aiModeSelect">Type d'IA</label>
+        <select id="aiModeSelect" class="field__input">
+          <option value="hybrid" selected>IA hybride (modèle + minimax)</option>
+          <option value="minimax">Minimax pur</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <button type="button" class="btn btn-block" id="btnApplySettings">
+          🛠️ Appliquer réglages IA
+        </button>
+      </div>
+
       <div class="field">
         <label class="field__label" style="cursor:pointer;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="autoAnalysisToggle" />
