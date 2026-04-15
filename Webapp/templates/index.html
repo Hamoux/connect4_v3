@@ -208,6 +208,19 @@
           ✕ Annuler et quitter
         </button>
       </div>
+
+      <!-- Import signature depuis fichier -->
+      <div class="field" style="margin-top:14px">
+        <label class="field__label">Importer une position (.txt)</label>
+        <p class="field__hint">Fichier texte contenant une signature (ex: 5544332)</p>
+        <div class="toolbar">
+          <label class="btn btn-block" for="importSigFile" style="cursor:pointer;text-align:center">
+            📂 Charger un fichier
+          </label>
+          <input type="file" id="importSigFile" accept=".txt" hidden />
+        </div>
+        <div id="importSigStatus" class="field__hint" hidden></div>
+      </div>
     </section>
 
     <!-- PANNEAU CENTRAL — Plateau -->
