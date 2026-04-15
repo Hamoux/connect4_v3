@@ -39,10 +39,9 @@ let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "Joueur jaune";
 let humanColor = localStorage.getItem("humanColor") || "R";
 
-const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R", aiMode: "hybrid" };
+const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R" };
 let committedMode = "IA";
 let committedDifficulty = "4";
-let committedAiMode = "hybrid";
 let suppressSelectChange = false;
 let pendingConfirmCallback = null;
 

@@ -11,14 +11,6 @@ from psycopg2.extras import RealDictCursor
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from ai import MinimaxAI  # noqa
 
-try:
-    from ai_model_bridge import MLModelAI
-except Exception as e:
-    MLModelAI = None
-    MODEL_BRIDGE_ERROR = str(e)
-else:
-    MODEL_BRIDGE_ERROR = None
-
 app = Flask(__name__)
 
 ROWS = 9
@@ -31,12 +23,6 @@ MAX_DEPTH = 9
 
 ai_engine = MinimaxAI(ROWS, COLS)
 games = {}
-
-MODEL_CHECKPOINT_ENV = os.getenv("AI_MODEL_CHECKPOINT") or os.getenv("CONNECT4_MODEL_CHECKPOINT")
-MODEL_PY_ENV = os.getenv("AI_MODEL_PY") or os.getenv("CONNECT4_MODEL_PY")
-DEFAULT_MODEL_CHECKPOINT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "runs", "cpu_test", "best_modelv1.pt"))
-DEFAULT_MODEL_PY = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "connect4_ml_pipeline", "connect4_ml", "model.py"))
-hybrid_ai = None
 
 
 def normalize_depth(value, default=DEFAULT_DEPTH):
@@ -542,42 +528,8 @@ def best_ai_col(board, ai_player, depth, moves_history=None, eval_func=None):
     return best_col
 
 
-def get_default_model_paths():
-    checkpoint = MODEL_CHECKPOINT_ENV or DEFAULT_MODEL_CHECKPOINT
-    model_py = MODEL_PY_ENV or DEFAULT_MODEL_PY
-    return checkpoint, model_py
-
-
-def try_load_hybrid_ai(depth=DEFAULT_DEPTH):
-    global hybrid_ai
-    if hybrid_ai is not None:
-        hybrid_ai.set_minimax_depth(depth)
-        return hybrid_ai
-
-    if MLModelAI is None:
-        return None
-
-    checkpoint, model_py = get_default_model_paths()
-    if not checkpoint or not os.path.exists(checkpoint):
-        return None
-
-    model_py_path = model_py if model_py and os.path.exists(model_py) else None
-    try:
-        hybrid_ai = MLModelAI(minimax_depth=depth)
-        hybrid_ai.load(checkpoint, model_py_path=model_py_path, device="cpu")
-        return hybrid_ai
-    except Exception:
-        hybrid_ai = None
-        return None
-
-
-def choose_ai_move(board, player, depth, ai_mode="hybrid", enforce_max_depth=False, moves_history=None):
+def choose_ai_move(board, player, depth, enforce_max_depth=False, moves_history=None):
     depth_value = MAX_DEPTH if enforce_max_depth else normalize_depth(depth, DEFAULT_DEPTH)
-    if str(ai_mode or "").lower() == "minimax":
-        return best_ai_col(board, player, depth_value, moves_history=moves_history)
-    model_ai = try_load_hybrid_ai(depth_value)
-    if model_ai is not None:
-        return model_ai.choose_move([row[:] for row in board], player)
     return best_ai_col(board, player, depth_value, moves_history=moves_history)
 
 
@@ -862,12 +814,8 @@ def api_new():
 
     mode = str(data.get("mode") or "IA").upper()
     depth = normalize_depth(data.get("difficulty"), DEFAULT_DEPTH)
-    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
     starting_player = str(data.get("starting_player") or "R").upper()
     human_player = str(data.get("human_player") or "R").upper()
-
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
 
     if starting_player not in ("R", "J"):
         starting_player = "R"
@@ -895,7 +843,7 @@ def api_new():
         g["ai_enabled"] = False
         g["ai_player"] = None
         g["ai_depth"] = depth
-        g["ai_mode"] = ai_mode
+        g["ai_mode"] = "minimax"
 
         pid, sig = create_partie_db(
             "LOCAL", "HUMAIN", g["starting_player"],
@@ -924,7 +872,7 @@ def api_new():
         g["ai_enabled"] = True
         g["ai_player"] = ai_player
         g["ai_players"] = {"R": ai_player == "R", "J": ai_player == "J"}
-        g["ai_mode"] = ai_mode
+        g["ai_mode"] = "minimax"
 
         if ai_player == "R":
             g["player_r_name"] = "IA"
@@ -956,7 +904,7 @@ def api_new():
         g["ai_enabled"] = True
         g["ai_player"] = None
         g["ai_players"] = {"R": True, "J": True}
-        g["ai_mode"] = ai_mode
+        g["ai_mode"] = "minimax"
 
         pid, sig = create_partie_db(
             "LOCAL", "IA_VS_IA", g["starting_player"],
@@ -1076,9 +1024,6 @@ def api_set_ai_prefs():
     game_id = normalize_game_id(data.get("game_id"))
     client_id = data.get("client_id")
     ai_depth = normalize_depth(data.get("ai_depth"), DEFAULT_DEPTH)
-    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
 
     game = get_game_state(game_id)
     if game is None:
@@ -1094,7 +1039,7 @@ def api_set_ai_prefs():
         return jsonify({"error": "Partie terminée"}), 400
 
     s["ai_depth"] = ai_depth
-    s["ai_mode"] = ai_mode
+    s["ai_mode"] = "minimax"
     update_partie_metadata_db(s.get("id_partie"), s)
     return jsonify(export_state(s))
 
@@ -1231,18 +1176,15 @@ def api_ai_move():
     depth = int(s.get("ai_depth", DEFAULT_DEPTH))
     ai_player = s.get("current_player")
     print(f"DEBUG: Using ai_depth: {depth} for ai_player: {ai_player}")
-    ai_mode = str(s.get("ai_mode") or "hybrid").lower()
 
     # Extraire l'historique des coups pour la bibliothèque d'ouverture
     moves_history = signature_to_moves(s.get("signature", ""))
 
     try:
-        # On ne vide plus le cache entre les coups pour réutiliser la table de transposition
         ai_col = choose_ai_move(
             [row[:] for row in s["board"]],
             ai_player,
             depth,
-            ai_mode=ai_mode,
             moves_history=moves_history
         )
     except Exception as e:
@@ -1286,13 +1228,11 @@ def api_local_ai_move():
 
         moves_history = signature_to_moves(s.get("signature", ""))
 
-        ai_mode = str(s.get("ai_mode") or "hybrid").lower()
         try:
             ai_col = choose_ai_move(
                 [row[:] for row in s["board"]],
                 player,
                 depth,
-                ai_mode=ai_mode,
                 moves_history=moves_history
             )
         except Exception as e:
@@ -1320,17 +1260,9 @@ def api_local_ai_move():
     if not isinstance(board, list) or len(board) != ROWS:
         return jsonify({"error": "Plateau invalide"}), 400
 
-    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
     try:
         board_copy = [row[:] for row in board]
-        col = choose_ai_move(
-            board_copy,
-            player,
-            depth,
-            ai_mode=ai_mode
-        )
+        col = choose_ai_move(board_copy, player, depth)
     except Exception as e:
         return jsonify({"error": f"Erreur pendant le calcul Minimax local: {str(e)}"}), 500
 
@@ -1358,13 +1290,10 @@ def api_hint():
     player = s.get("current_player", "R")
     board_copy = [row[:] for row in s["board"]]
     moves_history = signature_to_moves(s.get("signature", ""))
-    ai_mode = str(data.get("ai_mode") or s.get("ai_mode") or "hybrid").lower()
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
 
-    print(f"DEBUG hint: Using ai_depth: {depth}, ai_mode: {ai_mode}")
+    print(f"DEBUG hint: Using ai_depth: {depth}")
     try:
-        col = choose_ai_move(board_copy, player, depth, ai_mode=ai_mode, moves_history=moves_history)
+        col = choose_ai_move(board_copy, player, depth, moves_history=moves_history)
         scores = compute_move_scores([row[:] for row in s["board"]], player, depth, moves_history=moves_history)
     except Exception as e:
         return jsonify({"error": f"Erreur IA hint: {str(e)}"}), 500
@@ -1462,18 +1391,10 @@ def api_restore_state():
 
 @app.get("/api/model_status")
 def api_model_status():
-    checkpoint, model_py = get_default_model_paths()
-    model_ai = try_load_hybrid_ai(DEFAULT_DEPTH)
     return jsonify({
-        "model_bridge_available": MLModelAI is not None,
-        "model_bridge_error": MODEL_BRIDGE_ERROR,
-        "checkpoint_path": checkpoint,
-        "checkpoint_exists": bool(checkpoint and os.path.exists(checkpoint)),
-        "model_py_path": model_py,
-        "model_py_exists": bool(model_py and os.path.exists(model_py)),
-        "model_loaded": model_ai is not None,
-        "fallback": "minimax" if model_ai is None else "hybrid_ml",
-        "debug": getattr(model_ai, "last_debug", "") if model_ai is not None else ""
+        "model_loaded": False,
+        "fallback": "minimax",
+        "mode": "Minimax pur"
     })
 
 
@@ -1481,14 +1402,11 @@ def api_model_status():
 def api_predict():
     """
     Prédit qui va gagner et dans combien de coups.
-    Body: { game_id?, board?, current_player?, depth?, ai_mode? }
+    Body: { game_id?, board?, current_player?, depth? }
     """
     data = request.json or {}
     game_id = normalize_game_id(data.get("game_id"))
     depth = normalize_depth(data.get("depth"), DEFAULT_DEPTH)
-    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
 
     # Mode partie existante ou plateau libre
     if game_id is not None:
@@ -1527,10 +1445,7 @@ def api_predict():
             board.append([0] * COLS)
 
     try:
-        eval_func = None
-        if ai_mode == "hybrid" and hybrid_ai is not None:
-            eval_func = lambda b, p: hybrid_ai.evaluate_position(b, p) * 1000
-        result = ai_engine.predict_winner(board, current_player, depth=depth, eval_func=eval_func)
+        result = ai_engine.predict_winner(board, current_player, depth=depth)
     except Exception as e:
         return jsonify({"error": f"Erreur prédiction: {str(e)}"}), 500
 
@@ -1894,12 +1809,9 @@ def api_paint_hint():
         return jsonify({"error": "Plateau invalide"}), 400
 
     board = [row[:] for row in board_raw]
-    ai_mode = str(data.get("ai_mode") or "hybrid").lower()
-    if ai_mode not in ("hybrid", "minimax"):
-        ai_mode = "hybrid"
 
     try:
-        col = choose_ai_move(board, current_player, depth, ai_mode=ai_mode)
+        col = choose_ai_move(board, current_player, depth)
     except Exception as e:
         return jsonify({"error": f"Erreur IA: {str(e)}"}), 500
 
