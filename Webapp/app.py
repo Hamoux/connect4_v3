@@ -1470,10 +1470,8 @@ def api_predict():
     moves = result.get("moves")
     certain = result.get("certain", False)
 
-    if winner == "draw" and certain:
+    if winner == "draw":
         message = "Match nul inévitable."
-    elif winner == "draw":
-        message = "Match nul probable."
     elif winner and certain and moves is not None and moves <= 1:
         color_name = "Rouge" if winner == "R" else "Jaune"
         message = f"Victoire forcée immédiate pour {color_name}."
