@@ -39,9 +39,9 @@ let PLAYER_R_NAME = localStorage.getItem("playerNameR") || "Joueur rouge";
 let PLAYER_J_NAME = localStorage.getItem("playerNameJ") || "Joueur jaune";
 let humanColor = localStorage.getItem("humanColor") || "R";
 
-const uiPrefs = { mode: "IA", difficulty: "4", startingPlayer: "R", humanColor: "R" };
+const uiPrefs = { mode: "IA", difficulty: "5", startingPlayer: "R", humanColor: "R" };
 let committedMode = "IA";
-let committedDifficulty = "4";
+let committedDifficulty = "5";
 let suppressSelectChange = false;
 let pendingConfirmCallback = null;
 
@@ -113,7 +113,7 @@ function cloneFullState(state) {
 
 function syncUiPrefsFromForm() {
   uiPrefs.mode = ($("modeSelect")?.value || "IA").toUpperCase();
-  uiPrefs.difficulty = $("diffSelect")?.value || "4";
+  uiPrefs.difficulty = $("diffSelect")?.value || "5";
   uiPrefs.startingPlayer = ($("colorSelect")?.value || "R").toUpperCase();
   uiPrefs.humanColor = ($("humanColorSelect")?.value || "R").toUpperCase();
   committedMode = uiPrefs.mode;
@@ -213,7 +213,7 @@ async function resyncServerStateFromSnapshot(targetSnap) {
     lastState = st;
     if (st.game_over) break;
     if (isAiTurn(st)) {
-      const r = lastState.mode === "LOCAL" ? await postLocalAiMove(lastState.board, lastState.current_player, Number(lastState.ai_depth || 4)) : await postAiMove();
+      const r = lastState.mode === "LOCAL" ? await postLocalAiMove(lastState.board, lastState.current_player, Number(lastState.ai_depth || 5)) : await postAiMove();
       if (!r.ok) { showMessage((r.data || {}).error || r.error || "Erreur lors du coup de l'IA."); return false; }
       lastState = r.data || lastState;
     } else {
@@ -361,7 +361,7 @@ async function postAiMove() {
 }
 
 async function postHint() {
-  const depth = Number($("diffSelect")?.value) || Number(lastState?.ai_depth) || 4;
+  const depth = Number($("diffSelect")?.value) || Number(lastState?.ai_depth) || 5;
   const res = await fetch("/api/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ game_id: GAME_ID, client_id: CLIENT_ID, ai_depth: depth }) });
   const data = await res.json();
   return { ok: res.ok, data };
@@ -393,7 +393,7 @@ async function postLocalAiMove(board, player, depth) {
 }
 
 async function postPredict(board, currentPlayer, depth) {
-  const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 6 }) });
+  const res = await fetch("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ board, current_player: currentPlayer, depth: depth || 5 }) });
   const data = await res.json();
   return { ok: res.ok, data };
 }
@@ -653,7 +653,7 @@ async function newGame() {
   if (paintMode) exitPaintMode(false);
 
   const mode = ($("modeSelect")?.value || "IA").toUpperCase();
-  const difficulty = $("diffSelect")?.value || "4";
+  const difficulty = $("diffSelect")?.value || "5";
   const starting_player = mode === "ONLINE" ? undefined : (($("colorSelect")?.value || "R").toUpperCase());
   const human_player = mode === "IA" ? (($("humanColorSelect")?.value || humanColor || "R").toUpperCase()) : undefined;
   blockAutoAiUntilHumanAction = false;
@@ -779,7 +779,7 @@ async function aiMove() {
       const response = await fetch("/api/local_ai_move", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ game_id: GAME_ID || lastState.id_partie, depth: Number(lastState.ai_depth || 4) })
+        body: JSON.stringify({ game_id: GAME_ID || lastState.id_partie, depth: Number(lastState.ai_depth || 5) })
       });
       const data = await response.json();
       res = { ok: response.ok, data };
@@ -931,7 +931,7 @@ function jsFindFirstWinLine(board, player) {
 function makeDummyState() {
   return {
     id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "EN_COURS",
-    ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false },
+    ai_enabled: false, ai_depth: 5, ai_player: null, ai_players: { R: false, J: false },
     board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)),
     current_player: "R", starting_player: "R", signature: "init",
     game_over: false, winning_line: null, player_count: 1,
@@ -1064,7 +1064,7 @@ async function runPrediction(manual = false) {
     return;
   }
 
-  const depth = parseInt($("diffSelect")?.value, 10) || Number(lastState?.ai_depth) || 4;
+  const depth = parseInt($("diffSelect")?.value, 10) || Number(lastState?.ai_depth) || 5;
   const res = await postPredict(board, currentPlayer, depth);
 
   if (btnPredict) { btnPredict.disabled = false; btnPredict.textContent = "🔮 Analyser"; }
@@ -1073,7 +1073,11 @@ async function runPrediction(manual = false) {
 
   predictionResult = res.data;
   renderPrediction();
-  showHistoryLine(`Analyse : ${res.data.message}`, "log-item--system");
+  let historyMessage = `Analyse : ${res.data.message}`;
+  if (res.data.suggested_col !== null && res.data.suggested_col !== undefined) {
+    historyMessage += ` | Coup suggéré: colonne ${res.data.suggested_col + 1}`;
+  }
+  showHistoryLine(historyMessage, "log-item--system");
 }
 
 function renderPrediction() {
@@ -1083,7 +1087,7 @@ function renderPrediction() {
   if (!predictionResult) { el.hidden = true; return; }
 
   el.hidden = false;
-  const { winner, moves, certain, message } = predictionResult;
+  const { winner, moves, certain, message, suggested_col, scores } = predictionResult;
 
   let cls = "";
   if (winner === "R") cls = "prediction--red";
@@ -1097,7 +1101,12 @@ function renderPrediction() {
   else if (winner === "J") icon = "🟡";
   else if (winner === "draw") icon = "🤝";
 
-  el.innerHTML = `<span class="prediction-icon">${icon}</span> <strong>${escapeHtml(message)}</strong>${certain ? "" : " <em>(estimation)</em>"}`;
+  let moveSuggestion = "";
+  if (suggested_col !== null && suggested_col !== undefined) {
+    moveSuggestion = ` <strong>Coup suggéré: colonne ${suggested_col + 1}</strong>`;
+  }
+
+  el.innerHTML = `<span class="prediction-icon">${icon}</span> <strong>${escapeHtml(message)}</strong>${certain ? "" : " <em>(estimation)</em>"}` + moveSuggestion;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1620,7 +1629,7 @@ window.addEventListener("load", async () => {
     else if (nb_j > nb_r)  cp = "R";
     else                   cp = ($("colorSelect")?.value || "R").toUpperCase();
 
-    const depth = normalize_depth_js($("diffSelect")?.value, 4);
+    const depth = normalize_depth_js($("diffSelect")?.value, 5);
     const res = await postPaintHint(deepCloneBoard(paintBoard), cp, depth);
     if (!res.ok) { showMessage(res.data.error || "Erreur IA."); return; }
     const col = res.data.suggested_col;
@@ -1746,7 +1755,7 @@ window.addEventListener("load", async () => {
   // ── Boutons IA/Humain ─────────────────────────────────────────────────────
   $("btnAiRed")?.addEventListener("click", async () => {
     if (!lastState) return;
-    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 5));
     blockAutoAiUntilHumanAction = false;
     setThinking(false);
     if (GAME_ID) {
@@ -1785,7 +1794,7 @@ window.addEventListener("load", async () => {
 
   $("btnAiYellow")?.addEventListener("click", async () => {
     if (!lastState) return;
-    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 4));
+    const depth = Math.max(2, Math.min(9, parseInt($("diffSelect")?.value, 10) || 5));
     blockAutoAiUntilHumanAction = false;
     setThinking(false);
     if (GAME_ID) {
@@ -1921,7 +1930,7 @@ window.addEventListener("load", async () => {
   } else { lastState = await getState(); }
 
   if (!lastState) {
-    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "Aucune partie", ai_enabled: false, ai_depth: 4, ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: "R", starting_player: "R", signature: "init", game_over: false, winning_line: null, player_count: 0, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
+    lastState = { id_partie: null, mode: "LOCAL", type_partie: "HUMAIN", status: "Aucune partie", ai_enabled: false, ai_depth: 5, ai_player: null, ai_players: { R: false, J: false }, board: Array.from({ length: ROWS }, () => Array(COLS).fill(0)), current_player: "R", starting_player: "R", signature: "init", game_over: false, winning_line: null, player_count: 0, client_r: null, client_j: null, player_r_name: PLAYER_R_NAME, player_j_name: PLAYER_J_NAME };
   }
   refreshDbGames().catch(() => {});
 

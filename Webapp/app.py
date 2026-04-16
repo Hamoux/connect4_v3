@@ -18,7 +18,7 @@ ROWS = 9
 COLS = 9
 CONFIANCE_WEB = 2
 
-DEFAULT_DEPTH = 4
+DEFAULT_DEPTH = 5
 MIN_DEPTH = 2
 MAX_DEPTH = 9
 
@@ -1358,6 +1358,15 @@ def api_predict():
     moves = result.get("moves")
     certain = result.get("certain", False)
 
+    # Get the best move suggestion using same depth as analysis
+    try:
+        best_col, raw_scores = ai_engine.choose_best_move(board, current_player, depth)
+        suggested_col = int(best_col) if best_col is not None else None
+        scores = {str(col): int(score) for col, score in raw_scores.items()} if raw_scores else {}
+    except Exception as e:
+        suggested_col = None
+        scores = {}
+
     if winner == "draw":
         message = "Match nul inévitable."
     elif winner and certain and moves is not None and moves <= 1:
@@ -1382,7 +1391,9 @@ def api_predict():
         "winner": winner,
         "moves": moves,
         "certain": certain,
-        "message": message
+        "message": message,
+        "suggested_col": suggested_col,
+        "scores": scores
     })
 
 

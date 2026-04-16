@@ -175,7 +175,7 @@ class Connect4UI(tk.Tk):
         depth_row.columnconfigure(1, weight=1)
 
         ttk.Label(depth_row, text="Profondeur").grid(row=0, column=0, sticky="w")
-        self.ai_depth_var = tk.IntVar(value=4)
+        self.ai_depth_var = tk.IntVar(value=5)
         self.ai_depth_spin = ttk.Spinbox(depth_row, from_=1, to=10, textvariable=self.ai_depth_var, width=5)
         self.ai_depth_spin.grid(row=0, column=1, sticky="e")
 

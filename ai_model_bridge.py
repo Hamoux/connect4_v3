@@ -28,7 +28,7 @@ class MLModelAI:
     FORCED_WIN_SCORE = 9_000_000
     FORCED_LOSS_SCORE = -9_000_000
 
-    def __init__(self, minimax_depth: int = 7):
+    def __init__(self, minimax_depth: int = 6):
         self.model = None
         self.device = "cpu"
         self.checkpoint_path: Optional[Path] = None
