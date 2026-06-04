@@ -1,24 +1,96 @@
-# connect4_v3
-Connect4 Web Game
+# Connect 4 Intelligent — Plateforme Web IA
 
-## Features
+Une plateforme web complète de Puissance 4, développée en binôme, combinant moteur IA, multijoueur en ligne, pipeline de scraping de parties réelles et modèle de Machine Learning entraîné sur des données réelles.
 
-- Play against a computer (easy/medium/hard difficulty).
-- Two-player **local** games: play on the same machine without network.
-- Two-player **online** games: click "Nouvelle partie" to create or join a room. The server keeps a pool of waiting games and will match you with the first available opponent – you don't even need to exchange links. When you do create a room, the first player gets a random colour and a pop‑up reminds them that they must wait for an adversary before playing; column buttons are disabled until a second user connects. The generated share‑link is still provided and automatically copied for convenience, but either player can simply hit "Nouvelle partie" to start matching. Only the first two distinct browser sessions can occupy a room; a third attempt will be rejected with an error. Moves made while waiting are stored and become visible once the opponent joins.
-- All online matches are recorded in a PostgreSQL database with replay support.
+---
 
-## Usage
+## Fonctionnalités
 
-1. Start the server:
-   ```bash
-   python Webapp/app.py
-   ```
-2. Open http://localhost:5000 in your browser.
-3. Select a mode from the dropdown:
-   - **J vs J (local)** – the game runs entirely in the browser.
-   - **J vs J (online)** – a new online room is created; copy/share the URL shown after creating the game.
-   - **J vs IA** – play against the AI.
-4. When playing online, both players must load the shared link; the server will prevent a third client from joining the same game.
+### Modes de jeu
+- **Joueur vs IA** — affrontez le moteur Minimax avec trois niveaux de difficulté (facile / moyen / difficile)
+- **Local (J vs J)** — deux joueurs sur la même machine, entièrement dans le navigateur
+- **En ligne (J vs J)** — création de salle et matchmaking automatique via WebSocket
+
+### Moteur IA — Minimax
+- Algorithme **Minimax** avec **élagage alpha-bêta** pour couper les branches inutiles
+- **Table de transposition** (cache de positions déjà évaluées) pour éviter les recalculs et accélérer la recherche
+- Profondeur de recherche variable selon le niveau de difficulté
+
+### Pipeline de données BGA
+- **Scraping automatique** de parties réelles depuis Board Game Arena via **Selenium**
+- Gestion de profil Chrome dédié pour contourner les limitations de session
+- **Déduplication par signature canonique** : chaque partie est identifiée de façon unique pour éviter les doublons en base
+- Importation des parties d'amis (`import_friend_game.py`, `import_friend_games.py`)
+- Stockage complet des coups joués dans PostgreSQL avec support de replay
+
+### Pipeline Machine Learning
+- Entraînement d'un modèle ML sur les parties scrappées (`connect4_ml_pipeline/`)
+- Intégration du modèle dans l'interface via `ai_model_bridge.py`
+- Interface de jeu avec recommandations ML (`ui_with_ml.py`)
+- Génération de parties synthétiques pour l'entraînement (`generate_games_fast_safe.py`)
+
+---
+
+## Architecture
+
+```
+connect4_v3/
+├── Webapp/                    # Interface Flask (routes, templates, WebSocket)
+├── ai.py                      # Moteur Minimax + alpha-bêta + table de transposition
+├── ai_model_bridge.py         # Pont entre le modèle ML et l'interface
+├── game.py                    # Logique du jeu (grille, victoire, coups valides)
+├── main.py                    # Point d'entrée principal
+├── bga_import.py              # Import de parties BGA
+├── bga_puppet.py              # Automatisation Selenium BGA
+├── scrape_replay_selenium_patched_v3.py  # Scraping des replays BGA
+├── explorer_tool_signature.py # Génération de signatures canoniques
+├── connect4_ml_pipeline/      # Pipeline ML complet
+├── db/                        # Schéma et configuration PostgreSQL
+├── scraped_moves/             # Données de parties scrappées
+└── utils/                     # Utilitaires divers
+```
+
+---
+
+## Stack technique
+
+| Couche | Technologies |
+|--------|-------------|
+| Backend | Python, Flask, API REST |
+| Frontend | JavaScript, HTML, CSS |
+| Base de données | PostgreSQL, psycopg2 |
+| IA | Minimax, élagage alpha-bêta, table de transposition |
+| Machine Learning | Pipeline ML, modèle entraîné sur données BGA |
+| Scraping | Selenium, Chrome headless |
+| Temps réel | WebSocket (multijoueur en ligne) |
+
+---
+
+## Installation
+
+```bash
+# Cloner le dépôt
+git clone https://github.com/Hamoux/connect4_v3.git
+cd connect4_v3
+
+# Installer les dépendances
+pip install -r requirements.txt
+
+# Configurer les variables d'environnement
+cp .env.example .env
+# Remplir les informations de connexion PostgreSQL dans .env
+
+# Lancer le serveur
+python Webapp/app.py
+```
+
+Ouvrir http://localhost:5000 dans le navigateur.
+
+---
+
+## Auteurs
+
+- Hamou Djellab
+- Celina Ikhlef
 
 
